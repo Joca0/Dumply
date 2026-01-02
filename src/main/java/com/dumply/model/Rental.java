@@ -1,5 +1,6 @@
 package com.dumply.model;
 
+import com.dumply.common.RentalRequest;
 import com.dumply.common.RentalStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,7 +22,7 @@ public class Rental {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private RentalStatus status;
-
+    private String fullAddress;
     private double latitude;
     private double longitude;
 
@@ -39,10 +40,11 @@ public class Rental {
 
     }
 
-    public Rental(LocalDateTime startDate, LocalDateTime endDate, RentalStatus status, double latitude, double longitude, Equipment equipment, Customer customer, BigDecimal charge) {
+    public Rental(LocalDateTime startDate, LocalDateTime endDate, RentalStatus status, String fullAddress, double latitude, double longitude, Equipment equipment, Customer customer, BigDecimal charge) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
+        this.fullAddress = fullAddress;
         this.latitude = latitude;
         this.longitude = longitude;
         this.equipment = equipment;

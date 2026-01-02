@@ -55,6 +55,7 @@ public class RentalService {
 
         //CONTINUA OPERAÇÃO
 
+        rental.setFullAddress(request.fullAddress());
         rental.setLatitude(request.latitude());
         rental.setLongitude(request.longitude());
 

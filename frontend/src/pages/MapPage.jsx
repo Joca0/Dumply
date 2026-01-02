@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { getActiveRentals } from '../api';
 
-// Corrigir ícone do Leaflet que some com o Vite/Webpack
+
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -59,6 +59,7 @@ const MapPage = () => {
               <div className="text-gray-900">
                 <h3 className="font-bold border-b mb-2">{rental.equipment.name}</h3>
                 <p><strong>Cliente:</strong> {rental.customer.fullName}</p>
+                <p><strong>Endereço:</strong> {rental.fullAddress}</p>
                 <p><strong>Início:</strong> {new Date(rental.startDate).toLocaleDateString()}</p>
                 <p><strong>Encerramento:</strong> {rental.endDate ? new Date(rental.endDate).toLocaleDateString() : 'Pendente'}</p>
                 <p><strong>Valor:</strong> R$ {rental.charge}</p>

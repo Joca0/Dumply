@@ -4,8 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { X } from 'lucide-react';
 
-const LocationPickerModal = ({ isOpen, onClose, onSelect }) => {
-  const [position, setPosition] = useState(null);
+const LocationPickerModal = ({ isOpen, onClose, onSelect, initialPosition }) => {
+  const [position, setPosition] = useState(initialPosition || null);
+
+  useEffect(() => {
+    if (initialPosition) {
+      setPosition(initialPosition);
+    }
+  }, [initialPosition]);
 
   const MapEvents = () => {
     useMapEvents({
@@ -14,6 +20,16 @@ const LocationPickerModal = ({ isOpen, onClose, onSelect }) => {
       },
     });
     return position ? <Marker position={position} /> : null;
+  };
+
+  const MapUpdater = () => {
+    const map = useMapEvents({});
+    useEffect(() => {
+      if (position) {
+        map.setView([position.lat, position.lng], map.getZoom());
+      }
+    }, [position, map]);
+    return null;
   };
 
   if (!isOpen) return null;
@@ -25,9 +41,14 @@ const LocationPickerModal = ({ isOpen, onClose, onSelect }) => {
           <X size={20} />
         </button>
         <div className="h-[500px] w-full">
-          <MapContainer center={[-23.5505, -46.6333]} zoom={13} className="h-full w-full">
+          <MapContainer 
+            center={position ? [position.lat, position.lng] : [-23.5505, -46.6333]} 
+            zoom={15} 
+            className="h-full w-full"
+          >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <MapEvents />
+            <MapUpdater />
           </MapContainer>
         </div>
         <div className="p-4 bg-gray-800 flex justify-end gap-3">
@@ -54,13 +75,53 @@ const RentalForm = () => {
     customerId: '',
     equipmentId: '',
     charge: '',
+    fullAddress: '',
     latitude: '',
     longitude: '',
     startDate: new Date().toISOString().slice(0, 16),
     endDate: ''
   });
+  const [addressSearch, setAddressSearch] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleAddressSearch = async (query) => {
+    setAddressSearch(query);
+    if (query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=br&addressdetails=1&limit=5`
+      );
+      const data = await response.json();
+      setSearchResults(data);
+    } catch (err) {
+      console.error('Erro ao buscar endereço:', err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectAddress = (result) => {
+    const { lat, lon, display_name, address } = result;
+    // Tenta pegar o número da casa se disponível
+    const houseNumber = address.house_number || '';
+    
+    setFormData({
+      ...formData,
+      fullAddress: display_name,
+      latitude: lat,
+      longitude: lon
+    });
+    setAddressSearch(display_name);
+    setSearchResults([]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,6 +138,10 @@ const RentalForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.latitude || !formData.longitude) {
+      alert("Por favor, selecione um endereço válido na busca.");
+      return;
+    }
     setLoading(true);
     try {
       await createRental({
@@ -167,32 +232,51 @@ const RentalForm = () => {
         </div>
 
         <div className="border-t border-gray-700 pt-4 mt-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">Coordenadas</span>
+          <label className="block text-sm font-medium mb-1">Endereço Completo (Brasil)</label>
+          <div className="relative">
+            <input
+              type="text"
+              required
+              disabled={loading}
+              placeholder="Rua, Número, Bairro, Cidade..."
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
+              value={addressSearch}
+              onChange={(e) => handleAddressSearch(e.target.value)}
+            />
+            {isSearching && (
+              <div className="absolute right-3 top-3">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              </div>
+            )}
+            
+            {searchResults.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+                {searchResults.map((result, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className="w-full text-left px-4 py-2 hover:bg-gray-700 text-sm border-b border-gray-700 last:border-0"
+                    onClick={() => selectAddress(result)}
+                  >
+                    {result.display_name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-4 flex justify-between items-center">
+            <span className="text-xs text-gray-400">
+              {formData.latitude && `Lat: ${parseFloat(formData.latitude).toFixed(4)}, Long: ${parseFloat(formData.longitude).toFixed(4)}`}
+            </span>
             <button 
               type="button" 
-              disabled={loading}
+              disabled={loading || !formData.latitude}
               onClick={() => setIsModalOpen(true)}
               className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded disabled:opacity-50"
             >
-              Selecionar no Mapa
+              Ver no Mapa
             </button>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              placeholder="Latitude"
-              readOnly
-              required
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-400"
-              value={formData.latitude}
-            />
-            <input
-              placeholder="Longitude"
-              readOnly
-              required
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-400"
-              value={formData.longitude}
-            />
           </div>
         </div>
 
@@ -213,6 +297,7 @@ const RentalForm = () => {
       <LocationPickerModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+        initialPosition={formData.latitude ? { lat: formData.latitude, lng: formData.longitude } : null}
         onSelect={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}
       />
     </div>

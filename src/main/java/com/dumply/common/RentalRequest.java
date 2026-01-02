@@ -8,7 +8,8 @@ public record RentalRequest(
         Long customerId,
         LocalDateTime startDate,
         LocalDateTime endDate,
-        Double latitude,
-        Double longitude,
+        String fullAddress,
+        double latitude,
+        double longitude,
         BigDecimal charge
 ) {}
