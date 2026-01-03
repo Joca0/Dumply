@@ -55,7 +55,8 @@ const RentalList = () => {
 
   const filteredRentals = Array.isArray(rentals) ? rentals.filter(r => {
     const matchesStatus = filter === 'ALL' || r.status === filter;
-    const matchesSearch = r.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+    const customerName = r.customer?.fullName || '';
+    const matchesSearch = customerName.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   }) : [];
 
@@ -109,12 +110,12 @@ const RentalList = () => {
             {filteredRentals.map((rental) => (
               <tr key={rental.id} className="hover:bg-gray-700/30 transition-colors">
                 <td className="p-4">
-                  <p className="font-medium">{rental.customer.fullName}</p>
-                  <p className="text-xs text-gray-500">{rental.customer.document}</p>
+                  <p className="font-medium">{rental.customer?.fullName || 'N/A'}</p>
+                  <p className="text-xs text-gray-500">{rental.customer?.document || 'N/D'}</p>
                 </td>
                 <td className="p-4">
-                  <p>{rental.equipment.name}</p>
-                  <p className="text-xs text-gray-500">S/N: {rental.equipment.serialNumber}</p>
+                  <p>{rental.equipment?.name || 'N/A'}</p>
+                  <p className="text-xs text-gray-500">S/N: {rental.equipment?.serialNumber || 'N/A'}</p>
                 </td>
                 <td className="p-4 text-sm">
                   {new Date(rental.startDate).toLocaleDateString()}

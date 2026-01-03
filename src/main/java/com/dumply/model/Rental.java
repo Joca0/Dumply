@@ -1,27 +1,42 @@
 package com.dumply.model;
 
+import com.dumply.common.InvoiceStatus;
 import com.dumply.common.RentalRequest;
 import com.dumply.common.RentalStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "rentals")
 @Getter
 @Setter
+@FilterDef(
+        name = "filtroMesAluguel",
+        parameters = {
+                @ParamDef(name = "startDate", type = LocalDate.class),
+                @ParamDef(name = "endDate", type = LocalDate.class)
+        }
+)
+@Filter(name = "filtroMesAluguel", condition = "startDate BETWEEN :startDate AND :endDate")
 public class Rental {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    @Enumerated(EnumType.STRING)
     private RentalStatus status;
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatus invoiceStatus = InvoiceStatus.PENDING;
     private String fullAddress;
     private double latitude;
     private double longitude;
@@ -36,11 +51,16 @@ public class Rental {
 
     private BigDecimal charge;
 
+    @ManyToOne
+    @JoinColumn(name = "invoice_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("items")
+    private Invoice invoice;
+
     public Rental() {
 
     }
 
-    public Rental(LocalDateTime startDate, LocalDateTime endDate, RentalStatus status, String fullAddress, double latitude, double longitude, Equipment equipment, Customer customer, BigDecimal charge) {
+    public Rental(LocalDate startDate, LocalDate endDate, RentalStatus status, String fullAddress, double latitude, double longitude, Equipment equipment, Customer customer, BigDecimal charge) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;

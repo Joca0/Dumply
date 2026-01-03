@@ -1,0 +1,32 @@
+package com.dumply.controller;
+
+import com.dumply.common.InvoiceStatus;
+import com.dumply.model.Invoice;
+import com.dumply.service.InvoiceService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/invoices")
+public class InvoiceController {
+
+    @Autowired
+    private InvoiceService invoiceService;
+
+    @GetMapping
+    public List<Invoice> getAllInvoices() {
+        return invoiceService.getAllInvoices();
+    }
+
+    @GetMapping("/{id}")
+    public Invoice getInvoiceById(@PathVariable Long id) {
+        return invoiceService.getInvoiceById(id);
+    }
+
+    @PutMapping("/{id}/status")
+    public Invoice updateInvoiceStatus(@PathVariable Long id, @RequestBody InvoiceStatus status) {
+        return invoiceService.updateInvoiceStatus(id, status);
+    }
+}

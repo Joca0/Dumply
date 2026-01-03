@@ -27,6 +27,9 @@ public class RentalService {
     @Autowired
     private EquipmentRepository equipmentRepository;
 
+    @Autowired
+    private InvoiceService invoiceService;
+
     @Transactional
     public Rental createRental(RentalRequest request) {
         Equipment equipment = equipmentRepository.findById(request.equipmentId())
@@ -67,7 +70,10 @@ public class RentalService {
         equipment.setStatus(EquipmentStatus.RENTED);
         equipmentRepository.save(equipment);
 
-        return rentalRepository.save(rental);
+        Rental savedRental = rentalRepository.save(rental);
+        invoiceService.createInvoiceForRental(savedRental);
+
+        return savedRental;
     }
 
     public List<Rental> getActiveRentalsForMap() {
@@ -84,7 +90,7 @@ public class RentalService {
         }
 
         rental.setStatus(RentalStatus.FINISHED);
-        rental.setEndDate(java.time.LocalDateTime.now());
+        rental.setEndDate(java.time.LocalDate.now());
 
         Equipment equipment = rental.getEquipment();
         equipment.setStatus(EquipmentStatus.AVAILABLE);

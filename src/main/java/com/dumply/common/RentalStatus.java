@@ -1,5 +1,5 @@
 package com.dumply.common;
 
 public enum RentalStatus {
-    ACTIVE, FINISHED, LATE
+    ACTIVE, FINISHED, CANCELLED
 }

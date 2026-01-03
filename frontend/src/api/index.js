@@ -22,4 +22,12 @@ export const createRental = (data) => api.post('/rentals', data);
 export const returnRental = (id) => api.post(`/rentals/${id}/return`);
 export const deleteRental = (id) => api.delete(`/rentals/${id}`);
 
+export const getInvoices = () => api.get('/invoices');
+export const getInvoice = (id) => api.get(`/invoices/${id}`);
+export const updateInvoiceStatus = (id, status) => api.put(`/invoices/${id}/status`, status, {
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
 export default api;

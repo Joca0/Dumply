@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, PlusCircle, Search, MapPin, Menu, X } from 'lucide-react';
+import { Home, PlusCircle, Search, MapPin, Menu, X, FileText } from 'lucide-react';
 
 const Layout = () => {
   const [isOpen, setIsOpen] = React.useState(true);
@@ -11,6 +11,7 @@ const Layout = () => {
     { to: '/rentals', icon: Search, label: 'Aluguéis' },
     { to: '/customers', icon: Search, label: 'Clientes' },
     { to: '/equipments', icon: Search, label: 'Equipamentos' },
+    { to: '/invoices', icon: FileText, label: 'Faturas' },
     { to: '/customers/new', icon: PlusCircle, label: 'Novo Cliente' },
     { to: '/equipments/new', icon: PlusCircle, label: 'Novo Equipamento' },
     { to: '/rentals/new', icon: PlusCircle, label: 'Novo Aluguel' },
