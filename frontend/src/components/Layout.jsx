@@ -20,7 +20,7 @@ const Layout = () => {
   return (
     <div className="flex h-screen bg-gray-900 overflow-hidden">
       {/* Sidebar */}
-      <aside className={`${isOpen ? 'w-64' : 'w-20'} bg-gray-800 border-r border-gray-700 transition-all duration-300 flex flex-col`}>
+      <aside className={`${isOpen ? 'w-64' : 'w-20'} bg-gray-800 border-r border-gray-700 transition-all duration-300 flex flex-col no-print`}>
         <div className="p-4 flex items-center justify-between border-b border-gray-700">
           {isOpen && <h1 className="text-xl font-bold text-blue-500">Dumply</h1>}
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 hover:bg-gray-700 rounded-lg">

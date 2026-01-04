@@ -75,7 +75,7 @@ const InvoiceDetail = () => {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 no-print">
         <button 
           onClick={() => navigate('/invoices')}
           className="flex items-center text-gray-400 hover:text-white transition-colors"
@@ -113,9 +113,9 @@ const InvoiceDetail = () => {
           )}
           <button 
             onClick={() => window.print()}
-            className="flex items-center bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-colors"
+            className="flex items-center bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors"
           >
-            <Printer size={18} className="mr-2" /> Imprimir
+            <Download size={18} className="mr-2" /> Gerar PDF
           </button>
         </div>
       </div>
@@ -125,7 +125,6 @@ const InvoiceDetail = () => {
         <div className="p-8 border-b border-gray-700 bg-gray-700/30 flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold text-blue-500 mb-2">DUMPLY</h1>
-            <p className="text-gray-400 text-sm">Fatura #{invoice.id}</p>
           </div>
           <div className="text-right">
             <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(invoice.status)}`}>
