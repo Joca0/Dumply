@@ -26,9 +26,7 @@ public class RentalService {
 
     @Autowired
     private EquipmentRepository equipmentRepository;
-
-    @Autowired
-    private InvoiceService invoiceService;
+    
 
     @Transactional
     public Rental createRental(RentalRequest request) {
@@ -71,7 +69,6 @@ public class RentalService {
         equipmentRepository.save(equipment);
 
         Rental savedRental = rentalRepository.save(rental);
-        invoiceService.createInvoiceForRental(savedRental);
 
         return savedRental;
     }

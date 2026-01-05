@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getInvoices } from '../api';
-import { Search, FileText, Eye } from 'lucide-react';
+import { Search, FileText, Eye, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const InvoiceList = () => {
@@ -42,6 +42,13 @@ const InvoiceList = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Faturas</h2>
+        <button
+          onClick={() => navigate('/invoices/new')}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+        >
+          <Plus size={20} />
+          Nova Fatura
+        </button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">

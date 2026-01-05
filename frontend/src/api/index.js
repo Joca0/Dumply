@@ -24,6 +24,8 @@ export const deleteRental = (id) => api.delete(`/rentals/${id}`);
 
 export const getInvoices = () => api.get('/invoices');
 export const getInvoice = (id) => api.get(`/invoices/${id}`);
+export const createInvoice = (data) => api.post('/invoices', data);
+export const getUninvoicedRentals = (customerId) => api.get(`/invoices/uninvoiced/${customerId}`);
 export const updateInvoiceStatus = (id, status) => api.put(`/invoices/${id}/status`, status, {
   headers: {
     'Content-Type': 'application/json'

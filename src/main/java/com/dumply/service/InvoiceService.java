@@ -1,9 +1,14 @@
 package com.dumply.service;
 
+import com.dumply.common.InvoiceRequest;
 import com.dumply.common.InvoiceStatus;
+import com.dumply.model.Customer;
 import com.dumply.model.Invoice;
 import com.dumply.model.Rental;
+import com.dumply.repository.CustomerRepository;
 import com.dumply.repository.InvoiceRepository;
+import com.dumply.repository.RentalRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +21,45 @@ public class InvoiceService {
     @Autowired
     private InvoiceRepository invoiceRepository;
 
-    //Sem PostMapping porque é criado um Invoice ao fazer criar um aluguel
-    public Invoice createInvoiceForRental(Rental rental) {
-        Invoice invoice = new Invoice(rental.getCustomer(), Collections.singletonList(rental));
-        rental.setInvoice(invoice);
-        return invoiceRepository.save(invoice);
+    @Autowired
+    private RentalRepository rentalRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Transactional
+    public Invoice createInvoice(InvoiceRequest request) {
+        Customer customer = customerRepository.findById(request.customerId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+
+        List<Rental> rentals = rentalRepository.findAllById(request.rentalIds());
+
+        if (rentals.isEmpty()) {
+            throw new RuntimeException("Nenhum aluguel selecionado");
+        }
+
+        for (Rental rental : rentals) {
+            if (!rental.getCustomer().getId().equals(customer.getId())) {
+                throw new RuntimeException("Aluguel não pertence ao cliente");
+            }
+            if (rental.getInvoice() != null) {
+                throw new RuntimeException("Aluguel já possui fatura");
+            }
+        }
+
+        Invoice invoice = new Invoice(customer, rentals);
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        for (Rental rental : rentals) {
+            rental.setInvoice(savedInvoice);
+            rentalRepository.save(rental);
+        }
+
+        return savedInvoice;
+    }
+
+    public List<Rental> getUninvoicedRentals(Long customerId) {
+        return rentalRepository.findByCustomerIdAndInvoiceIsNull(customerId);
     }
 
     public List<Invoice> getAllInvoices() {
