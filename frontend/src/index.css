@@ -15,3 +15,48 @@
   width: 100%;
   height: 100%;
 }
+
+@media print {
+  /* Esconde elementos que não devem sair na impressão (botões, navegação) */
+  button, nav, aside, .no-print {
+    display: none !important;
+  }
+
+  /* Garante que o conteúdo principal ocupe todo o espaço */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+    position: static !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Garante que o container da fatura ocupe a largura total e remova bordas/sombras desnecessárias */
+  #printable-invoice {
+    border: none !important;
+    box-shadow: none !important;
+    background: white !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ajusta as cores de texto específicas que podem estar com cores claras */
+  .text-gray-400, .text-gray-500, .text-blue-500, .text-blue-400, .text-gray-300, .invoice-number {
+    color: black !important;
+  }
+
+  /* Força a exibição de bordas que dividem seções */
+  .border-gray-700, .border-t, .border-b {
+    border-color: #e5e7eb !important; /* gray-200 */
+  }
+
+  .bg-gray-700\/30, .bg-gray-900\/50, .bg-gray-900\/30 {
+    background-color: transparent !important;
+  }
+}

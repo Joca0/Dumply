@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,47 +27,46 @@ public class RentalService {
 
     @Autowired
     private EquipmentRepository equipmentRepository;
+    
 
     @Transactional
-    public Rental createRental(RentalRequest request) {
-        Equipment equipment = equipmentRepository.findById(request.equipmentId())
-                .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
-
-        if (equipment.getStatus() != EquipmentStatus.AVAILABLE) {
-            throw new RuntimeException("Equipamento indisponível para locação");
-        }
-
+    public List<Rental> createRental(RentalRequest request) {
         Customer customer = customerRepository.findById(request.customerId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-
-        Rental rental = new Rental();
-        rental.setEquipment(equipment);
-        rental.setCustomer(customer);
-
-        // VALIDAR SE A DATA NÃO É INVÁLIDA
-
         if (request.endDate().isBefore(request.startDate())) {
             throw new RuntimeException("Data final deve ser maior que a data inicial");
-        } else {
-            rental.setStartDate(request.startDate());
-            rental.setEndDate(request.endDate());
         }
 
-        //CONTINUA OPERAÇÃO
+        List<Rental> rentals = new ArrayList<>();
 
-        rental.setLatitude(request.latitude());
-        rental.setLongitude(request.longitude());
+        for (var item : request.items()) {
+            Equipment equipment = equipmentRepository.findById(item.equipmentId())
+                    .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
 
-        rental.setCharge(request.charge());
+            if (equipment.getStatus() != EquipmentStatus.AVAILABLE) {
+                throw new RuntimeException("Equipamento " + equipment.getName() + " indisponível para locação");
+            }
 
-        rental.setStatus(RentalStatus.ACTIVE);
+            Rental rental = new Rental();
+            rental.setEquipment(equipment);
+            rental.setCustomer(customer);
+            rental.setStartDate(request.startDate());
+            rental.setEndDate(request.endDate());
+            rental.setFullAddress(request.fullAddress());
+            rental.setLatitude(request.latitude());
+            rental.setLongitude(request.longitude());
+            rental.setCharge(item.charge());
+            rental.setStatus(RentalStatus.ACTIVE);
 
-        // Atualiza status do ativo
-        equipment.setStatus(EquipmentStatus.RENTED);
-        equipmentRepository.save(equipment);
+            // Atualiza status do ativo
+            equipment.setStatus(EquipmentStatus.RENTED);
+            equipmentRepository.save(equipment);
 
-        return rentalRepository.save(rental);
+            rentals.add(rentalRepository.save(rental));
+        }
+
+        return rentals;
     }
 
     public List<Rental> getActiveRentalsForMap() {
@@ -83,7 +83,7 @@ public class RentalService {
         }
 
         rental.setStatus(RentalStatus.FINISHED);
-        rental.setEndDate(java.time.LocalDateTime.now());
+        rental.setEndDate(java.time.LocalDate.now());
 
         Equipment equipment = rental.getEquipment();
         equipment.setStatus(EquipmentStatus.AVAILABLE);

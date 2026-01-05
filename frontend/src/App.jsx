@@ -9,6 +9,9 @@ import EquipmentForm from './pages/EquipmentForm';
 import EquipmentList from './pages/EquipmentList';
 import RentalForm from './pages/RentalForm';
 import RentalList from './pages/RentalList';
+import InvoiceList from './pages/InvoiceList';
+import InvoiceDetail from './pages/InvoiceDetail';
+import InvoiceCreate from './pages/InvoiceCreate';
 
 function App() {
   return (
@@ -25,6 +28,9 @@ function App() {
           <Route path="equipments" element={<EquipmentList />} />
           <Route path="rentals/new" element={<RentalForm />} />
           <Route path="rentals" element={<RentalList />} />
+          <Route path="invoices" element={<InvoiceList />} />
+          <Route path="invoices/new" element={<InvoiceCreate />} />
+          <Route path="invoices/:id" element={<InvoiceDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

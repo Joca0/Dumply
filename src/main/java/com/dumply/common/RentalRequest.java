@@ -1,14 +1,15 @@
 package com.dumply.common;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.List;
 
 public record RentalRequest(
-        Long equipmentId,
+        List<RentalItemRequest> items,
         Long customerId,
-        LocalDateTime startDate,
-        LocalDateTime endDate,
-        Double latitude,
-        Double longitude,
-        BigDecimal charge
+        LocalDate startDate,
+        LocalDate endDate,
+        String fullAddress,
+        double latitude,
+        double longitude
 ) {}

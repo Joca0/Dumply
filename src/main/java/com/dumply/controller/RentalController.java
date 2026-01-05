@@ -18,7 +18,7 @@ public class RentalController {
     private RentalService rentalService;
 
     @PostMapping
-    public Rental createRental(@RequestBody RentalRequest rentalRequest) {
+    public List<Rental> createRental(@RequestBody RentalRequest rentalRequest) {
         return rentalService.createRental(rentalRequest);
     }
 
