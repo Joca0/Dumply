@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCustomers, getEquipments, createRental } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { X } from 'lucide-react';
+import { X, Plus, Trash2 } from 'lucide-react';
 
 const LocationPickerModal = ({ isOpen, onClose, onSelect, initialPosition }) => {
   const [position, setPosition] = useState(initialPosition || null);
@@ -73,14 +73,32 @@ const RentalForm = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     customerId: '',
-    equipmentId: '',
-    charge: '',
+    items: [{ equipmentId: '', charge: '' }],
     fullAddress: '',
     latitude: '',
     longitude: '',
     startDate: new Date().toISOString().split('T')[0],
     endDate: ''
   });
+
+  const addItem = () => {
+    setFormData({
+      ...formData,
+      items: [...formData.items, { equipmentId: '', charge: '' }]
+    });
+  };
+
+  const removeItem = (index) => {
+    if (formData.items.length === 1) return;
+    const newItems = formData.items.filter((_, i) => i !== index);
+    setFormData({ ...formData, items: newItems });
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index][field] = value;
+    setFormData({ ...formData, items: newItems });
+  };
   const [addressSearch, setAddressSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -146,7 +164,10 @@ const RentalForm = () => {
     try {
       await createRental({
         ...formData,
-        charge: parseFloat(formData.charge),
+        items: formData.items.map(item => ({
+          ...item,
+          charge: parseFloat(item.charge)
+        })),
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude)
       });
@@ -164,46 +185,75 @@ const RentalForm = () => {
     <div className="max-w-2xl mx-auto p-8">
       <h2 className="text-2xl font-bold mb-6">Novo Aluguel</h2>
       <form onSubmit={handleSubmit} className="space-y-4 bg-gray-800 p-6 rounded-xl border border-gray-700">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Cliente</label>
-            <select
-              required
-              disabled={loading}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
-              value={formData.customerId}
-              onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-            >
-              <option value="">Selecione...</option>
-              {customers.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Equipamento</label>
-            <select
-              required
-              disabled={loading}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
-              value={formData.equipmentId}
-              onChange={(e) => setFormData({ ...formData, equipmentId: e.target.value })}
-            >
-              <option value="">Selecione...</option>
-              {equipments.map(e => <option key={e.id} value={e.id}>{e.name} - {e.serialNumber}</option>)}
-            </select>
-          </div>
-        </div>
-
         <div>
-          <label className="block text-sm font-medium mb-1">Valor do Aluguel (R$)</label>
-          <input
-            type="number"
-            step="0.01"
+          <label className="block text-sm font-medium mb-1">Cliente</label>
+          <select
             required
             disabled={loading}
             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
-            value={formData.charge}
-            onChange={(e) => setFormData({ ...formData, charge: e.target.value })}
-          />
+            value={formData.customerId}
+            onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+          >
+            <option value="">Selecione...</option>
+            {customers.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
+          </select>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium">Equipamentos</label>
+            <button
+              type="button"
+              onClick={addItem}
+              className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
+            >
+              <Plus size={14} /> Adicionar Equipamento
+            </button>
+          </div>
+
+          {formData.items.map((item, index) => (
+            <div key={index} className="grid grid-cols-12 gap-2 items-end bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+              <div className="col-span-6">
+                <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Equipamento</label>
+                <select
+                  required
+                  disabled={loading}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm disabled:opacity-50"
+                  value={item.equipmentId}
+                  onChange={(e) => handleItemChange(index, 'equipmentId', e.target.value)}
+                >
+                  <option value="">Selecione...</option>
+                  {equipments.map(e => (
+                    <option key={e.id} value={e.id} disabled={formData.items.some((it, i) => i !== index && it.equipmentId == e.id)}>
+                      {e.name} - {e.serialNumber}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-4">
+                <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Valor (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  disabled={loading}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm disabled:opacity-50"
+                  value={item.charge}
+                  onChange={(e) => handleItemChange(index, 'charge', e.target.value)}
+                />
+              </div>
+              <div className="col-span-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => removeItem(index)}
+                  disabled={formData.items.length === 1}
+                  className="p-2 text-red-500 hover:bg-red-500/10 rounded disabled:opacity-30"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

@@ -1,6 +1,8 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/DumplyApplication.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/EquipmentStatus.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/InvoiceRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/InvoiceStatus.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/RentalItemRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/RentalMapDTO.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/RentalRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/RentalStatus.java
