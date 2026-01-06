@@ -18,6 +18,8 @@ com/dumply/model/Equipment.class
 com/dumply/controller/CustomerController.class
 com/dumply/repository/InvoiceRepository.class
 com/dumply/common/RentalMapDTO.class
+com/dumply/model/Invoice.class
 com/dumply/common/EquipmentStatus.class
 com/dumply/DumplyApplication.class
 com/dumply/controller/InvoiceController.class
+com/dumply/common/InvoiceRequest.class
