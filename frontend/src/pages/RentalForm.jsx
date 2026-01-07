@@ -77,7 +77,7 @@ const RentalForm = () => {
     fullAddress: '',
     latitude: '',
     longitude: '',
-    startDate: new Date().toISOString().split('T')[0],
+    startDate: new Date().toISOString().split('T')[16],
     endDate: ''
   });
 
@@ -260,7 +260,7 @@ const RentalForm = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Data Início</label>
             <input
-              type="date"
+              type="datetime-local"
               required
               disabled={loading}
               className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
@@ -271,7 +271,7 @@ const RentalForm = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Data Fim (Previsão)</label>
             <input
-              type="date"
+              type="datetime-local"
               required
               disabled={loading}
               className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"

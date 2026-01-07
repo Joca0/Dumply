@@ -1,8 +1,10 @@
 package com.dumply.controller;
 
+import com.dumply.common.EquipmentDTO;
 import com.dumply.model.Equipment;
 import com.dumply.service.EquipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,12 @@ public class EquipmentController {
     @PostMapping
     public Equipment createEquipment(@RequestBody Equipment equipment) {
         return equipmentService.createEquipment(equipment);
+    }
+
+    @PostMapping("/bulk")
+    public void createEquipments(@RequestBody List<EquipmentDTO> equipments) {
+        equipmentService.saveAllItems(equipments);
+
     }
 
     @GetMapping("/{id}")

@@ -1,11 +1,14 @@
 package com.dumply.service;
 
+import com.dumply.common.EquipmentDTO;
 import com.dumply.model.Equipment;
 import com.dumply.repository.EquipmentRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EquipmentService {
@@ -34,6 +37,25 @@ public class EquipmentService {
     }
     public List<Equipment> getAllEquipments() {
         return equipmentRepository.findAll();
+    }
+
+    //Método criado para injetar vários equipamentos de uma vez
+    @Transactional
+    public void saveAllItems(List<EquipmentDTO> dtos) {
+        List<Equipment> entidades = dtos.stream()
+                .map(dto -> {
+
+                    Equipment entity = new Equipment();
+
+                    entity.setName(dto.name());
+                    entity.setSerialNumber(dto.serialNumber());
+                    entity.setCategory(dto.category());
+                    entity.setStatus(dto.status());
+                    return entity;
+                })
+                .collect(Collectors.toList());
+
+        equipmentRepository.saveAll(entidades);
     }
 
     public void deleteEquipment(Long equipmentId) {

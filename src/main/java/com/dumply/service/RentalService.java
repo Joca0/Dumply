@@ -83,7 +83,8 @@ public class RentalService {
         }
 
         rental.setStatus(RentalStatus.FINISHED);
-        rental.setEndDate(java.time.LocalDate.now());
+        //Vou deixar assim, caso seja preferível deixar aberto só trocar.
+        rental.setEndDate(java.time.LocalDateTime.now());
 
         Equipment equipment = rental.getEquipment();
         equipment.setStatus(EquipmentStatus.AVAILABLE);

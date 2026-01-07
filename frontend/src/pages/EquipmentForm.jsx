@@ -15,11 +15,10 @@ const EquipmentForm = () => {
         setFetching(true);
         try {
           const res = await getEquipment(id);
-          const { name, serialNumber, baseValue, category, status } = res.data;
+          const { name, serialNumber, category, status } = res.data;
           setFormData({ 
             name: name || '', 
-            serialNumber: serialNumber || '', 
-            baseValue: baseValue || '', 
+            serialNumber: serialNumber || '',
             category: category || '',
             status: status || 'AVAILABLE'
           });
@@ -97,16 +96,6 @@ const EquipmentForm = () => {
             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Valor Base (Opcional)</label>
-          <input
-            type="number"
-            disabled={loading}
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-            value={formData.baseValue}
-            onChange={(e) => setFormData({ ...formData, baseValue: e.target.value })}
           />
         </div>
         <button 

@@ -11,7 +11,7 @@ const Layout = () => {
     { to: '/rentals', icon: Search, label: 'Aluguéis' },
     { to: '/customers', icon: Search, label: 'Clientes' },
     { to: '/equipments', icon: Search, label: 'Equipamentos' },
-    { to: '/invoices', icon: FileText, label: 'Faturas' },
+    { to: '/invoices', icon: FileText, label: 'Faturas e Relatórios' },
     { to: '/customers/new', icon: PlusCircle, label: 'Novo Cliente' },
     { to: '/equipments/new', icon: PlusCircle, label: 'Novo Equipamento' },
     { to: '/rentals/new', icon: PlusCircle, label: 'Novo Aluguel' },

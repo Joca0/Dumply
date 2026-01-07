@@ -12,6 +12,7 @@ import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "rentals")
@@ -20,8 +21,8 @@ import java.time.LocalDate;
 @FilterDef(
         name = "filtroMesAluguel",
         parameters = {
-                @ParamDef(name = "startDate", type = LocalDate.class),
-                @ParamDef(name = "endDate", type = LocalDate.class)
+                @ParamDef(name = "startDate", type = LocalDateTime.class),
+                @ParamDef(name = "endDate", type = LocalDateTime.class)
         }
 )
 @Filter(name = "filtroMesAluguel", condition = "startDate BETWEEN :startDate AND :endDate")
@@ -31,8 +32,8 @@ public class Rental {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     @Enumerated(EnumType.STRING)
     private RentalStatus status;
     @Enumerated(EnumType.STRING)
@@ -60,7 +61,7 @@ public class Rental {
 
     }
 
-    public Rental(LocalDate startDate, LocalDate endDate, RentalStatus status, String fullAddress, double latitude, double longitude, Equipment equipment, Customer customer, BigDecimal charge) {
+    public Rental(LocalDateTime startDate, LocalDateTime endDate, RentalStatus status, String fullAddress, double latitude, double longitude, Equipment equipment, Customer customer, BigDecimal charge) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
