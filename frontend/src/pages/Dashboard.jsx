@@ -53,7 +53,7 @@ const Dashboard = () => {
     <div className="p-8">
       <h2 className="text-3xl font-bold mb-8">Painel de Controle</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <Link to="/rentals" className="bg-gray-800 p-6 rounded-xl border border-gray-700 flex items-center hover:border-blue-500/50 transition-colors group">
           <div className="bg-blue-600/20 p-4 rounded-lg mr-4 text-blue-500 group-hover:bg-blue-600/30 transition-colors">
             <Package size={32} />
@@ -63,16 +63,6 @@ const Dashboard = () => {
             <p className="text-3xl font-bold">{stats.totalRentals}</p>
           </div>
         </Link>
-
-        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 flex items-center">
-          <div className="bg-green-600/20 p-4 rounded-lg mr-4 text-green-500">
-            <DollarSign size={32} />
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm">Receita Total Prevista</p>
-            <p className="text-3xl font-bold">R$ {stats.totalRevenue.toLocaleString()}</p>
-          </div>
-        </div>
 
         <Link to="/invoices" className="bg-gray-800 p-6 rounded-xl border border-gray-700 flex items-center hover:border-yellow-500/50 transition-colors group">
           <div className="bg-yellow-600/20 p-4 rounded-lg mr-4 text-yellow-500 group-hover:bg-yellow-600/30 transition-colors">
