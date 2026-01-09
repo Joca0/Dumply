@@ -1,145 +1,131 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getCustomers, getEquipments, createRental } from '../api';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { X, Plus, Trash2 } from 'lucide-react';
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  Pin,
+  useMapsLibrary
+} from '@vis.gl/react-google-maps';
+import { Plus, Trash2, Calendar, MapPin, User, Package, Search } from 'lucide-react';
 
-const LocationPickerModal = ({ isOpen, onClose, onSelect, initialPosition }) => {
-  const [position, setPosition] = useState(initialPosition || null);
+const apiKey = import.meta.env.VITE_API_KEY;
+const GOOGLE_MAPS_API_KEY = apiKey;
+
+// --- BUSCA DE EQUIPAMENTO ---
+const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedIds }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
 
   useEffect(() => {
-    if (initialPosition) {
-      setPosition(initialPosition);
+    function handleClickOutside(event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) setIsOpen(false);
     }
-  }, [initialPosition]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const MapEvents = () => {
-    useMapEvents({
-      click(e) {
-        setPosition(e.latlng);
-      },
-    });
-    return position ? <Marker position={position} /> : null;
-  };
+  const selectedEquipment = equipments.find(e => e.id === item.equipmentId);
 
-  const MapUpdater = () => {
-    const map = useMapEvents({});
-    useEffect(() => {
-      if (position) {
-        map.setView([position.lat, position.lng], map.getZoom());
-      }
-    }, [position, map]);
-    return null;
-  };
-
-  if (!isOpen) return null;
+  const filtered = equipments.filter(e => {
+    const term = searchTerm.toLowerCase();
+    const matches = e.name.toLowerCase().includes(term) || e.serialNumber.toLowerCase().includes(term);
+    const isAlreadySelected = selectedIds.some(id => id === e.id && id !== item.equipmentId);
+    return matches && !isAlreadySelected;
+  });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-gray-800 w-full max-w-4xl rounded-2xl overflow-hidden relative border border-gray-700">
-        <button onClick={onClose} className="absolute top-4 right-4 z-[1000] p-2 bg-gray-900 rounded-full hover:bg-gray-700">
-          <X size={20} />
-        </button>
-        <div className="h-[500px] w-full">
-          <MapContainer 
-            center={position ? [position.lat, position.lng] : [-23.5505, -46.6333]} 
-            zoom={15} 
-            className="h-full w-full"
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <MapEvents />
-            <MapUpdater />
-          </MapContainer>
+      <div className="relative" ref={wrapperRef}>
+        <div className="relative">
+          <input
+              type="text"
+              placeholder="Buscar nome ou serial..."
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 pl-8 text-sm text-white focus:border-blue-500 outline-none"
+              value={isOpen ? searchTerm : (selectedEquipment ? `${selectedEquipment.name} (${selectedEquipment.serialNumber})` : searchTerm)}
+              onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
+              onFocus={() => { setSearchTerm(''); setIsOpen(true); }}
+          />
+          <Search size={14} className="absolute left-2.5 top-3 text-gray-500" />
         </div>
-        <div className="p-4 bg-gray-800 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button>
-          <button 
-            disabled={!position}
-            onClick={() => { onSelect(position); onClose(); }}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
-          >
-            Confirmar Localização
-          </button>
-        </div>
+
+        {isOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl max-h-52 overflow-y-auto">
+              {filtered.length > 0 ? (
+                  filtered.map(e => (
+                      <div
+                          key={e.id}
+                          className="p-2 hover:bg-blue-600 cursor-pointer border-b border-gray-700 last:border-0 transition-colors"
+                          onClick={() => {
+                            onSelect(index, 'equipmentId', e.id);
+                            setIsOpen(false);
+                            setSearchTerm('');
+                          }}
+                      >
+                        <div className="text-xs font-bold text-white">{e.name}</div>
+                        <div className="text-[10px] text-gray-300 uppercase">S/N: {e.serialNumber}</div>
+                      </div>
+                  ))
+              ) : (
+                  <div className="p-3 text-xs text-gray-500 text-center">Nenhum disponível</div>
+              )}
+            </div>
+        )}
       </div>
-    </div>
   );
 };
 
+// --- AUTOCOMPLETE DO GOOGLE ---
+const GoogleAddressInput = ({ onAddressSelect }) => {
+  const inputRef = useRef(null);
+  const places = useMapsLibrary('places');
+
+  useEffect(() => {
+    if (!places || !inputRef.current) return;
+    const autocomplete = new places.Autocomplete(inputRef.current, {
+      fields: ['geometry', 'formatted_address'],
+      componentRestrictions: { country: 'br' }
+    });
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (place.geometry) {
+        onAddressSelect({
+          address: place.formatted_address,
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        });
+      }
+    });
+  }, [places, onAddressSelect]);
+
+  return (
+      <input
+          ref={inputRef}
+          type="text"
+          required
+          placeholder="Digite o endereço da entrega..."
+          className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 text-white"
+      />
+  );
+};
+
+// --- COMPONENTE PRINCIPAL ---
 const RentalForm = () => {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [equipments, setEquipments] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     customerId: '',
     items: [{ equipmentId: '', charge: '' }],
     fullAddress: '',
-    latitude: '',
-    longitude: '',
-    startDate: new Date().toISOString().split('T')[16],
+    latitude: -23.5505,
+    longitude: -46.6333,
+    startDate: new Date().toISOString().slice(0, 16),
     endDate: ''
   });
-
-  const addItem = () => {
-    setFormData({
-      ...formData,
-      items: [...formData.items, { equipmentId: '', charge: '' }]
-    });
-  };
-
-  const removeItem = (index) => {
-    if (formData.items.length === 1) return;
-    const newItems = formData.items.filter((_, i) => i !== index);
-    setFormData({ ...formData, items: newItems });
-  };
-
-  const handleItemChange = (index, field, value) => {
-    const newItems = [...formData.items];
-    newItems[index][field] = value;
-    setFormData({ ...formData, items: newItems });
-  };
-  const [addressSearch, setAddressSearch] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  const navigate = useNavigate();
-
-  const handleAddressSearch = async (query) => {
-    setAddressSearch(query);
-    if (query.length < 3) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=br&addressdetails=1&limit=5`
-      );
-      const data = await response.json();
-      setSearchResults(data);
-    } catch (err) {
-      console.error('Erro ao buscar endereço:', err);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const selectAddress = (result) => {
-    const { lat, lon, display_name, address } = result;
-    // Tenta pegar o número da casa se disponível
-    const houseNumber = address.house_number || '';
-    
-    setFormData({
-      ...formData,
-      fullAddress: display_name,
-      latitude: lat,
-      longitude: lon
-    });
-    setAddressSearch(display_name);
-    setSearchResults([]);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,210 +133,186 @@ const RentalForm = () => {
         const [custRes, eqRes] = await Promise.all([getCustomers(), getEquipments()]);
         setCustomers(custRes.data);
         setEquipments(eqRes.data.filter(e => e.status === 'AVAILABLE'));
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) { console.error(err); }
     };
     fetchData();
   }, []);
 
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index][field] = value;
+    setFormData({ ...formData, items: newItems });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.latitude || !formData.longitude) {
-      alert("Por favor, selecione um endereço válido na busca.");
-      return;
-    }
+    if (!formData.fullAddress) return alert("Selecione um endereço pelo buscador.");
+
     setLoading(true);
     try {
       await createRental({
         ...formData,
-        items: formData.items.map(item => ({
-          ...item,
-          charge: parseFloat(item.charge)
-        })),
+        items: formData.items.map(item => ({ ...item, charge: parseFloat(item.charge) })),
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude)
       });
-      alert('Aluguel criado com sucesso!');
       navigate('/rentals');
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Erro ao criar aluguel");
-    } finally {
-      setLoading(false);
-    }
+      alert(err.response?.data?.message || "Erro ao criar");
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      <h2 className="text-2xl font-bold mb-6">Novo Aluguel</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 bg-gray-800 p-6 rounded-xl border border-gray-700">
-        <div>
-          <label className="block text-sm font-medium mb-1">Cliente</label>
-          <select
-            required
-            disabled={loading}
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
-            value={formData.customerId}
-            onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-          >
-            <option value="">Selecione...</option>
-            {customers.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
-          </select>
-        </div>
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+        <div className="max-w-6xl mx-auto p-8 text-gray-200 grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <label className="block text-sm font-medium">Equipamentos</label>
-            <button
-              type="button"
-              onClick={addItem}
-              className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
-            >
-              <Plus size={14} /> Adicionar Equipamento
-            </button>
-          </div>
+          {/* LADO ESQUERDO: FORMULÁRIO */}
+          <div className="lg:col-span-7">
+            <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+              <Package className="text-blue-500" /> Novo Aluguel
+            </h2>
 
-          {formData.items.map((item, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2 items-end bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
-              <div className="col-span-6">
-                <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Equipamento</label>
+            <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl">
+
+              {/* Cliente */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1">
+                  <User size={12}/> Cliente
+                </label>
                 <select
-                  required
-                  disabled={loading}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm disabled:opacity-50"
-                  value={item.equipmentId}
-                  onChange={(e) => handleItemChange(index, 'equipmentId', e.target.value)}
+                    required
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 outline-none focus:border-blue-500 text-sm"
+                    value={formData.customerId}
+                    onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
                 >
-                  <option value="">Selecione...</option>
-                  {equipments.map(e => (
-                    <option key={e.id} value={e.id} disabled={formData.items.some((it, i) => i !== index && it.equipmentId == e.id)}>
-                      {e.name} - {e.serialNumber}
-                    </option>
-                  ))}
+                  <option value="">Selecione um cliente...</option>
+                  {customers.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
                 </select>
               </div>
-              <div className="col-span-4">
-                <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Valor (R$)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  disabled={loading}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm disabled:opacity-50"
-                  value={item.charge}
-                  onChange={(e) => handleItemChange(index, 'charge', e.target.value)}
-                />
-              </div>
-              <div className="col-span-2 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => removeItem(index)}
-                  disabled={formData.items.length === 1}
-                  className="p-2 text-red-500 hover:bg-red-500/10 rounded disabled:opacity-30"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Data Início</label>
-            <input
-              type="datetime-local"
-              required
-              disabled={loading}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
-              value={formData.startDate}
-              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Data Fim (Previsão)</label>
-            <input
-              type="datetime-local"
-              required
-              disabled={loading}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
-              value={formData.endDate}
-              onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <div className="border-t border-gray-700 pt-4 mt-4">
-          <label className="block text-sm font-medium mb-1">Endereço Completo (Brasil)</label>
-          <div className="relative">
-            <input
-              type="text"
-              required
-              disabled={loading}
-              placeholder="Rua, Número, Bairro, Cidade..."
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 disabled:opacity-50"
-              value={addressSearch}
-              onChange={(e) => handleAddressSearch(e.target.value)}
-            />
-            {isSearching && (
-              <div className="absolute right-3 top-3">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-              </div>
-            )}
-            
-            {searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden">
-                {searchResults.map((result, index) => (
+              {/* Itens Dinâmicos */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Equipamentos</label>
                   <button
-                    key={index}
-                    type="button"
-                    className="w-full text-left px-4 py-2 hover:bg-gray-700 text-sm border-b border-gray-700 last:border-0"
-                    onClick={() => selectAddress(result)}
+                      type="button"
+                      onClick={() => setFormData({...formData, items: [...formData.items, {equipmentId: '', charge: ''}]})}
+                      className="flex items-center gap-1 text-[10px] bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded transition-colors"
                   >
-                    {result.display_name}
+                    <Plus size={12} /> Adicionar Item
                   </button>
+                </div>
+
+                {formData.items.map((item, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-3 p-3 bg-gray-900/50 rounded-lg border border-gray-700 relative">
+                      <div className="col-span-7">
+                        <InternalEquipmentSearch
+                            index={index}
+                            item={item}
+                            equipments={equipments}
+                            onSelect={handleItemChange}
+                            selectedIds={formData.items.map(i => i.equipmentId)}
+                        />
+                      </div>
+                      <div className="col-span-4 relative">
+                        <span className="absolute left-2 top-2 text-[10px] text-gray-500 font-bold">R$</span>
+                        <input
+                            type="number"
+                            step="0.01"
+                            className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 pl-7 text-sm outline-none focus:border-blue-500"
+                            value={item.charge}
+                            onChange={(e) => handleItemChange(index, 'charge', e.target.value)}
+                            required
+                        />
+                      </div>
+                      <div className="col-span-1 flex items-center justify-center">
+                        <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, items: formData.items.filter((_, i) => i !== index) })}
+                            className="text-red-500 hover:text-red-400 disabled:opacity-20"
+                            disabled={formData.items.length === 1}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
                 ))}
               </div>
-            )}
+
+              {/* Datas */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1 italic">Data Início</label>
+                  <input
+                      type="datetime-local"
+                      required
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1 italic">Previsão Fim</label>
+                  <input
+                      type="datetime-local"
+                      required
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Endereço */}
+              <div className="border-t border-gray-700 pt-4">
+                <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1">
+                  <MapPin size={12}/> Local de Entrega
+                </label>
+                <GoogleAddressInput
+                    onAddressSelect={(data) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        fullAddress: data.address,
+                        latitude: data.lat,
+                        longitude: data.lng
+                      }));
+                    }}
+                />
+              </div>
+
+              <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-[0.98] disabled:opacity-50"
+              >
+                {loading ? 'Salvando...' : 'Finalizar Aluguel'}
+              </button>
+            </form>
           </div>
-          
-          <div className="mt-4 flex justify-between items-center">
-            <span className="text-xs text-gray-400">
-              {formData.latitude && `Lat: ${parseFloat(formData.latitude).toFixed(4)}, Long: ${parseFloat(formData.longitude).toFixed(4)}`}
-            </span>
-            <button 
-              type="button" 
-              disabled={loading || !formData.latitude}
-              onClick={() => setIsModalOpen(true)}
-              className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded disabled:opacity-50"
-            >
-              Ver no Mapa
-            </button>
+
+          {/* LADO DIREITO: MAPA */}
+          <div className="lg:col-span-5">
+            <div className="sticky top-8 h-[550px] bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-2xl relative">
+              <Map
+                  mapId="PREVIEW_MAP"
+                  center={{ lat: formData.latitude, lng: formData.longitude }}
+                  zoom={15}
+                  disableDefaultUI={true}
+                  zoomControl={true}
+              >
+                <AdvancedMarker position={{ lat: formData.latitude, lng: formData.longitude }}>
+                  <Pin background={'#2563eb'} borderColor={'#ffffff'} glyphColor={'#ffffff'} />
+                </AdvancedMarker>
+              </Map>
+              <div className="absolute bottom-4 left-4 right-4 bg-gray-900/90 p-3 rounded-lg border border-gray-700 backdrop-blur-sm">
+                <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Localização Selecionada</p>
+                <p className="text-xs text-white truncate">{formData.fullAddress || "Aguardando endereço..."}</p>
+              </div>
+            </div>
           </div>
+
         </div>
-
-        <button 
-          type="submit" 
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg mt-4 disabled:opacity-50 flex justify-center items-center"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-              Processando...
-            </>
-          ) : 'Confirmar Aluguel'}
-        </button>
-      </form>
-
-      <LocationPickerModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        initialPosition={formData.latitude ? { lat: formData.latitude, lng: formData.longitude } : null}
-        onSelect={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}
-      />
-    </div>
+      </APIProvider>
   );
 };
 

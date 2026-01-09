@@ -93,6 +93,21 @@ public class RentalService {
         return rentalRepository.save(rental);
     }
 
+    @Transactional
+    public Rental updateRental(Long id, RentalRequest dto) {
+        Rental rental = rentalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Aluguel não encontrado com id: " + id));
+
+
+        rental.setStartDate(dto.startDate());
+        rental.setEndDate(dto.endDate());
+        rental.setFullAddress(dto.fullAddress());
+        rental.setLatitude(dto.latitude());
+        rental.setLongitude(dto.longitude());
+
+        return rentalRepository.save(rental);
+    }
+
     public List<Rental> getAllRentals() {
         return rentalRepository.findAll();
     }

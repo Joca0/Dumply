@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const InvoiceList = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7));
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('all');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();

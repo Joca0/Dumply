@@ -1,6 +1,7 @@
 package com.dumply.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +18,10 @@ public class Customer {
     private Long id;
 
     private String fullName;
+
+    @NotNull
     private String document;
+
     private String email;
     private String phone;
 

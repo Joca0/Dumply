@@ -1,75 +1,117 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import {
+    APIProvider,
+    Map,
+    AdvancedMarker,
+    Pin,
+    InfoWindow
+} from '@vis.gl/react-google-maps';
 import { getActiveRentals } from '../api';
 
+import { User, MapPin, DollarSign } from 'lucide-react';
 
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-    iconUrl: markerIcon,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+const apiKey = import.meta.env.VITE_API_KEY;
+const GOOGLE_MAPS_API_KEY = apiKey;
 
 const MapPage = () => {
-  const [rentals, setRentals] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [rentals, setRentals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedRental, setSelectedRental] = useState(null);
 
-  useEffect(() => {
-    getActiveRentals()
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setRentals(res.data);
-        } else {
-          setRentals([]);
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        setRentals([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    useEffect(() => {
+        getActiveRentals()
+            .then(res => {
+                setRentals(Array.isArray(res.data) ? res.data : []);
+            })
+            .catch(err => {
+                console.error(err);
+                setRentals([]);
+            })
+            .finally(() => setLoading(false));
+    }, []);
 
-  const rentalList = Array.isArray(rentals) ? rentals : [];
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-900">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
 
-  if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+        <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+            <div className="h-screen w-full bg-gray-900">
+                <Map
+                    mapId="PAGINA_MAPA_GLOBAL"
+                    defaultCenter={{ lat: -23.5505, lng: -46.6333 }}
+                    defaultZoom={12}
+                    gestureHandling={'greedy'}
+                    disableDefaultUI={false}
 
-  return (
-    <div className="h-full w-full">
-      <MapContainer center={[-23.5505, -46.6333]} zoom={13} scrollWheelZoom={true} className="h-full w-full">
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {rentalList.map((rental) => (
-          <Marker key={rental.id} position={[rental.latitude, rental.longitude]}>
-            <Popup>
-              <div className="text-gray-900">
-                <h3 className="font-bold border-b mb-2">{rental.equipment.name}</h3>
-                <p><strong>Cliente:</strong> {rental.customer.fullName}</p>
-                <p><strong>Endereço:</strong> {rental.fullAddress}</p>
-                <p><strong>Início:</strong> {new Date(rental.startDate).toLocaleDateString()}</p>
-                <p><strong>Encerramento:</strong> {rental.endDate ? new Date(rental.endDate).toLocaleDateString() : 'Pendente'}</p>
-                <p><strong>Valor:</strong> R$ {rental.charge}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  );
+                >
+                    {rentals.map((rental) => (
+                        <AdvancedMarker
+                            key={rental.id}
+                            position={{ lat: parseFloat(rental.latitude), lng: parseFloat(rental.longitude) }}
+                            onClick={() => setSelectedRental(rental)}
+                        >
+                            {/* Customização do Pin baseada em (ex: atrasado ou no prazo) */}
+                            <Pin
+                                background={rental.endDate ? '#10b981' : '#2563eb'}
+                                borderColor={'#fff'}
+                                glyphColor={'#fff'}
+                            />
+                        </AdvancedMarker>
+                    ))}
+
+                    {/* Renderização Condicional do Popup (InfoWindow) */}
+                    {selectedRental && (
+                        <InfoWindow
+                            position={{
+                                lat: parseFloat(selectedRental.latitude),
+                                lng: parseFloat(selectedRental.longitude)
+                            }}
+                            onCloseClick={() => setSelectedRental(null)}
+                        >
+                            <div className="p-2 min-w-[200px] text-gray-800">
+                                <h3 className="font-bold text-blue-600 border-b border-gray-200 pb-1 mb-2 text-sm uppercase">
+                                    {selectedRental.equipment?.name || 'Equipamento'}
+                                </h3>
+
+                                <div className="space-y-2 text-xs">
+                                    <p className="flex items-center gap-2">
+                                        <User size={14} className="text-gray-400" />
+                                        <span><strong>Cliente:</strong> {selectedRental.customer?.fullName}</span>
+                                    </p>
+
+                                    <p className="flex items-center gap-2">
+                                        <MapPin size={14} className="text-gray-400" />
+                                        <span className="truncate w-40"><strong>Local:</strong> {selectedRental.fullAddress}</span>
+                                    </p>
+
+                                    <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-100">
+                                        <div>
+                                            <p className="text-[10px] text-gray-400 uppercase font-bold">Início</p>
+                                            <p>{new Date(selectedRental.startDate).toLocaleDateString()}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-400 uppercase font-bold">Previsão</p>
+                                            <p>{selectedRental.endDate ? new Date(selectedRental.endDate).toLocaleDateString() : 'Pendente'}</p>
+                                        </div>
+                                    </div>
+
+                                    <p className="flex items-center gap-1 mt-2 font-bold text-green-600 text-sm">
+                                        <DollarSign size={14} />
+                                        <span>R$ {selectedRental.charge}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </InfoWindow>
+                    )}
+                </Map>
+            </div>
+        </APIProvider>
+    );
 };
 
 export default MapPage;
