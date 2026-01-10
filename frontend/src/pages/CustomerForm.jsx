@@ -15,11 +15,12 @@ const CustomerForm = () => {
         setFetching(true);
         try {
           const res = await getCustomer(id);
-          const { fullName, document, phone, email } = res.data;
+          const { companyName, fullName, document, phone, email } = res.data;
           setFormData({ 
-            fullName: fullName || '', 
+            fullName: fullName || '',
+            companyName: companyName || '',
             document: document || '', 
-            phone: phone|| '',
+            phone: phone || '',
             email: email || '' 
           });
         } catch (err) {
@@ -67,7 +68,7 @@ const CustomerForm = () => {
       <h2 className="text-2xl font-bold mb-6">{id ? 'Editar Cliente' : 'Cadastrar Cliente'}</h2>
       <form onSubmit={handleSubmit} className="space-y-4 bg-gray-800 p-6 rounded-xl border border-gray-700">
         <div>
-          <label className="block text-sm font-medium mb-1">Nome</label>
+          <label className="block text-sm font-medium mb-1">Cliente</label>
           <input
             type="text"
             required
@@ -75,6 +76,16 @@ const CustomerForm = () => {
             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
             value={formData.fullName}
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Empresa (Opcional)</label>
+          <input
+              type="text"
+              disabled={loading}
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+              value={formData.companyName}
+              onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
           />
         </div>
         <div>
@@ -89,13 +100,13 @@ const CustomerForm = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Contato</label>
+          <label className="block text-sm font-medium mb-1">Celular</label>
           <input
             type="text"
             required
             disabled={loading}
             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-            value={formData.contact}
+            value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           />
         </div>

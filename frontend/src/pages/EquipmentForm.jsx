@@ -3,7 +3,7 @@ import { createEquipment, getEquipment, updateEquipment } from '../api';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const EquipmentForm = () => {
-  const [formData, setFormData] = useState({ name: '', serialNumber: '', baseValue: '', category: '', status: 'AVAILABLE' });
+  const [formData, setFormData] = useState({ name: '', serialNumber: '', category: '', status: 'AVAILABLE' });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const navigate = useNavigate();

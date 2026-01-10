@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getRentals, returnRental, deleteRental } from '../api';
-import { Search, CheckCircle, Trash2, Printer, Calendar, User, Clock, FileText } from 'lucide-react';
+import {Search, CheckCircle, Trash2, Printer, Calendar, User, Clock, FileText, Edit2} from 'lucide-react';
+import {Link} from "react-router-dom";
 
 const RentalList = () => {
   const [rentals, setRentals] = useState([]);
@@ -126,6 +127,7 @@ const RentalList = () => {
             <tr>
               <th className="p-4 border-b border-gray-700 print:border-black">Cliente</th>
               <th className="p-4 border-b border-gray-700 print:border-black">Equipamento</th>
+              <th className="p-4 border-b border-gray-700 print:border-black">Endereço</th>
               <th className="p-4 border-b border-gray-700 print:border-black">Início</th>
               <th className="p-4 border-b border-gray-700 print:border-black">Encerramento</th>
               <th className="p-4 border-b border-gray-700 print:border-black">Status</th>
@@ -141,7 +143,10 @@ const RentalList = () => {
                   </td>
                   <td className="p-4">
                     <p>{rental.equipment?.name || 'N/A'}</p>
-                    <p className="text-xs text-gray-500">SN: {rental.equipment?.serialNumber || 'N/A'}</p>
+                    <p className="text-xs text-gray-500">Número de Série: {rental.equipment?.serialNumber || 'N/A'}</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="font-medium">{rental.fullAddress}</p>
                   </td>
                   <td className="p-4 text-sm">
                     {new Date(rental.startDate).toLocaleDateString()}
@@ -163,6 +168,13 @@ const RentalList = () => {
                             <CheckCircle size={20} />
                           </button>
                       )}
+                      <Link
+                          to={`/rentals/edit/${rental.id}`}
+                          className="text-blue-500 hover:text-blue-400 p-2"
+                          title="Editar"
+                      >
+                        <Edit2 size={20} />
+                      </Link>
                       <button onClick={() => handleDelete(rental.id)} className="text-red-500 hover:text-red-400 p-2">
                         <Trash2 size={20} />
                       </button>

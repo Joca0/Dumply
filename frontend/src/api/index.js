@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://dumply-po26.onrender.com',
-  //baseURL: 'http://localhost:8080',
+  //baseURL: 'https://dumply-po26.onrender.com',
+  baseURL: 'http://localhost:8080',
 });
 
 export const getEquipments = () => api.get('/equipments');
@@ -18,8 +18,10 @@ export const updateCustomer = (id, data) => api.put(`/customers/${id}`, data);
 export const deleteCustomer = (id) => api.delete(`/customers/${id}`);
 
 export const getRentals = () => api.get('/rentals');
+export const getRental = (id) => api.get(`/rentals/${id}`);
 export const getActiveRentals = () => api.get('/rentals/active');
 export const createRental = (data) => api.post('/rentals', data);
+export const updateRental = (id, data) => api.put(`/rentals/${id}`, data)
 export const returnRental = (id) => api.post(`/rentals/${id}/return`);
 export const deleteRental = (id) => api.delete(`/rentals/${id}`);
 

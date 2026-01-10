@@ -25,6 +25,7 @@ public class CustomerService {
     public Customer updateCustomer(Long id, Customer updatedCustomer) {
         return customerRepository.findById(id)
                 .map(customer -> {
+                        customer.setCompanyName(updatedCustomer.getCompanyName());
                         customer.setFullName(updatedCustomer.getFullName());
                         customer.setDocument(updatedCustomer.getDocument());
                         customer.setEmail(updatedCustomer.getEmail());

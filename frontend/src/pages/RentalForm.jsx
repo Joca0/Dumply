@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { getCustomers, getEquipments, createRental } from '../api';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { getCustomers, getEquipments, createRental, getRental, updateRental } from '../api';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   APIProvider,
   Map,
@@ -8,10 +8,9 @@ import {
   Pin,
   useMapsLibrary
 } from '@vis.gl/react-google-maps';
-import { Plus, Trash2, Calendar, MapPin, User, Package, Search } from 'lucide-react';
+import { Trash2, MapPin, User, Package, Search } from 'lucide-react';
 
-const apiKey = import.meta.env.VITE_API_KEY;
-const GOOGLE_MAPS_API_KEY = apiKey;
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_API_KEY;
 
 // --- BUSCA DE EQUIPAMENTO ---
 const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedIds }) => {
@@ -29,11 +28,12 @@ const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedId
 
   const selectedEquipment = equipments.find(e => e.id === item.equipmentId);
 
+  // Filtro: mostra o que bate com a busca E não está selecionado em OUTRA linha (mas permite mostrar o atual da linha)
   const filtered = equipments.filter(e => {
     const term = searchTerm.toLowerCase();
     const matches = e.name.toLowerCase().includes(term) || e.serialNumber.toLowerCase().includes(term);
-    const isAlreadySelected = selectedIds.some(id => id === e.id && id !== item.equipmentId);
-    return matches && !isAlreadySelected;
+    const isAlreadyInOtherLine = selectedIds.some(id => id === e.id && id !== item.equipmentId);
+    return matches && !isAlreadyInOtherLine;
   });
 
   return (
@@ -76,46 +76,93 @@ const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedId
   );
 };
 
-// --- AUTOCOMPLETE DO GOOGLE ---
-const GoogleAddressInput = ({ onAddressSelect }) => {
-  const inputRef = useRef(null);
+// --- AUTOCOMPLETE DO GOOGLE (RESTAURADO E SEGURO) ---
+const GoogleAddressInput = ({ onAddressSelect, defaultValue }) => {
+  const [inputValue, setInputValue] = useState('');
+  const [predictions, setPredictions] = useState([]);
   const places = useMapsLibrary('places');
+  const [autocompleteService, setAutocompleteService] = useState(null);
+  const [sessionToken, setSessionToken] = useState(null);
 
   useEffect(() => {
-    if (!places || !inputRef.current) return;
-    const autocomplete = new places.Autocomplete(inputRef.current, {
-      fields: ['geometry', 'formatted_address'],
-      componentRestrictions: { country: 'br' }
-    });
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      if (place.geometry) {
+    if (defaultValue) setInputValue(defaultValue);
+  }, [defaultValue]);
+
+  useEffect(() => {
+    if (!places) return;
+    setAutocompleteService(new places.AutocompleteService());
+    setSessionToken(new places.AutocompleteSessionToken());
+  }, [places]);
+
+  useEffect(() => {
+    if (!inputValue || inputValue.length < 3 || !autocompleteService || inputValue === defaultValue) {
+      setPredictions([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      autocompleteService.getPlacePredictions({
+        input: inputValue,
+        sessionToken: sessionToken,
+        componentRestrictions: { country: 'br' }
+      }, (results) => {
+        setPredictions(results || []);
+      });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [inputValue, autocompleteService]);
+
+  const handleSelect = (prediction) => {
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
+      if (status === 'OK' && results[0]) {
         onAddressSelect({
-          address: place.formatted_address,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng()
+          address: results[0].formatted_address,
+          lat: results[0].geometry.location.lat(),
+          lng: results[0].geometry.location.lng()
         });
+        setInputValue(results[0].formatted_address);
+        setPredictions([]);
       }
     });
-  }, [places, onAddressSelect]);
+  };
 
   return (
-      <input
-          ref={inputRef}
-          type="text"
-          required
-          placeholder="Digite o endereço da entrega..."
-          className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 text-white"
-      />
+      <div className="relative">
+        <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Digite o endereço da entrega..."
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none"
+        />
+        {predictions.length > 0 && (
+            <div className="absolute z-[100] w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+              {predictions.map(p => (
+                  <div
+                      key={p.place_id}
+                      onClick={() => handleSelect(p)}
+                      className="p-3 hover:bg-blue-600 cursor-pointer text-xs border-b border-gray-700 last:border-0"
+                  >
+                    {p.description}
+                  </div>
+              ))}
+            </div>
+        )}
+      </div>
   );
 };
 
 // --- COMPONENTE PRINCIPAL ---
 const RentalForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+
   const [customers, setCustomers] = useState([]);
   const [equipments, setEquipments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
 
   const [formData, setFormData] = useState({
     customerId: '',
@@ -127,16 +174,66 @@ const RentalForm = () => {
     endDate: ''
   });
 
+  const handleAddressSelect = useCallback((data) => {
+    setFormData(prev => ({
+      ...prev,
+      fullAddress: data.address,
+      latitude: data.lat,
+      longitude: data.lng
+    }));
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
+      setFetching(true);
       try {
+        // 1. Busca Clientes e Equipamentos primeiro (Independente do ID)
         const [custRes, eqRes] = await Promise.all([getCustomers(), getEquipments()]);
-        setCustomers(custRes.data);
-        setEquipments(eqRes.data.filter(e => e.status === 'AVAILABLE'));
-      } catch (err) { console.error(err); }
+
+        const allCustomers = Array.isArray(custRes.data) ? custRes.data : [];
+        const allEquipments = Array.isArray(eqRes.data) ? eqRes.data : [];
+
+        setCustomers(allCustomers);
+
+        if (id) {
+          // 2. Busca o Aluguel específico se houver ID
+          const rentRes = await getRental(id);
+          const rental = rentRes.data;
+
+          if (rental) {
+            const formatDT = (d) => d ? new Date(d).toISOString().slice(0, 16) : '';
+
+            setFormData({
+              customerId: rental.customerId || '',
+              items: (rental.items && Array.isArray(rental.items))
+                  ? rental.items.map(i => ({
+                    equipmentId: i.equipmentId,
+                    charge: i.charge ? i.charge.toString() : ''
+                  }))
+                  : [{ equipmentId: '', charge: '' }],
+              fullAddress: rental.fullAddress || '',
+              latitude: rental.latitude || -23.5505,
+              longitude: rental.longitude || -46.6333,
+              startDate: formatDT(rental.startDate),
+              endDate: formatDT(rental.endDate)
+            });
+
+            // Na edição, usamos todos os equipamentos (para mostrar o que já está alugado)
+            setEquipments(allEquipments);
+          }
+        } else {
+          // 3. Se for NOVO aluguel, filtra apenas os disponíveis
+          setEquipments(allEquipments.filter(e => e.status === 'AVAILABLE'));
+        }
+      } catch (err) {
+        console.error("ERRO CRÍTICO NO FETCH:", err);
+        if (id) alert("Não foi possível carregar os dados deste aluguel.");
+      } finally {
+        setFetching(false);
+      }
     };
     fetchData();
-  }, []);
+  }, [id]);
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...formData.items];
@@ -146,42 +243,78 @@ const RentalForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.fullAddress) return alert("Selecione um endereço pelo buscador.");
+    console.log("1. Botão salvar clicado!");
+
+    // Verificação básica antes de tentar enviar
+    if (!formData.customerId) {
+      alert("Por favor, selecione um cliente.");
+      return;
+    }
+
+    if (!formData.fullAddress) {
+      alert("Por favor, selecione um endereço válido no mapa");
+      return;
+    }
 
     setLoading(true);
     try {
-      await createRental({
-        ...formData,
-        items: formData.items.map(item => ({ ...item, charge: parseFloat(item.charge) })),
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude)
-      });
+      console.log("2. Preparando payload...");
+
+      const payload = {
+        customerId: formData.customerId,
+        // Garante que latitude e longitude são números
+        latitude: Number(formData.latitude),
+        longitude: Number(formData.longitude),
+        fullAddress: formData.fullAddress,
+        startDate: formData.startDate,
+        endDate: formData.endDate || null,
+        // Converte charges para float e garante que IDs existem
+        items: formData.items
+            .filter(item => item.equipmentId) // Remove itens vazios
+            .map(item => ({
+              equipmentId: item.equipmentId,
+              charge: parseFloat(item.charge) || 0
+            }))
+      };
+
+      console.log("3. Payload pronto para envio:", payload);
+
+      if (id) {
+        console.log("4. Chamando updateRental para ID:", id);
+        await updateRental(id, payload);
+      } else {
+        console.log("4. Chamando createRental (Novo)");
+        await createRental(payload);
+      }
+
+      console.log("5. Sucesso! Navegando...");
       navigate('/rentals');
     } catch (err) {
-      alert(err.response?.data?.message || "Erro ao criar");
-    } finally { setLoading(false); }
+      console.error("ERRO NO SALVAMENTO:", err);
+      // Exibe o erro real que vem da API no alert
+      const errorMsg = err.response?.data?.message || err.message || "Erro desconhecido";
+      alert("Erro ao salvar: " + errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (fetching) return <div className="p-20 text-center text-white animate-pulse">Carregando dados...</div>;
 
   return (
       <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
         <div className="max-w-6xl mx-auto p-8 text-gray-200 grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-          {/* LADO ESQUERDO: FORMULÁRIO */}
           <div className="lg:col-span-7">
             <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
-              <Package className="text-blue-500" /> Novo Aluguel
+              <Package className="text-blue-500" /> {id ? 'Editar Aluguel' : 'Novo Aluguel'}
             </h2>
-
             <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl">
-
               {/* Cliente */}
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1">
-                  <User size={12}/> Cliente
-                </label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1"><User size={12}/> Cliente</label>
                 <select
                     required
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 outline-none focus:border-blue-500 text-sm"
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
                     value={formData.customerId}
                     onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
                 >
@@ -190,21 +323,20 @@ const RentalForm = () => {
                 </select>
               </div>
 
-              {/* Itens Dinâmicos */}
+              {/* Equipamentos */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Equipamentos</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Equipamentos e Diárias</label>
                   <button
                       type="button"
                       onClick={() => setFormData({...formData, items: [...formData.items, {equipmentId: '', charge: ''}]})}
-                      className="flex items-center gap-1 text-[10px] bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded transition-colors"
+                      className="bg-blue-600 px-2 py-1 rounded text-[10px] font-bold hover:bg-blue-500"
                   >
-                    <Plus size={12} /> Adicionar Item
+                    + Adicionar Item
                   </button>
                 </div>
-
                 {formData.items.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-3 p-3 bg-gray-900/50 rounded-lg border border-gray-700 relative">
+                    <div key={index} className="grid grid-cols-12 gap-3 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
                       <div className="col-span-7">
                         <InternalEquipmentSearch
                             index={index}
@@ -215,11 +347,11 @@ const RentalForm = () => {
                         />
                       </div>
                       <div className="col-span-4 relative">
-                        <span className="absolute left-2 top-2 text-[10px] text-gray-500 font-bold">R$</span>
+                        <span className="absolute left-2 top-2 text-[10px] text-gray-500">R$</span>
                         <input
                             type="number"
-                            step="0.01"
-                            className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 pl-7 text-sm outline-none focus:border-blue-500"
+                            placeholder="0.00"
+                            className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 pl-7 text-sm"
                             value={item.charge}
                             onChange={(e) => handleItemChange(index, 'charge', e.target.value)}
                             required
@@ -242,75 +374,43 @@ const RentalForm = () => {
               {/* Datas */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1 italic">Data Início</label>
-                  <input
-                      type="datetime-local"
-                      required
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  />
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Início</label>
+                  <input type="datetime-local" className="w-full bg-gray-900 p-2.5 rounded-lg text-sm border border-gray-700" value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1 italic">Previsão Fim</label>
-                  <input
-                      type="datetime-local"
-                      required
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  />
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Previsão Fim</label>
+                  <input type="datetime-local" className="w-full bg-gray-900 p-2.5 rounded-lg text-sm border border-gray-700" value={formData.endDate} onChange={(e) => setFormData({...formData, endDate: e.target.value})} />
                 </div>
               </div>
 
               {/* Endereço */}
-              <div className="border-t border-gray-700 pt-4">
-                <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1 mb-1">
-                  <MapPin size={12}/> Local de Entrega
-                </label>
-                <GoogleAddressInput
-                    onAddressSelect={(data) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        fullAddress: data.address,
-                        latitude: data.lat,
-                        longitude: data.lng
-                      }));
-                    }}
-                />
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1"><MapPin size={12}/> Local de Entrega</label>
+                <GoogleAddressInput onAddressSelect={handleAddressSelect} defaultValue={formData.fullAddress} />
               </div>
 
-              <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-[0.98] disabled:opacity-50"
-              >
-                {loading ? 'Salvando...' : 'Finalizar Aluguel'}
+              <button type="submit" disabled={loading} className="w-full bg-blue-600 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50">
+                {loading ? 'Salvando...' : id ? 'Salvar Alterações' : 'Finalizar Aluguel'}
               </button>
             </form>
           </div>
 
-          {/* LADO DIREITO: MAPA */}
+          {/* MAPA */}
           <div className="lg:col-span-5">
-            <div className="sticky top-8 h-[550px] bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-2xl relative">
+            <div className="h-[550px] bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl sticky top-8">
               <Map
-                  mapId="PREVIEW_MAP"
+                  defaultCenter={{ lat: formData.latitude, lng: formData.longitude }}
                   center={{ lat: formData.latitude, lng: formData.longitude }}
                   zoom={15}
                   disableDefaultUI={true}
-                  zoomControl={true}
+                  mapId="PREVIEW_MAP"
               >
                 <AdvancedMarker position={{ lat: formData.latitude, lng: formData.longitude }}>
                   <Pin background={'#2563eb'} borderColor={'#ffffff'} glyphColor={'#ffffff'} />
                 </AdvancedMarker>
               </Map>
-              <div className="absolute bottom-4 left-4 right-4 bg-gray-900/90 p-3 rounded-lg border border-gray-700 backdrop-blur-sm">
-                <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Localização Selecionada</p>
-                <p className="text-xs text-white truncate">{formData.fullAddress || "Aguardando endereço..."}</p>
-              </div>
             </div>
           </div>
-
         </div>
       </APIProvider>
   );

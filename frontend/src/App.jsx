@@ -26,6 +26,7 @@ function App() {
           <Route path="equipments/new" element={<EquipmentForm />} />
           <Route path="equipments/edit/:id" element={<EquipmentForm />} />
           <Route path="equipments" element={<EquipmentList />} />
+          <Route path="rentals/edit/:id" element={<RentalForm />} />
           <Route path="rentals/new" element={<RentalForm />} />
           <Route path="rentals" element={<RentalList />} />
           <Route path="invoices" element={<InvoiceList />} />

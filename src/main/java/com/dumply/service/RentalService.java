@@ -1,8 +1,6 @@
 package com.dumply.service;
 
-import com.dumply.common.EquipmentStatus;
-import com.dumply.common.RentalRequest;
-import com.dumply.common.RentalStatus;
+import com.dumply.common.*;
 import com.dumply.model.Customer;
 import com.dumply.model.Equipment;
 import com.dumply.model.Rental;
@@ -73,6 +71,11 @@ public class RentalService {
         return rentalRepository.findByStatus(RentalStatus.ACTIVE);
     }
 
+    public Rental getRentalById(Long id) {
+        return rentalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Aluguel com esse ID não encontrado"));
+    }
+
     @Transactional
     public Rental returnRental(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId)
@@ -98,12 +101,40 @@ public class RentalService {
         Rental rental = rentalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aluguel não encontrado com id: " + id));
 
-
         rental.setStartDate(dto.startDate());
         rental.setEndDate(dto.endDate());
         rental.setFullAddress(dto.fullAddress());
         rental.setLatitude(dto.latitude());
         rental.setLongitude(dto.longitude());
+
+        // Como o form envia uma lista, pegamos o primeiro item para este Rental específico
+        if (dto.items() != null && !dto.items().isEmpty()) {
+            var itemDto = dto.items().get(0); // Pega o equipamento selecionado no form
+
+            // Se o equipamento mudou, gerenciar os status
+            if (!rental.getEquipment().getId().equals(itemDto.equipmentId())) {
+
+                // Libera o equipamento antigo
+                Equipment oldEquip = rental.getEquipment();
+                oldEquip.setStatus(EquipmentStatus.AVAILABLE);
+                equipmentRepository.save(oldEquip);
+
+                // Reserva o novo equipamento
+                Equipment newEquip = equipmentRepository.findById(itemDto.equipmentId())
+                        .orElseThrow(() -> new RuntimeException("Novo equipamento não encontrado"));
+
+                if (newEquip.getStatus() != EquipmentStatus.AVAILABLE) {
+                    throw new RuntimeException("O novo equipamento selecionado não está disponível.");
+                }
+
+                newEquip.setStatus(EquipmentStatus.RENTED);
+                rental.setEquipment(newEquip);
+                equipmentRepository.save(newEquip);
+            }
+
+            // Atualiza o valor
+            rental.setCharge(itemDto.charge());
+        }
 
         return rentalRepository.save(rental);
     }

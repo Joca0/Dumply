@@ -77,8 +77,9 @@ const CustomerList = () => {
           <thead className="bg-gray-700/50 text-gray-400 text-sm">
             <tr>
               <th className="p-4">Cliente</th>
+              <th className="p-4">Empresa</th>
+              <th className="p-4">Celular</th>
               <th className="p-4">Documento</th>
-              <th className="p-4">Contato</th>
               <th className="p-4">E-mail</th>
               <th className="p-4 text-right">Ações</th>
             </tr>
@@ -92,8 +93,9 @@ const CustomerList = () => {
                   </div>
                   <span className="font-medium">{customer.fullName}</span>
                 </td>
-                <td className="p-4">{customer.document}</td>
+                <td className="p-4">{customer.companyName || '-'}</td>
                 <td className="p-4">{customer.phone || customer.contact}</td>
+                <td className="p-4">{customer.document}</td>
                 <td className="p-4 text-gray-400 text-sm">{customer.email || '-'}</td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">

@@ -22,6 +22,11 @@ public class RentalController {
         return rentalService.createRental(rentalRequest);
     }
 
+    @PutMapping("/{id}")
+    public Rental updateRental(@PathVariable Long id, @RequestBody RentalRequest rentalRequest) {
+        return rentalService.updateRental(id, rentalRequest);
+    }
+
     @GetMapping
     public List<Rental> getAllRentals() {
         return rentalService.getAllRentals();
@@ -30,6 +35,11 @@ public class RentalController {
     @GetMapping("/active")
     public List<Rental> getRentalsForMap() {
         return rentalService.getActiveRentalsForMap();
+    }
+
+    @GetMapping("/{id}")
+    public Rental getRental(@PathVariable Long id) {
+        return rentalService.getRentalById(id);
     }
 
     @PostMapping("/{rentalId}/return")

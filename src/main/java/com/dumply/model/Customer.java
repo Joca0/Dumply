@@ -17,6 +17,7 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String companyName;
     private String fullName;
 
     @NotNull
@@ -32,7 +33,8 @@ public class Customer {
 
     }
 
-    public Customer(String fullName, String document, String email, String phone) {
+    public Customer(String companyName, String fullName, String document, String email, String phone) {
+        this.companyName = companyName;
         this.fullName = fullName;
         this.document = document;
         this.email = email;
