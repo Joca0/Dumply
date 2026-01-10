@@ -277,20 +277,14 @@ const RentalForm = () => {
             }))
       };
 
-      console.log("3. Payload pronto para envio:", payload);
 
       if (id) {
-        console.log("4. Chamando updateRental para ID:", id);
         await updateRental(id, payload);
       } else {
-        console.log("4. Chamando createRental (Novo)");
         await createRental(payload);
       }
-
-      console.log("5. Sucesso! Navegando...");
       navigate('/rentals');
     } catch (err) {
-      console.error("ERRO NO SALVAMENTO:", err);
       // Exibe o erro real que vem da API no alert
       const errorMsg = err.response?.data?.message || err.message || "Erro desconhecido";
       alert("Erro ao salvar: " + errorMsg);
