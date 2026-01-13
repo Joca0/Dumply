@@ -30,6 +30,8 @@ jobs:
           context: ./frontend
           push: true
           tags: jjsalustiano/frontend-react:latest
+          build-args: |
+            VITE_API_KEY=${{ secrets.VITE_API_KEY }}
 
   deploy:
     needs: build-and-push

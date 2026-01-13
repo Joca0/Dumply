@@ -9,7 +9,10 @@ RUN npm install
 # Copia o restante dos arquivos
 COPY . .
 
-# Executa o build do Vite (gera a pasta /dist)
+
+ARG VITE_API_KEY
+ENV VITE_API_KEY=$VITE_API_KEY
+
 RUN npm run build
 
 # Estágio 2: Produção com Nginx
