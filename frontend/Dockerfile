@@ -6,14 +6,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-ARG VITE_API_KEY
-ENV VITE_API_KEY=$VITE_API_KEY
-
 # Copia o restante dos arquivos
 COPY . .
 
-
-
+# No seu Dockerfile do frontend, antes do comando de build (npm run build):
+ARG VITE_API_KEY
+ENV VITE_API_KEY=$VITE_API_KEY
 
 RUN npm run build
 
