@@ -47,6 +47,7 @@ jobs:
           source: "docker-compose.yml"
           target: "~/app"
 
+
       - name: Executar comandos na VM via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -55,9 +56,6 @@ jobs:
           key: ${{ secrets.OCI_SSH_KEY }}
           script: |
             cd ~/app
-            
-            sed -i 's|build: .|image: jjsalustiano/backend-java:latest|g' docker-compose.yml
-            sed -i 's|build: ./frontend|image: jjsalustiano/frontend-react:latest|g' docker-compose.yml
             
             docker-compose pull
             docker-compose up -d

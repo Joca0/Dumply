@@ -1,14 +1,12 @@
 services:
   backend:
-    build:
-      context: .
+    image: jjsalustiano/backend-java:latest
     ports:
       - "8080:8080"
     restart: always
 
   frontend:
-    build:
-      context: ./frontend
+    image: jjsalustiano/frontend-react:latest
     ports:
       - "80:80"
     depends_on:
