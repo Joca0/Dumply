@@ -73,13 +73,18 @@ const RentalList = () => {
         {/* CABEÇALHO */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Relatório de Aluguéis</h2>
-          <button
-              onClick={() => window.print()}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors no-print"
-          >
-            <Printer size={20} />
-            Imprimir PDF
-          </button>
+          <div className="flex gap-2">
+            <button
+                onClick={() => window.print()}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors no-print"
+            >
+              <Printer size={18} />
+              Imprimir PDF
+            </button>
+            <Link to="/rentals/new" className="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+              Novo Aluguel
+            </Link>
+          </div>
         </div>
 
         {/* FILTROS (no-print) */}

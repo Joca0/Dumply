@@ -243,7 +243,6 @@ const RentalForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("1. Botão salvar clicado!");
 
     // Verificação básica antes de tentar enviar
     if (!formData.customerId) {
@@ -258,7 +257,6 @@ const RentalForm = () => {
 
     setLoading(true);
     try {
-      console.log("2. Preparando payload...");
 
       const payload = {
         customerId: formData.customerId,

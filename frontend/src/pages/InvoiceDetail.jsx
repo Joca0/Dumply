@@ -142,6 +142,7 @@ const InvoiceDetail = () => {
             <h3 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center">
               <User size={14} className="mr-2" /> Cliente
             </h3>
+            <p className="text-xl font-bold">{invoice.customer.companyName}</p>
             <p className="text-xl font-bold">{invoice.customer.fullName}</p>
             <p className="text-gray-400">{invoice.customer.document}</p>
             <p className="text-gray-400 mt-2">{invoice.customer.email}</p>
@@ -180,6 +181,7 @@ const InvoiceDetail = () => {
               <thead>
                 <tr className="text-gray-400 text-sm border-b border-gray-700">
                   <th className="pb-4 font-normal">Equipamento</th>
+                  <th className="pb-4 font-normal">Endereço</th>
                   <th className="pb-4 font-normal">Período</th>
                   <th className="pb-4 font-normal text-right">Valor</th>
                 </tr>
@@ -187,9 +189,12 @@ const InvoiceDetail = () => {
               <tbody className="divide-y divide-gray-700">
                 {invoice.items.map((item) => (
                   <tr key={item.id}>
-                    <td className="py-4">
+                    <td className="p-4">
                       <p className="font-medium">{item.equipment.name}</p>
-                      <p className="text-xs text-gray-500">S/N: {item.equipment.serialNumber}</p>
+                      <p className="text-xs text-gray-500">N/S: {item.equipment.serialNumber}</p>
+                    </td>
+                    <td className="py-4 text-sm text-gray-300">
+                      <p className="font-medium">{item.fullAddress}</p>
                     </td>
                     <td className="py-4 text-sm text-gray-300">
                       {new Date(item.startDate).toLocaleDateString('pt-BR')} - {item.endDate ? new Date(item.endDate).toLocaleDateString('pt-BR') : 'Em aberto'}

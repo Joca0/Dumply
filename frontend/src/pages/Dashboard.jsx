@@ -35,8 +35,9 @@ const Dashboard = () => {
   }, []);
 
   const menus = [
-    { title: 'Novo Aluguel', description: 'Registre uma nova locação', to: '/rentals/new', color: 'bg-blue-600' },
     { title: 'Mapa', description: 'Veja a localização dos equipamentos', to: '/map', color: 'bg-indigo-600' },
+    { title: 'Aluguéis', description: 'Gerencie seus aluguéis', to: '/rentals', color: 'bg-amber-600'},
+    { title: 'Fatura', description: 'Gere ou consulte faturas', to:'/invoices', color: 'bg-emerald-700'},
     { title: 'Equipamentos', description: 'Consulte e gerencie seus equipamentos', to: '/equipments', color: 'bg-slate-700' },
     { title: 'Clientes', description: 'Consulte sua base de clientes', to: '/customers', color: 'bg-slate-700' },
   ];
