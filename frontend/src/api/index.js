@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  //baseURL: 'https://dumply-po26.onrender.com',
-  baseURL: 'http://localhost:8080',
+  baseURL: 'http://164.152.252.146:8080',
 });
 
 export const getEquipments = () => api.get('/equipments');

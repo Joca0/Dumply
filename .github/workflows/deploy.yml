@@ -1,0 +1,56 @@
+name: Deploy Automático Oracle Cloud
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build e Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: jjsalustiano/backend-java:latest
+
+      - name: Build e Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: jjsalustiano/frontend-react:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executar comandos na VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          script: |
+            mkdir -p ~/app
+            cd ~/app
+            # TROQUE O LINK ABAIXO PELO LINK DO SEU REPOSITÓRIO
+            curl -L https://raw.githubusercontent.com/Joca0/Dumply/main/docker-compose.yml -o docker-compose.yml
+            
+            # Ajusta o docker-compose para usar as imagens que acabamos de subir
+            sed -i 's|build: .|image: ${{ secrets.DOCKERHUB_USERNAME }}/backend-java:latest|g' docker-compose.yml
+            sed -i 's|build: ./frontend|image: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-react:latest|g' docker-compose.yml
+            
+            docker compose pull
+            docker compose up -d
+            docker image prune -f
