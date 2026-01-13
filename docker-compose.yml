@@ -1,6 +1,13 @@
 services:
   backend:
     image: jjsalustiano/backend-java:latest
+    volumes:
+      - ~/app/wallet:/app/wallet:ro
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@nome_do_db_high?TNS_ADMIN=/app/wallet
+      - SPRING_DATASOURCE_USERNAME=ADMIN
+      - SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
     ports:
       - "8080:8080"
     restart: always

@@ -6,12 +6,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+ARG VITE_API_KEY
+ENV VITE_API_KEY=$VITE_API_KEY
+
 # Copia o restante dos arquivos
 COPY . .
 
 
-ARG VITE_API_KEY
-ENV VITE_API_KEY=$VITE_API_KEY
+
 
 RUN npm run build
 

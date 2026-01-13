@@ -59,6 +59,8 @@ jobs:
           script: |
             cd ~/app
             
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
+            
             docker-compose pull
             docker-compose up -d
             docker image prune -f
