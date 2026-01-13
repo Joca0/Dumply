@@ -42,9 +42,16 @@ const MapPage = () => {
         <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
             <div className="h-screen w-full bg-gray-900">
                 <Map
-                    mapId="PAGINA_MAPA_GLOBAL"
+                    styles={[
+                        {
+                            featureType: "poi",
+                            elementType: "labels",
+                            stylers: [{ visibility: "off" }],
+                        }
+                    ]}
                     defaultCenter={{ lat: -23.5505, lng: -46.6333 }}
-                    defaultZoom={12}
+                    defaultZoom={11}
+                    mapId=''
                     gestureHandling={'greedy'}
                     disableDefaultUI={false}
 
@@ -91,7 +98,7 @@ const MapPage = () => {
 
                                     <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-100">
                                         <div>
-                                            <p className="text-[10px] text-gray-400 uppercase font-bold">Início</p>
+                                            <p className="text-[10px] text-gray-400 uppercase font-bold">Data Inicio</p>
                                             <p>{new Date(selectedRental.startDate).toLocaleDateString()}</p>
                                         </div>
                                         <div>
