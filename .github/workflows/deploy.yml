@@ -11,14 +11,12 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      # Login Docker Hub
       - name: Login no Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build e push backend
       - name: Build e Push Backend
         uses: docker/build-push-action@v5
         with:
@@ -26,7 +24,6 @@ jobs:
           push: true
           tags: jjsalustiano/backend-java:latest
 
-      # Build e push frontend
       - name: Build e Push Frontend
         uses: docker/build-push-action@v5
         with:
@@ -43,20 +40,17 @@ jobs:
       - name: Checkout do código (para pegar o docker-compose.yml)
         uses: actions/checkout@v4
 
-      # Copia docker-compose.yml e Wallet para a VM
-      - name: Copiar docker-compose.yml e Wallet via SCP
+      - name: Copiar docker-compose.yml via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.OCI_HOST }}
           username: ${{ secrets.OCI_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
-          source: |
-            docker-compose.yml
-            wallet/*
+          source: "docker-compose.yml"
           target: "~/app"
 
-      # Executar deploy na VM
-      - name: Deploy via SSH
+
+      - name: Executar comandos na VM via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.OCI_HOST }}
@@ -65,22 +59,20 @@ jobs:
           script: |
             cd ~/app
 
-            # Login Docker
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
-            # Criar arquivo .env com variáveis
             cat <<EOF > .env
-              SPRING_PROFILES_ACTIVE=prod
-              DB_USER=ADMIN
-              DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-              TNS_ADMIN=/app/wallet
-              VITE_API_KEY=${{ secrets.VITE_API_KEY }}
-              EOF
-              
-              # Subir containers
-              docker-compose down --remove-orphans
-              docker-compose pull
-              docker-compose up -d
-              
-              # Limpar imagens antigas
-              docker image prune -af
+            SPRING_PROFILES_ACTIVE=prod
+            DB_USER=ADMIN
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_URL=jdbc:oracle:thin:@dumplydb_high?TNS_ADMIN=/opt/oracle/wallet
+            TNS_ADMIN=/opt/oracle/wallet
+            VITE_API_KEY=${{ secrets.VITE_API_KEY }}
+            EOF
+
+            docker-compose down --remove-orphans --volumes
+            docker-compose pull
+            docker-compose up -d
+            docker image prune -af
+          
+          
