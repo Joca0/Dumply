@@ -5,12 +5,12 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /home/opc/app/wallet:/home/opc/app/wallet
+      - /home/opc/app/wallet:/app/wallet
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      TNS_ADMIN: ${TNS_ADMIN}
+      TNS_ADMIN: /app/wallet
     restart: always
 
   frontend:
