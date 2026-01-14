@@ -58,9 +58,13 @@ jobs:
           key: ${{ secrets.OCI_SSH_KEY }}
           script: |
             cd ~/app
-            
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
-            
-            docker-compose pull
-            docker-compose up -d
+
+            cat <<EOF > .env
+            SPRING_PROFILES_ACTIVE=prod
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            TNS_ADMIN=/opt/oracle/wallet
+            EOF
+
+            docker compose pull
+            docker compose up -d
             docker image prune -f
