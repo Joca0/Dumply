@@ -59,13 +59,20 @@ jobs:
           script: |
             cd ~/app
 
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
             cat <<EOF > .env
             SPRING_PROFILES_ACTIVE=prod
+            DB_USER=ADMIN
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_URL=jdbc:oracle:thin:@dumplydb_high?TNS_ADMIN=/opt/oracle/wallet
             TNS_ADMIN=/opt/oracle/wallet
+            VITE_API_KEY=${{ secrets.VITE_API_KEY }}
             EOF
 
+            docker-compose down --remove-orphans --volumes
             docker-compose pull
             docker-compose up -d
-            docker image prune -f
+            docker image prune -af
+          
           

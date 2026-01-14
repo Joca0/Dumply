@@ -1,23 +1,22 @@
-version: "3.8"
-
 services:
   backend:
-    image: joca0/dumply-backend:latest
+    image: jjsalustiano/backend-java:latest
     container_name: dumply-backend
     ports:
       - "8080:8080"
+    volumes:
+      - /opt/oracle/wallet:/opt/oracle/wallet
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_URL: ${DB_URL}
+      TNS_ADMIN: ${TNS_ADMIN}
     restart: always
 
   frontend:
-    image: joca0/dumply-frontend:latest
+    image: jjsalustiano/frontend-react:latest
     container_name: dumply-frontend
     ports:
       - "80:80"
-    environment:
-      VITE_API_KEY: ${VITE_API_KEY}
     restart: always
