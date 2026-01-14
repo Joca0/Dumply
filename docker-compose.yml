@@ -2,7 +2,7 @@ services:
   backend:
     image: jjsalustiano/backend-java:latest
     volumes:
-      - ~/home/opc/app/wallet:/app/wallet:ro
+      - /home/opc/app/wallet:/app/wallet:ro
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@dumplydb?TNS_ADMIN=/app/wallet
