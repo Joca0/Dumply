@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /opt/oracle/wallet:/opt/oracle/wallet
+      - /home/opc/app/wallet:/home/opc/app/wallet
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_USER: ${DB_USER}
