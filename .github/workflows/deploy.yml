@@ -65,6 +65,7 @@ jobs:
             TNS_ADMIN=/opt/oracle/wallet
             EOF
 
-            docker compose pull
-            docker compose up -d
+            docker-compose pull
+            docker-compose up -d
             docker image prune -f
+          
