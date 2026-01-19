@@ -105,14 +105,14 @@ const EquipmentList = () => {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
-                    <Link 
+                    <Link
                       to={`/equipments/edit/${eq.id}`}
                       className="text-blue-500 hover:text-blue-400 p-2"
                       title="Editar"
                     >
                       <Edit2 size={18} />
                     </Link>
-                    <button 
+                    <button
                       onClick={() => handleDelete(eq.id)}
                       className="text-red-500 hover:text-red-400 p-2"
                       title="Excluir"
@@ -120,6 +120,7 @@ const EquipmentList = () => {
                     >
                       <Trash2 size={18} className={eq.status === 'RENTED' ? 'opacity-30' : ''} />
                     </button>
+
                   </div>
                 </td>
               </tr>

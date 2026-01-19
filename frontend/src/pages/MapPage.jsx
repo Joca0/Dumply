@@ -7,6 +7,7 @@ import {
     InfoWindow
 } from '@vis.gl/react-google-maps';
 import { getActiveRentals } from '../api';
+import { useSearchParams } from 'react-router-dom';
 
 import { User, MapPin, DollarSign } from 'lucide-react';
 
@@ -17,18 +18,38 @@ const MapPage = () => {
     const [rentals, setRentals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedRental, setSelectedRental] = useState(null);
+    const [center, setCenter] = useState({ lat: -23.5505, lng: -46.6333 });
+    const [zoom, setZoom] = useState(11);
+
+    const [searchParams] = useSearchParams();
+    const queryLat = Number(searchParams.get('lat'));
+    const queryLng = Number(searchParams.get('lng'));
+    const queryZoom = Number(searchParams.get('zoom')) || 13;
+    const queryId = searchParams.get('id');
 
     useEffect(() => {
         getActiveRentals()
             .then(res => {
-                setRentals(Array.isArray(res.data) ? res.data : []);
+                const data = Array.isArray(res.data) ? res.data : [];
+                setRentals(data);
+
+                if (queryLat && queryLng) {
+                    setCenter({ lat: queryLat, lng: queryLng });
+                    setZoom(queryZoom);
+                }
+                if (queryId) {
+                    const found = data.find(r => String(r.id) === String(queryId));
+                    if (found) {
+                        setSelectedRental(found);
+                    }
+                }
             })
             .catch(err => {
                 console.error(err);
                 setRentals([]);
             })
             .finally(() => setLoading(false));
-    }, []);
+    }, [queryLat, queryLng, queryZoom, queryId]);
 
     if (loading) {
         return (
@@ -42,16 +63,9 @@ const MapPage = () => {
         <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
             <div className="h-screen w-full bg-gray-900">
                 <Map
-                    styles={[
-                        {
-                            featureType: "poi",
-                            elementType: "labels",
-                            stylers: [{ visibility: "off" }],
-                        }
-                    ]}
-                    defaultCenter={{ lat: -23.5505, lng: -46.6333 }}
-                    defaultZoom={11}
-                    mapId=''
+                    defaultCenter={{ lat: queryLat || -23.5505, lng: queryLng || -46.6333 }}
+                    defaultZoom={queryZoom || 16}
+                    mapId='3ac641bee6b260db54dce748'
                     gestureHandling={'greedy'}
                     disableDefaultUI={false}
 
