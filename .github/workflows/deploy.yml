@@ -68,6 +68,7 @@ jobs:
             DB_URL=jdbc:oracle:thin:@dumplydb_high?TNS_ADMIN=/opt/oracle/wallet
             TNS_ADMIN=/opt/oracle/wallet
             VITE_API_KEY=${{ secrets.VITE_API_KEY }}
+            JWT_API_SECRET=${{ secrets.JWT_API_SECRETS }}
             EOF
 
             docker-compose down --remove-orphans --volumes
@@ -75,4 +76,4 @@ jobs:
             docker-compose up -d
             docker image prune -af
           
-          
+            
