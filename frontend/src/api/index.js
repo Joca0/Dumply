@@ -1,8 +1,23 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://164.152.252.146:8080',
+  baseURL: 'http://localhost:8080',
 });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('@dumply:token');
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+export const login = (credentials) => api.post('/auth/login', credentials);
+export const profile = (data) => api.get('/auth/me', data);
 
 export const getEquipments = () => api.get('/equipments');
 export const getEquipment = (id) => api.get(`/equipments/${id}`);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getRentals, returnRental, deleteRental } from '../api';
-import {Search, CheckCircle, Trash2, Printer, Calendar, User, Clock, FileText, Edit2} from 'lucide-react';
+import {Search, CheckCircle, Trash2, Printer, Calendar, User, Clock, FileText, Edit2, MapIcon} from 'lucide-react';
 import {Link} from "react-router-dom";
 
 const RentalList = () => {
@@ -179,6 +179,12 @@ const RentalList = () => {
                           title="Editar"
                       >
                         <Edit2 size={20} />
+                      </Link>
+                      <Link
+                          to={`/map?id=${rental.id}&lat=${rental.latitude}&lng=${rental.longitude}&zoom=16`}
+                          className="text-yellow-500 hover:text-yellow-400 p-2"
+                          title="Ver no Mapa">
+                        <MapIcon size={20} />
                       </Link>
                       <button onClick={() => handleDelete(rental.id)} className="text-red-500 hover:text-red-400 p-2">
                         <Trash2 size={20} />

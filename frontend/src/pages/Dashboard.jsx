@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { getRentals, getEquipments, getInvoices } from '../api';
-import { Package, DollarSign, ArrowRight, FileText } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Package, ArrowRight, FileText, LogOut, LayoutDashboard } from 'lucide-react';
+import {Link, useNavigate} from 'react-router-dom';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({ totalRentals: 0, totalRevenue: 0, openInvoices: 0 });
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [rentalsRes, equipmentsRes, invoicesRes] = await Promise.all([
-          getRentals(), 
+          getRentals(),
           getEquipments(),
           getInvoices()
         ]);
         const activeRentals = Array.isArray(rentalsRes.data) ? rentalsRes.data.filter(r => r.status === 'ACTIVE') : [];
         const revenue = activeRentals.reduce((acc, curr) => acc + (curr.charge || 0), 0);
-        
+
         const pendingInvoices = Array.isArray(invoicesRes.data) ? invoicesRes.data.filter(i => i.status === 'PENDING') : [];
 
         setStats({
@@ -36,8 +38,8 @@ const Dashboard = () => {
 
   const menus = [
     { title: 'Mapa', description: 'Veja a localização dos equipamentos', to: '/map', color: 'bg-indigo-600' },
-    { title: 'Aluguéis', description: 'Gerencie seus aluguéis', to: '/rentals', color: 'bg-amber-600'},
-    { title: 'Fatura', description: 'Gere ou consulte faturas', to:'/invoices', color: 'bg-emerald-700'},
+    { title: 'Locações', description: 'Gerencie suas locações', to: '/rentals', color: 'bg-amber-600'},
+    { title: 'Faturas', description: 'Gere ou consulte faturas', to:'/invoices', color: 'bg-emerald-700'},
     { title: 'Equipamentos', description: 'Consulte e gerencie seus equipamentos', to: '/equipments', color: 'bg-slate-700' },
     { title: 'Clientes', description: 'Consulte sua base de clientes', to: '/customers', color: 'bg-slate-700' },
   ];
@@ -52,8 +54,17 @@ const Dashboard = () => {
 
   return (
     <div className="p-8">
-      <h2 className="text-3xl font-bold mb-8">Painel de Controle</h2>
-      
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-white flex items-center gap-3">
+            <LayoutDashboard className="text-blue-500" />
+            Painel de Controle
+          </h2>
+          <p className="text-slate-400 mt-1">Bem-vindo ao sistema de gestão Dumply.</p>
+        </div>
+      </div>
+
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <Link to="/rentals" className="bg-gray-800 p-6 rounded-xl border border-gray-700 flex items-center hover:border-blue-500/50 transition-colors group">
           <div className="bg-blue-600/20 p-4 rounded-lg mr-4 text-blue-500 group-hover:bg-blue-600/30 transition-colors">
