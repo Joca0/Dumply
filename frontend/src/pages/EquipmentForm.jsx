@@ -63,15 +63,16 @@ const EquipmentForm = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      <h2 className="text-2xl font-bold mb-6">{id ? 'Editar Equipamento' : 'Cadastrar Equipamento'}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 bg-gray-800 p-6 rounded-xl border border-gray-700">
+    <div className="max-w-2xl mx-auto p-4 md:p-8">
+      <h2 className="text-xl md:text-2xl font-bold mb-6 mt-8 md:mt-0">{id ? 'Editar Equipamento' : 'Cadastrar Equipamento'}</h2>
+      <form onSubmit={handleSubmit} className="space-y-4 bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700">
         <div>
           <label className="block text-sm font-medium mb-1">Nome</label>
           <input
             type="text"
             required
             disabled={loading}
+            placeholder="Nome do Equipamento"
             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -83,6 +84,7 @@ const EquipmentForm = () => {
             type="text"
             required
             disabled={loading}
+            placeholder="00"
             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
             value={formData.serialNumber}
             onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
@@ -93,6 +95,7 @@ const EquipmentForm = () => {
           <input
             type="text"
             disabled={loading}
+            placeholder="Caçamba, Máquina"
             className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}

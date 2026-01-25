@@ -81,4 +81,8 @@ public class InvoiceService {
                 .orElseThrow(() -> new RuntimeException("Fatura não encontrada"));
     }
 
+    public void deleteInvoice(Long id) {
+        invoiceRepository.deleteById(id);
+    }
+
 }

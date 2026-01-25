@@ -53,14 +53,14 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
         <div>
-          <h2 className="text-3xl font-black text-white flex items-center gap-3">
+          <h2 className="text-2xl md:text-3xl font-black text-white flex items-center gap-3 mt-8 md:mt-0">
             <LayoutDashboard className="text-blue-500" />
             Painel de Controle
           </h2>
-          <p className="text-slate-400 mt-1">Bem-vindo ao sistema de gestão Dumply.</p>
+          <p className="text-slate-400 mt-1 text-sm md:text-base">Bem-vindo ao sistema de gestão Dumply.</p>
         </div>
       </div>
 

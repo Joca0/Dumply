@@ -1,4 +1,5 @@
 import React from 'react';
+import { Toaster } from "sonner";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -30,6 +31,7 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="bottom-right" toastOptions={{ duration: 5000 }}/>
       <AuthProvider>
         <Routes>
           <Route path="/auth/login" element={<LoginForm/>}/>

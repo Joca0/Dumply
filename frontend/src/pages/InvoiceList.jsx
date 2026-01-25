@@ -41,7 +41,7 @@ const InvoiceList = () => {
 
   // --- CÁLCULO DOS RELATÓRIOS ---
   const stats = filteredInvoices.reduce((acc, curr) => {
-    if (curr.status !== 'CANCELED') acc.totalVendido += curr.totalAmount;
+    if (curr.status !== 'CANCELLED') acc.totalVendido += curr.totalAmount;
     if (curr.status === 'PENDING') acc.totalReceber += curr.totalAmount;
     if (curr.status === 'PAID') acc.totalConciliado += curr.totalAmount;
     return acc;
@@ -56,24 +56,24 @@ const InvoiceList = () => {
   }
 
   return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         {/* CABEÇALHO */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold no-print">Faturas e Relatórios</h2>
-          <div className="flex gap-2 no-print">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <h2 className="text-xl md:text-2xl font-bold no-print">Faturas e Relatórios</h2>
+          <div className="flex w-full md:w-auto gap-2 no-print">
             <button
                 onClick={() => window.print()}
-                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+                className="flex-1 md:flex-none bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
             >
-              <Download size={18} className="mr-2" />
-               Gerar PDF
+              <Download size={18} />
+               <span className="hidden sm:inline">Gerar PDF</span>
             </button>
             <button
                 onClick={() => navigate('/invoices/new')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+                className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
             >
               <Plus size={20} />
-              Nova Fatura
+              <span>Nova Fatura</span>
             </button>
           </div>
         </div>
@@ -85,6 +85,7 @@ const InvoiceList = () => {
             <input
                 type="month"
                 className="bg-gray-800 border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-blue-500"
+                placeholder="AAAA-MM"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
             />
@@ -134,15 +135,15 @@ const InvoiceList = () => {
         </div>
 
         {/* TABELA */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-          <table className="w-full text-left">
+        <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-x-auto">
+          <table className="w-full text-left min-w-[600px] md:min-w-full">
             <thead className="bg-gray-700/50 text-gray-400 text-sm">
             <tr>
               <th className="p-4">ID</th>
               <th className="p-4">Cliente</th>
-              <th className="p-4">Data</th>
+              <th className="p-4 hidden sm:table-cell">Data</th>
               <th className="p-4">Valor Total</th>
-              <th className="p-4">Status</th>
+              <th className="p-4 hidden sm:table-cell">Status</th>
               <th className="p-4 text-right no-print">Ações</th>
             </tr>
             </thead>
@@ -151,12 +152,22 @@ const InvoiceList = () => {
                 <tr key={invoice.id} className="hover:bg-gray-700/30 transition-colors">
                   <td className="p-4 font-medium text-blue-400">#{invoice.id}</td>
                   <td className="p-4">
-                    <p className="font-medium">{invoice.customer.fullName}</p>
-                    <p className="text-xs text-gray-500">{invoice.customer.document}</p>
+                    <p className="font-medium truncate max-w-[150px] md:max-w-none">{invoice.customer.fullName}</p>
+                    <p className="text-xs text-gray-500 hidden md:block">{invoice.customer.document}</p>
+                    <div className="sm:hidden mt-1">
+                       <span className={`px-2 py-0.5 rounded-full text-[10px] ${
+                        invoice.status === 'PAID' ? 'bg-green-600/20 text-green-400' :
+                            invoice.status === 'PENDING' ? 'bg-yellow-600/20 text-yellow-400' :
+                                'bg-red-600/20 text-red-400'
+                    }`}>
+                        {invoice.status === 'PAID' ? 'Pago' :
+                            invoice.status === 'PENDING' ? 'Pendente' : 'Cancelado'}
+                      </span>
+                    </div>
                   </td>
-                  <td className="p-4 text-sm">{new Date(invoice.createdAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-sm hidden sm:table-cell">{new Date(invoice.createdAt).toLocaleDateString()}</td>
                   <td className="p-4 font-bold">{formatCurrency(invoice.totalAmount)}</td>
-                  <td className="p-4">
+                  <td className="p-4 hidden sm:table-cell">
                     <span className={`px-2 py-1 rounded-full text-xs ${
                         invoice.status === 'PAID' ? 'bg-green-600/20 text-green-400' :
                             invoice.status === 'PENDING' ? 'bg-yellow-600/20 text-yellow-400' :

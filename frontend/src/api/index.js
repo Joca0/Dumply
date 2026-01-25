@@ -16,6 +16,21 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+api.interceptors.response.use(
+    res => res,
+    error => {
+      if (error.response?.status === 403) {
+        window.dispatchEvent(
+            new CustomEvent('auth:logout', {
+              detail: { reason: 'expired' }
+            })
+        );
+      }
+
+      return Promise.reject(error);
+    }
+);
+
 export const login = (credentials) => api.post('/auth/login', credentials);
 export const profile = (data) => api.get('/auth/me', data);
 

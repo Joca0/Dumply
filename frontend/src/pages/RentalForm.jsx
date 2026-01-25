@@ -295,12 +295,12 @@ const RentalForm = () => {
 
   return (
       <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-        <div className="max-w-6xl mx-auto p-8 text-gray-200 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="max-w-6xl mx-auto p-4 md:p-8 text-gray-200 grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-7">
-            <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
-              <Package className="text-blue-500" /> {id ? 'Editar Aluguel' : 'Novo Aluguel'}
+            <h2 className="text-xl md:text-2xl font-bold mb-6 text-white flex items-center gap-2 mt-8 md:mt-0">
+              <Package className="text-blue-500" /> {id ? 'Editar Aluguel' : 'Cadastrar Aluguel'}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl">
+            <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700 shadow-xl">
               {/* Cliente */}
               <div>
                 <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1"><User size={12}/> Cliente</label>
@@ -382,7 +382,7 @@ const RentalForm = () => {
               </div>
 
               <button type="submit" disabled={loading} className="w-full bg-blue-600 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50">
-                {loading ? 'Salvando...' : id ? 'Salvar Alterações' : 'Finalizar Aluguel'}
+                {loading ? 'Salvando...' : id ? 'Salvar Alterações' : 'Criar Aluguel'}
               </button>
             </form>
           </div>

@@ -6,7 +6,7 @@ import {Link} from "react-router-dom";
 const RentalList = () => {
   const [rentals, setRentals] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7));
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('all');
   const [filter, setFilter] = useState('ALL');
   const [loading, setLoading] = useState(true);
@@ -69,19 +69,20 @@ const RentalList = () => {
   }
 
   return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         {/* CABEÇALHO */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Relatório de Aluguéis</h2>
-          <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <h2 className="text-xl md:text-2xl font-bold mt-8 md:mt-0">Relatório de Aluguéis</h2>
+          <div className="flex w-full md:w-auto gap-2">
             <button
                 onClick={() => window.print()}
-                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors no-print"
+                className="flex-1 md:flex-none bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors no-print"
             >
               <Printer size={18} />
-              Imprimir PDF
+              <span className="hidden sm:inline">Imprimir PDF</span>
+              <span className="sm:hidden">PDF</span>
             </button>
-            <Link to="/rentals/new" className="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+            <Link to="/rentals/new" className="flex-1 md:flex-none bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center">
               Novo Aluguel
             </Link>
           </div>
@@ -93,6 +94,7 @@ const RentalList = () => {
             <label className="text-xs text-gray-400 font-medium ml-1 flex items-center gap-1"><Calendar size={12}/> MÊS</label>
             <input
                 type="month"
+                placeholder="AAAA-MM"
                 className="bg-gray-800 border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-blue-500 text-sm"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
@@ -126,15 +128,15 @@ const RentalList = () => {
         </div>
 
         {/* TABELA */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1000px] md:min-w-full">
             <thead className="bg-gray-700/50 text-gray-400 text-sm">
             <tr>
               <th className="p-4 border-b border-gray-700 print:border-black">Cliente</th>
-              <th className="p-4 border-b border-gray-700 print:border-black">Equipamento</th>
+              <th className="p-4 border-b border-gray-700 print:border-black hidden sm:table-cell">Equipamento</th>
               <th className="p-4 border-b border-gray-700 print:border-black">Endereço</th>
-              <th className="p-4 border-b border-gray-700 print:border-black">Início</th>
-              <th className="p-4 border-b border-gray-700 print:border-black">Encerramento</th>
+              <th className="p-4 border-b border-gray-700 print:border-black hidden md:table-cell">Início</th>
+              <th className="p-4 border-b border-gray-700 print:border-black hidden md:table-cell">Encerramento</th>
               <th className="p-4 border-b border-gray-700 print:border-black">Status</th>
               <th className="p-4 border-b border-gray-700 text-right no-print">Ações</th>
             </tr>
@@ -145,22 +147,25 @@ const RentalList = () => {
                   <td className="p-4">
                     <p className="font-medium">{rental.customer?.fullName || 'N/A'}</p>
                     <p className="text-xs text-gray-500">{rental.customer?.document || 'N/D'}</p>
+                    <div className="sm:hidden mt-1 text-[10px] text-gray-400 italic">
+                       {rental.equipment?.name || 'N/A'}
+                    </div>
                   </td>
-                  <td className="p-4">
+                  <td className="p-4 hidden sm:table-cell">
                     <p>{rental.equipment?.name || 'N/A'}</p>
-                    <p className="text-xs text-gray-500">Número de Série: {rental.equipment?.serialNumber || 'N/A'}</p>
+                    <p className="text-xs text-gray-500">N/S: {rental.equipment?.serialNumber || 'N/A'}</p>
                   </td>
                   <td className="p-4">
-                    <p className="font-medium">{rental.fullAddress}</p>
+                    <p className="font-medium truncate max-w-[150px] md:max-w-xs">{rental.fullAddress}</p>
                   </td>
-                  <td className="p-4 text-sm">
+                  <td className="p-4 text-sm hidden md:table-cell">
                     {new Date(rental.startDate).toLocaleDateString()}
                   </td>
-                  <td className="p-4 text-sm">
+                  <td className="p-4 text-sm hidden md:table-cell">
                     {rental.endDate ? new Date(rental.endDate).toLocaleDateString() : 'Pendente'}
                   </td>
                   <td className="p-4">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
+                  <span className={`px-2 py-1 rounded-full text-[10px] md:text-xs ${
                       rental.status === 'ACTIVE' ? 'bg-green-600/20 text-green-400' : 'bg-gray-700 text-gray-300'
                   }`}>
                     {rental.status === 'ACTIVE' ? 'Ativo' : 'Finalizado'}
@@ -180,15 +185,15 @@ const RentalList = () => {
                       >
                         <Edit2 size={20} />
                       </Link>
-                      <Link
-                          to={`/map?id=${rental.id}&lat=${rental.latitude}&lng=${rental.longitude}&zoom=16`}
-                          className="text-yellow-500 hover:text-yellow-400 p-2"
-                          title="Ver no Mapa">
-                        <MapIcon size={20} />
-                      </Link>
-                      <button onClick={() => handleDelete(rental.id)} className="text-red-500 hover:text-red-400 p-2">
-                        <Trash2 size={20} />
-                      </button>
+                        {rental.status === 'ACTIVE' && (
+                            <Link
+                                to={`/map?id=${rental.id}&lat=${rental.latitude}&lng=${rental.longitude}&zoom=16`}
+                                className="text-yellow-500 hover:text-yellow-400 p-2"
+                                title="Ver no Mapa">
+                              <MapIcon size={20} />
+                            </Link>
+                        )}
+
                     </div>
                   </td>
                 </tr>

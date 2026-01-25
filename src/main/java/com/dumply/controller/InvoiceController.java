@@ -41,4 +41,9 @@ public class InvoiceController {
     public Invoice updateInvoiceStatus(@PathVariable Long id, @RequestBody InvoiceStatus status) {
         return invoiceService.updateInvoiceStatus(id, status);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteInvoice(@PathVariable Long id) {
+        invoiceService.deleteInvoice(id);
+    }
 }

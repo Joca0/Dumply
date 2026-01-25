@@ -69,20 +69,20 @@ const InvoiceCreate = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">Gerar Nova Fatura</h2>
-        <p className="text-gray-400">Selecione o cliente e os aluguéis que deseja cobrar.</p>
+    <div className="p-4 md:p-8">
+      <div className="mb-6 mt-8 md:mt-0">
+        <h2 className="text-xl md:text-2xl font-bold">Gerar Nova Fatura</h2>
+        <p className="text-sm md:text-base text-gray-400">Selecione o cliente e os aluguéis que deseja cobrar.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
-          <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+          <div className="bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700">
             <label className="block text-sm font-medium text-gray-400 mb-2">Cliente</label>
             <select
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
             >
               <option value="">Selecione um cliente...</option>
               {customers.map(customer => (
@@ -97,23 +97,23 @@ const InvoiceCreate = () => {
         <div className="lg:col-span-2">
           <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
             <div className="p-4 bg-gray-700/50 border-b border-gray-700 flex justify-between items-center">
-              <h3 className="font-semibold text-lg">Aluguéis Pendentes de Cobrança</h3>
+              <h3 className="font-semibold text-base md:text-lg">Aluguéis Pendentes</h3>
               {selectedRentalIds.length > 0 && (
-                <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                <span className="bg-blue-600 text-white text-[10px] md:text-xs px-2 py-1 rounded-full whitespace-nowrap ml-2">
                   {selectedRentalIds.length} selecionado(s)
                 </span>
               )}
             </div>
             
-            <div className="max-h-[500px] overflow-y-auto">
+            <div className="max-h-[500px] overflow-x-auto">
               {fetchingRentals ? (
                 <div className="p-12 text-center">
                   <Loader2 className="animate-spin mx-auto mb-2 text-blue-500" size={32} />
                   <p className="text-gray-400">Buscando aluguéis...</p>
                 </div>
               ) : rentals.length > 0 ? (
-                <table className="w-full text-left">
-                  <thead className="text-gray-400 text-xs uppercase border-b border-gray-700">
+                <table className="w-full text-left min-w-[500px]">
+                  <thead className="text-gray-400 text-[10px] md:text-xs uppercase border-b border-gray-700">
                     <tr>
                       <th className="p-4 w-10"></th>
                       <th className="p-4">Equipamento</th>
@@ -134,13 +134,13 @@ const InvoiceCreate = () => {
                           </div>
                         </td>
                         <td className="p-4">
-                          <div className="font-medium">{rental.equipment.name}</div>
-                          <div className="text-xs text-gray-500">{rental.fullAddress}</div>
+                          <div className="font-medium text-sm">{rental.equipment.name}</div>
+                          <div className="text-[10px] text-gray-500 truncate max-w-[150px]">{rental.fullAddress}</div>
                         </td>
-                        <td className="p-4 text-sm">
+                        <td className="p-4 text-[10px] md:text-sm">
                           {new Date(rental.startDate).toLocaleDateString()} - {new Date(rental.endDate).toLocaleDateString()}
                         </td>
-                        <td className="p-4 text-right font-bold">
+                        <td className="p-4 text-right font-bold text-sm">
                           {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(rental.charge)}
                         </td>
                       </tr>
@@ -148,20 +148,20 @@ const InvoiceCreate = () => {
                   </tbody>
                 </table>
               ) : selectedCustomerId ? (
-                <div className="p-12 text-center text-gray-500">
+                <div className="p-12 text-center text-gray-500 text-sm">
                   Nenhum aluguel pendente para este cliente.
                 </div>
               ) : (
-                <div className="p-12 text-center text-gray-500">
+                <div className="p-12 text-center text-gray-500 text-sm">
                   Selecione um cliente para ver os aluguéis disponíveis.
                 </div>
               )}
             </div>
 
             {selectedRentalIds.length > 0 && (
-              <div className="p-4 bg-gray-900 border-t border-gray-700 flex justify-between items-center">
-                <div>
-                  <p className="text-xs text-gray-400 uppercase font-semibold">Total Selecionado</p>
+              <div className="p-4 bg-gray-900 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="text-center md:text-left">
+                  <p className="text-[10px] text-gray-400 uppercase font-semibold">Total Selecionado</p>
                   <p className="text-xl font-bold text-blue-400">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                       rentals.filter(r => selectedRentalIds.includes(r.id)).reduce((acc, curr) => acc + curr.charge, 0)
@@ -171,7 +171,7 @@ const InvoiceCreate = () => {
                 <button
                   onClick={handleCreateInvoice}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+                  className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-white px-6 py-3 md:py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
                 >
                   {loading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
                   Gerar Fatura

@@ -28,7 +28,7 @@ const InvoiceDetail = () => {
 
   const handleStatusChange = async (newStatus) => {
     if (!window.confirm(`Deseja realmente alterar o status para ${newStatus}?`)) return;
-    
+
     setUpdatingStatus(true);
     try {
       await updateInvoiceStatus(id, newStatus);
@@ -74,69 +74,74 @@ const InvoiceDetail = () => {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8 no-print">
-        <button 
+    <div className="p-4 md:p-8 max-w-5xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 no-print">
+        <button
           onClick={() => navigate('/invoices')}
           className="flex items-center text-gray-400 hover:text-white transition-colors"
         >
           <ArrowLeft size={20} className="mr-2" />
-          Voltar para faturas
+          <span className="hidden sm:inline">Voltar para faturas</span>
+          <span className="sm:hidden">Voltar</span>
         </button>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
           {invoice && invoice.status !== 'PAID' && (
-            <button 
+            <button
               onClick={() => handleStatusChange('PAID')}
               disabled={updatingStatus}
-              className="flex items-center bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+              className="flex-1 md:flex-none flex items-center justify-center bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
             >
-              <CheckCircle size={18} className="mr-2" /> Marcar como Pago
+              <CheckCircle size={18} className="mr-2" /> 
+              <span className="whitespace-nowrap">Marcar Pago</span>
             </button>
           )}
           {invoice && invoice.status === 'PAID' && (
-            <button 
+            <button
               onClick={() => handleStatusChange('PENDING')}
               disabled={updatingStatus}
-              className="flex items-center bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+              className="flex-1 md:flex-none flex items-center justify-center bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
             >
-              <Clock size={18} className="mr-2" /> Marcar como Pendente
+              <Clock size={18} className="mr-2" />
+              <span className="whitespace-nowrap">Marcar Pendente</span>
             </button>
           )}
           {invoice && invoice.status !== 'CANCELLED' && (
-            <button 
+            <button
               onClick={() => handleStatusChange('CANCELLED')}
               disabled={updatingStatus}
-              className="flex items-center bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+              className="flex-1 md:flex-none flex items-center justify-center bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
             >
-              <XCircle size={18} className="mr-2" /> Cancelar Fatura
+              <XCircle size={18} className="mr-2" />
+              <span className="whitespace-nowrap">Cancelar</span>
             </button>
           )}
-          <button 
+          <button
             onClick={() => window.print()}
-            className="flex items-center bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors"
+            className="flex-1 md:flex-none flex items-center justify-center bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors"
           >
-            <Download size={18} className="mr-2" /> Gerar PDF
+            <Download size={18} className="mr-2" />
+            <span className="whitespace-nowrap">PDF</span>
           </button>
         </div>
       </div>
 
-      <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl" id="printable-invoice">
+      <div className="bg-gray-800 rounded-2xl border border-gray-700 print:overflow-visible shadow-xl overflow-hidden" id="printable-invoice">
         {/* Header da Fatura */}
-        <div className="p-8 border-b border-gray-700 bg-gray-700/30 flex justify-between items-start">
+        <div className="p-4 md:p-8 border-b border-gray-700 bg-gray-700/30 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-blue-500 mb-2">DUMPLY</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-blue-500 mb-2">DUMPLY</h1>
           </div>
           <div className="text-right">
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(invoice.status)}`}>
+            <span className={`px-3 py-1 rounded-full text-[10px] md:text-sm font-semibold ${getStatusColor(invoice.status)}`}>
               {getStatusLabel(invoice.status)}
             </span>
-            <p className="mt-4 text-sm text-gray-400">
+            <p className="mt-4 text-[10px] md:text-sm text-gray-400">
               Emitido em: {new Date(invoice.createdAt).toLocaleDateString('pt-BR')}
             </p>
           </div>
         </div>
 
-        <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Cliente */}
           <div>
             <h3 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center">
@@ -174,7 +179,7 @@ const InvoiceDetail = () => {
         {/* Itens da Fatura */}
         <div className="p-8 border-t border-gray-700">
           <h3 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-6 flex items-center">
-            <Package size={14} className="mr-2" /> Itens da Fatura (Aluguéis)
+            <Package size={14} className="mr-2" /> Itens da Fatura
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     APIProvider,
     Map,
@@ -9,7 +9,7 @@ import {
 import { getActiveRentals } from '../api';
 import { useSearchParams } from 'react-router-dom';
 
-import { User, MapPin, DollarSign } from 'lucide-react';
+import { User, MapPin, DollarSign, Cuboid, ChevronLeft } from 'lucide-react';
 
 const apiKey = import.meta.env.VITE_API_KEY;
 const GOOGLE_MAPS_API_KEY = apiKey;
@@ -24,7 +24,7 @@ const MapPage = () => {
     const [searchParams] = useSearchParams();
     const queryLat = Number(searchParams.get('lat'));
     const queryLng = Number(searchParams.get('lng'));
-    const queryZoom = Number(searchParams.get('zoom')) || 13;
+    const queryZoom = Number(searchParams.get('zoom')) || 12;
     const queryId = searchParams.get('id');
 
     useEffect(() => {
@@ -51,6 +51,15 @@ const MapPage = () => {
             .finally(() => setLoading(false));
     }, [queryLat, queryLng, queryZoom, queryId]);
 
+    const groupedRentals = useMemo(() => {
+        return rentals.reduce((acc, rental) => {
+            const key = `${rental.latitude}-${rental.longitude}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(rental);
+            return acc;
+        }, {});
+    }, [rentals]);
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900">
@@ -64,68 +73,108 @@ const MapPage = () => {
             <div className="h-screen w-full bg-gray-900">
                 <Map
                     defaultCenter={{ lat: queryLat || -23.5505, lng: queryLng || -46.6333 }}
-                    defaultZoom={queryZoom || 16}
+                    defaultZoom={queryZoom || 12}
                     mapId='3ac641bee6b260db54dce748'
                     gestureHandling={'greedy'}
                     disableDefaultUI={false}
-
                 >
-                    {rentals.map((rental) => (
-                        <AdvancedMarker
-                            key={rental.id}
-                            position={{ lat: parseFloat(rental.latitude), lng: parseFloat(rental.longitude) }}
-                            onClick={() => setSelectedRental(rental)}
-                        >
-                            {/* Customização do Pin baseada em (ex: atrasado ou no prazo) */}
-                            <Pin
-                                background={rental.endDate ? '#10b981' : '#2563eb'}
-                                borderColor={'#fff'}
-                                glyphColor={'#fff'}
-                            />
-                        </AdvancedMarker>
-                    ))}
+                    {Object.entries(groupedRentals).map(([coords, items]) => {
+                        const isGroup = items.length > 1;
+                        const first = items[0];
 
-                    {/* Renderização Condicional do Popup (InfoWindow) */}
+                        return (
+                            <AdvancedMarker
+                                key={coords}
+                                position={{ lat: parseFloat(first.latitude), lng: parseFloat(first.longitude) }}
+                                onClick={() => setSelectedRental(isGroup ? items : first)}
+                            >
+                                <Pin
+                                    background={isGroup ? '#2b43fb' : (first.endDate ? '#10b981' : '#2563eb')}
+                                    borderColor={'#fff'}
+                                    glyphColor={'#fff'}
+                                >
+                                    {isGroup && <span className="text-white font-bold text-[10px]">{items.length}</span>}
+                                </Pin>
+                            </AdvancedMarker>
+                        );
+                    })}
                     {selectedRental && (
                         <InfoWindow
                             position={{
-                                lat: parseFloat(selectedRental.latitude),
-                                lng: parseFloat(selectedRental.longitude)
+                                lat: parseFloat(Array.isArray(selectedRental) ? selectedRental[0].latitude : selectedRental.latitude),
+                                lng: parseFloat(Array.isArray(selectedRental) ? selectedRental[0].longitude : selectedRental.longitude)
                             }}
                             onCloseClick={() => setSelectedRental(null)}
                         >
-                            <div className="p-2 min-w-[200px] text-gray-800">
-                                <h3 className="font-bold text-blue-600 border-b border-gray-200 pb-1 mb-2 text-sm uppercase">
-                                    {selectedRental.equipment?.name || 'Equipamento'}
-                                </h3>
-
-                                <div className="space-y-2 text-xs">
-                                    <p className="flex items-center gap-2">
-                                        <User size={14} className="text-gray-400" />
-                                        <span><strong>Cliente:</strong> {selectedRental.customer?.fullName}</span>
-                                    </p>
-
-                                    <p className="flex items-center gap-2">
-                                        <MapPin size={14} className="text-gray-400" />
-                                        <span className="truncate w-40"><strong>Local:</strong> {selectedRental.fullAddress}</span>
-                                    </p>
-
-                                    <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-100">
-                                        <div>
-                                            <p className="text-[10px] text-gray-400 uppercase font-bold">Data Inicio</p>
-                                            <p>{new Date(selectedRental.startDate).toLocaleDateString()}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-gray-400 uppercase font-bold">Previsão</p>
-                                            <p>{selectedRental.endDate ? new Date(selectedRental.endDate).toLocaleDateString() : 'Pendente'}</p>
+                            <div className="p-2 min-w-[220px] max-h-[350px] overflow-y-auto text-gray-800">
+                                {Array.isArray(selectedRental) ? (
+                                    /* VISÃO DA LISTA*/
+                                    <div>
+                                        <h3 className="font-bold text-blue-600 border-b pb-1 mb-2 text-xs uppercase">
+                                            {selectedRental.length} Equipamentos aqui
+                                        </h3>
+                                        <div className="flex flex-col gap-1">
+                                            {selectedRental.map(item => (
+                                                <div
+                                                    key={item.id}
+                                                    onClick={() => setSelectedRental(item)}
+                                                    className="p-2 hover:bg-gray-100 rounded cursor-pointer border border-transparent hover:border-gray-200 transition-colors"
+                                                >
+                                                    <p className="font-bold text-sm text-gray-700">{item.equipment?.name}</p>
+                                                    <p className="text-sm text-gray-700">Número de série: {item.equipment?.serialNumber}</p>
+                                                    <p new className="text-sm text-gray-700 italic">Data inicio: {new Date (item.startDate).toLocaleDateString()}</p>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
+                                ) : (
+                                    /* VISÃO DOS DETALHES */
+                                    <div className="space-y-2 text-xs">
+                                        <div className="flex items-center justify-between border-b border-gray-200 pb-1 mb-2">
+                                            <h3 className="font-bold text-blue-600 text-sm uppercase">
+                                                {selectedRental.equipment?.name}
+                                            </h3>
+                                            {/* Botão para voltar à lista se houver outros no mesmo local */}
+                                            {groupedRentals[`${selectedRental.latitude}-${selectedRental.longitude}`]?.length > 1 && (
+                                                <button
+                                                    onClick={() => setSelectedRental(groupedRentals[`${selectedRental.latitude}-${selectedRental.longitude}`])}
+                                                    className="p-1 hover:bg-gray-100 rounded text-black"
+                                                >
+                                                    <ChevronLeft size={16} />
+                                                </button>
+                                            )}
+                                        </div>
 
-                                    <p className="flex items-center gap-1 mt-2 font-bold text-green-600 text-sm">
-                                        <DollarSign size={14} />
-                                        <span>R$ {selectedRental.charge}</span>
-                                    </p>
-                                </div>
+                                        <p className="flex items-center gap-2">
+                                            <User size={14} className="text-gray-400" />
+                                            <span><strong>Cliente:</strong> {selectedRental.customer?.fullName}</span>
+                                        </p>
+
+                                        <p className="flex items-center gap-2">
+                                            <MapPin size={14} className="text-gray-400" />
+                                            <span className="truncate w-40"><strong>Local:</strong> {selectedRental.fullAddress}</span>
+                                        </p>
+
+                                        <p className="flex items-center gap-2">
+                                            <Cuboid size={14} className="text-gray-400" />
+                                            <span className="truncate w-40"><strong>Número de série: </strong> {selectedRental.equipment?.serialNumber}</span>
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-100">
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase font-bold">Data Inicio</p>
+                                                <p>{new Date(selectedRental.startDate).toLocaleDateString()}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase font-bold">Previsão</p>
+                                                <p>{selectedRental.endDate ? new Date(selectedRental.endDate).toLocaleDateString() : 'Pendente'}</p>
+                                            </div>
+                                        </div>
+                                        <p className="flex items-center gap-2 font-bold text-green-600 text-sm mt-2">
+                                            <DollarSign size={14} />
+                                            <span>R$ {selectedRental.charge}</span>
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </InfoWindow>
                     )}
