@@ -1,6 +1,6 @@
 package com.dumply.model;
 
-import com.dumply.common.InvoiceStatus;
+import com.dumply.common.dto.InvoiceStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

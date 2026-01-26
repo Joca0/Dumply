@@ -1,7 +1,7 @@
 package com.dumply.service;
 
-import com.dumply.common.InvoiceRequest;
-import com.dumply.common.InvoiceStatus;
+import com.dumply.common.dto.InvoiceRequest;
+import com.dumply.common.dto.InvoiceStatus;
 import com.dumply.model.Customer;
 import com.dumply.model.Invoice;
 import com.dumply.model.Rental;
@@ -12,7 +12,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service

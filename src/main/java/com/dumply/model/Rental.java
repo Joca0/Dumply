@@ -1,8 +1,7 @@
 package com.dumply.model;
 
-import com.dumply.common.InvoiceStatus;
-import com.dumply.common.RentalRequest;
-import com.dumply.common.RentalStatus;
+import com.dumply.common.dto.InvoiceStatus;
+import com.dumply.common.dto.RentalStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +10,6 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity

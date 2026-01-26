@@ -1,6 +1,9 @@
 package com.dumply.service;
 
-import com.dumply.common.*;
+import com.dumply.common.dto.EquipmentStatus;
+import com.dumply.common.dto.RentalRequest;
+import com.dumply.common.dto.RentalStatus;
+import com.dumply.common.exception.InvalidRentalDateException;
 import com.dumply.model.Customer;
 import com.dumply.model.Equipment;
 import com.dumply.model.Rental;
@@ -33,7 +36,7 @@ public class RentalService {
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         if (request.endDate().isBefore(request.startDate())) {
-            throw new RuntimeException("Data final deve ser maior que a data inicial");
+            throw new InvalidRentalDateException("Data final deve ser maior que a data inicial");
         }
 
         List<Rental> rentals = new ArrayList<>();

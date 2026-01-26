@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCustomers, deleteCustomer } from '../api';
 import { Search, User, Edit2, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import {toast} from "sonner";
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
@@ -28,7 +29,7 @@ const CustomerList = () => {
     if (window.confirm('Deseja realmente excluir este cliente?')) {
       try {
         await deleteCustomer(id);
-        alert('Cliente excluído com sucesso!');
+        toast.success('Cliente excluído com sucesso!');
         fetchCustomers();
       } catch (err) {
         console.error(err);

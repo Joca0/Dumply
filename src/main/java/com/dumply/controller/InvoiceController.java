@@ -1,7 +1,7 @@
 package com.dumply.controller;
 
-import com.dumply.common.InvoiceRequest;
-import com.dumply.common.InvoiceStatus;
+import com.dumply.common.dto.InvoiceRequest;
+import com.dumply.common.dto.InvoiceStatus;
 import com.dumply.model.Invoice;
 import com.dumply.model.Rental;
 import com.dumply.service.InvoiceService;

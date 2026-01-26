@@ -1,6 +1,6 @@
 package com.dumply.model;
 
-import com.dumply.common.Role;
+import com.dumply.common.dto.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

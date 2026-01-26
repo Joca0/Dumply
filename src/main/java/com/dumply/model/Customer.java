@@ -1,5 +1,6 @@
 package com.dumply.model;
 
+import com.jereztech.validation.br.constraints.CPFCNPJ;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -21,13 +22,13 @@ public class Customer {
     private String fullName;
 
     @NotNull
+    @Column(unique = true)
+    @CPFCNPJ
     private String document;
 
     private String email;
     private String phone;
 
-    //@OneToMany(mappedBy = "customer")
-    //private List<Rental> rentals;
 
     public Customer() {
 

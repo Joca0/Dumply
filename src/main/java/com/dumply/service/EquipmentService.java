@@ -1,6 +1,6 @@
 package com.dumply.service;
 
-import com.dumply.common.EquipmentDTO;
+import com.dumply.common.dto.EquipmentDTO;
 import com.dumply.model.Equipment;
 import com.dumply.repository.EquipmentRepository;
 import jakarta.transaction.Transactional;

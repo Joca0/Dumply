@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createCustomer, getCustomer, updateCustomer } from '../api';
 import { useNavigate, useParams } from 'react-router-dom';
+import {toast} from "sonner";
 
 const CustomerForm = () => {
   const [formData, setFormData] = useState({ fullName: '', document: '', phone: '', email: '' });
@@ -41,15 +42,13 @@ const CustomerForm = () => {
     try {
       if (id) {
         await updateCustomer(id, formData);
-        alert('Cliente atualizado com sucesso!');
+        toast.success('Cliente atualizado com sucesso!');
       } else {
         await createCustomer(formData);
-        alert('Cliente cadastrado com sucesso!');
+        toast.success("Cliente cadastrado com sucesso!");
       }
       navigate('/customers');
     } catch (err) {
-      console.error(err);
-      alert('Erro ao salvar cliente.');
     } finally {
       setLoading(false);
     }

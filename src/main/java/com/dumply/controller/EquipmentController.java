@@ -1,10 +1,9 @@
 package com.dumply.controller;
 
-import com.dumply.common.EquipmentDTO;
+import com.dumply.common.dto.EquipmentDTO;
 import com.dumply.model.Equipment;
 import com.dumply.service.EquipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

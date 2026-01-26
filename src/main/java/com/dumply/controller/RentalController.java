@@ -1,8 +1,7 @@
 package com.dumply.controller;
 
-import com.dumply.common.RentalRequest;
+import com.dumply.common.dto.RentalRequest;
 import com.dumply.model.Rental;
-import com.dumply.repository.RentalRepository;
 import com.dumply.service.RentalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

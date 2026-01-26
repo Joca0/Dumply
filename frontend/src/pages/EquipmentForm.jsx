@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createEquipment, getEquipment, updateEquipment } from '../api';
 import { useNavigate, useParams } from 'react-router-dom';
+import {toast} from "sonner";
 
 const EquipmentForm = () => {
   const [formData, setFormData] = useState({ name: '', serialNumber: '', category: '', status: 'AVAILABLE' });
@@ -40,10 +41,10 @@ const EquipmentForm = () => {
     try {
       if (id) {
         await updateEquipment(id, formData);
-        alert('Equipamento atualizado com sucesso!');
+        toast.success('Equipamento atualizado com sucesso!');
       } else {
         await createEquipment(formData);
-        alert('Equipamento cadastrado com sucesso!');
+        toast.success('Equipamento cadastrado com sucesso!');
       }
       navigate('/equipments');
     } catch (err) {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {toast} from "sonner";
 
 const api = axios.create({
   baseURL: 'http://164.152.252.146:8080',
@@ -17,18 +18,28 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-    res => res,
-    error => {
-      if (error.response?.status === 403) {
+  res => res,
+  error => {
+    if (error.response) {
+      const { status, data } = error.response;
+
+      if (status === 403) {
         window.dispatchEvent(
-            new CustomEvent('auth:logout', {
-              detail: { reason: 'expired' }
-            })
+          new CustomEvent('auth:logout', {
+            detail: { reason: 'expired' }
+          })
         );
       }
 
-      return Promise.reject(error);
+      if (status === 409) {
+        toast.warning(typeof data === 'string' ? data : 'Conflito de dados');
+      }
+    } else {
+      toast.error('Erro de conexão com o servidor');
     }
+
+    return Promise.reject(error);
+  }
 );
 
 export const login = (credentials) => api.post('/auth/login', credentials);

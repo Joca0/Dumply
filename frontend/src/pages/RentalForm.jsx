@@ -9,6 +9,7 @@ import {
   useMapsLibrary
 } from '@vis.gl/react-google-maps';
 import { Trash2, MapPin, User, Package, Search } from 'lucide-react';
+import {toast} from "sonner";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_API_KEY;
 
@@ -64,7 +65,7 @@ const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedId
                           }}
                       >
                         <div className="text-xs font-bold text-white">{e.name}</div>
-                        <div className="text-[10px] text-gray-300 uppercase">S/N: {e.serialNumber}</div>
+                        <div className="text-[10px] text-gray-300 uppercase">Número de Série: {e.serialNumber}</div>
                       </div>
                   ))
               ) : (
@@ -246,12 +247,12 @@ const RentalForm = () => {
 
     // Verificação básica antes de tentar enviar
     if (!formData.customerId) {
-      alert("Por favor, selecione um cliente.");
+      toast.warning("Por favor, selecione um cliente.");
       return;
     }
 
     if (!formData.fullAddress) {
-      alert("Por favor, selecione um endereço válido no mapa");
+      toast.warning("Por favor, selecione um endereço válido no mapa");
       return;
     }
 
@@ -278,14 +279,14 @@ const RentalForm = () => {
 
       if (id) {
         await updateRental(id, payload);
+        toast.success("Aluguel atualizado com sucesso!");
       } else {
         await createRental(payload);
       }
+      toast.success("Aluguel criado com sucesso!");
       navigate('/rentals');
     } catch (err) {
-      // Exibe o erro real que vem da API no alert
-      const errorMsg = err.response?.data?.message || err.message || "Erro desconhecido";
-      alert("Erro ao salvar: " + errorMsg);
+      //erro tratado no toast :)
     } finally {
       setLoading(false);
     }

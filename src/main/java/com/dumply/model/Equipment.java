@@ -1,11 +1,9 @@
 package com.dumply.model;
 
-import com.dumply.common.EquipmentStatus;
+import com.dumply.common.dto.EquipmentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @Table(name = "equipments")

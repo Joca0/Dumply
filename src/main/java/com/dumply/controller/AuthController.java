@@ -1,9 +1,9 @@
 package com.dumply.controller;
 
-import com.dumply.common.LoginRequestDTO;
-import com.dumply.common.ProfileDTO;
-import com.dumply.common.RegisterRequestDTO;
-import com.dumply.common.ResponseDTO;
+import com.dumply.common.dto.LoginRequestDTO;
+import com.dumply.common.dto.ProfileDTO;
+import com.dumply.common.dto.RegisterRequestDTO;
+import com.dumply.common.dto.ResponseDTO;
 import com.dumply.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

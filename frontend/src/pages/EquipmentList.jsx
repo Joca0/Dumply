@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getEquipments, deleteEquipment } from '../api';
 import { Search, Box, Edit2, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import {toast} from "sonner";
 
 const EquipmentList = () => {
   const [equipments, setEquipments] = useState([]);
@@ -28,7 +29,7 @@ const EquipmentList = () => {
     if (window.confirm('Deseja realmente excluir este equipamento?')) {
       try {
         await deleteEquipment(id);
-        alert('Equipamento excluído com sucesso!');
+        toast.warning('Equipamento excluído com sucesso!');
         fetchEquipments();
       } catch (err) {
         console.error(err);
@@ -64,7 +65,7 @@ const EquipmentList = () => {
           <Search className="absolute left-3 top-3 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder="Buscar por nome ou S/N..."
+            placeholder="Buscar por nome ou número de série..."
             className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

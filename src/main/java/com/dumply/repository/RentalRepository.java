@@ -1,6 +1,6 @@
 package com.dumply.repository;
 
-import com.dumply.common.RentalStatus;
+import com.dumply.common.dto.RentalStatus;
 import com.dumply.model.Rental;
 import org.springframework.data.jpa.repository.JpaRepository;
 
