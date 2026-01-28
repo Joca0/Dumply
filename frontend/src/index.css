@@ -37,6 +37,8 @@
 
   body {
     background: white !important;
+    overflow: visible !important;
+    height: auto !important;
     color: black !important;
   }
 
@@ -61,7 +63,13 @@
   }
 
   tr {
-    page-break-inside: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  table {
+    page-break-after: auto;
+    width: 100%;
   }
 
   /* Força a exibição de bordas que dividem seções */

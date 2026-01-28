@@ -1,7 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { getCustomers, getUninvoicedRentals, createInvoice } from '../api';
-import { Search, Plus, Check, Loader2 } from 'lucide-react';
+import { User, Search, Plus, Check, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {toast} from "sonner";
+
+
+// -- PESQUISA POR CLIENTE ---
+const CustomerSearch = ({ customers, onSelect, selectedCustomerId }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) setIsOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedCustomer = customers.find(c => c.id.toString() === selectedCustomerId.toString());
+
+  const filtered = customers.filter(c => {
+    const term = searchTerm.toLowerCase();
+    return c.fullName.toLowerCase().includes(term) || (c.document && c.document.includes(term));
+  });
+
+  return (
+      <div className="relative" ref={wrapperRef}>
+        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+          <User size={12}/> Cliente
+        </label>
+        <div className="relative">
+          <input
+              type="text"
+              placeholder="Buscar cliente por nome ou CPF/CNPJ..."
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 pl-9 text-sm text-white focus:border-blue-500 outline-none"
+              value={isOpen ? searchTerm : (selectedCustomer ? selectedCustomer.fullName : searchTerm)}
+              onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
+              onFocus={() => { setSearchTerm(''); setIsOpen(true); }}
+          />
+          <Search size={16} className="absolute left-3 top-3 text-gray-500" />
+        </div>
+
+        {isOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl max-h-60 overflow-y-auto">
+              {filtered.length > 0 ? (
+                  filtered.map(c => (
+                      <div
+                          key={c.id}
+                          className="p-3 hover:bg-blue-600 cursor-pointer border-b border-gray-700 last:border-0 transition-colors"
+                          onClick={() => {
+                            onSelect(c.id.toString());
+                            setIsOpen(false);
+                            setSearchTerm('');
+                          }}
+                      >
+                        <div className="text-sm font-bold text-white">{c.fullName}</div>
+                        <div className="text-[10px] text-gray-400 uppercase">{c.document || 'Sem documento'}</div>
+                      </div>
+                  ))
+              ) : (
+                  <div className="p-4 text-sm text-gray-500 text-center">Cliente não encontrado</div>
+              )}
+            </div>
+        )}
+      </div>
+  );
+};
+
 
 const InvoiceCreate = () => {
   const [customers, setCustomers] = useState([]);
@@ -46,7 +113,7 @@ const InvoiceCreate = () => {
   }, [selectedCustomerId]);
 
   const toggleRentalSelection = (id) => {
-    setSelectedRentalIds(prev => 
+    setSelectedRentalIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
@@ -59,6 +126,7 @@ const InvoiceCreate = () => {
         customerId: parseInt(selectedCustomerId),
         rentalIds: selectedRentalIds
       });
+      toast.success('Fatura gerada com sucesso!');
       navigate(`/invoices/${res.data.id}`);
     } catch (err) {
       console.error(err);
@@ -76,21 +144,14 @@ const InvoiceCreate = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/*Seleção de cliente*/}
         <div className="lg:col-span-1">
           <div className="bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700">
-            <label className="block text-sm font-medium text-gray-400 mb-2">Cliente</label>
-            <select
-              value={selectedCustomerId}
-              onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-            >
-              <option value="">Selecione um cliente...</option>
-              {customers.map(customer => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.fullName} ({customer.document})
-                </option>
-              ))}
-            </select>
+            <CustomerSearch
+                customers={customers}
+                selectedCustomerId={selectedCustomerId}
+                onSelect={setSelectedCustomerId}
+            />
           </div>
         </div>
 
@@ -104,7 +165,7 @@ const InvoiceCreate = () => {
                 </span>
               )}
             </div>
-            
+
             <div className="max-h-[500px] overflow-x-auto">
               {fetchingRentals ? (
                 <div className="p-12 text-center">
@@ -123,8 +184,8 @@ const InvoiceCreate = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {rentals.map((rental) => (
-                      <tr 
-                        key={rental.id} 
+                      <tr
+                        key={rental.id}
                         className={`hover:bg-gray-700/30 cursor-pointer transition-colors ${selectedRentalIds.includes(rental.id) ? 'bg-blue-600/10' : ''}`}
                         onClick={() => toggleRentalSelection(rental.id)}
                       >

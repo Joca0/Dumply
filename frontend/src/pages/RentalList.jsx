@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getRentals, returnRental, deleteRental } from '../api';
-import {Search, CheckCircle, Trash2, Printer, Calendar, User, Clock, FileText, Edit2, MapIcon} from 'lucide-react';
+import {Search, CheckCircle, Trash2, Printer, Calendar, User, Clock, FileText, Edit2, MapIcon, Download} from 'lucide-react';
 import {Link} from "react-router-dom";
 
 const RentalList = () => {
@@ -75,11 +75,11 @@ const RentalList = () => {
           <h2 className="text-xl md:text-2xl font-bold mt-8 md:mt-0">Relatório de Aluguéis</h2>
           <div className="flex w-full md:w-auto gap-2">
             <button
-                onClick={() => window.print()}
+                onClick={window.print}
                 className="flex-1 md:flex-none bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors no-print"
             >
-              <Printer size={18} />
-              <span className="hidden sm:inline">Imprimir PDF</span>
+              <Download size={18} />
+              <span className="hidden sm:inline">Gerar PDF</span>
               <span className="sm:hidden">PDF</span>
             </button>
             <Link to="/rentals/new" className="flex-1 md:flex-none bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center">

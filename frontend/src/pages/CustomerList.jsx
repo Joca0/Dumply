@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCustomers, deleteCustomer } from '../api';
-import { Search, User, Edit2, Trash2 } from 'lucide-react';
+import { Search, User, Edit2, Trash2, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {toast} from "sonner";
 
@@ -55,9 +55,18 @@ const CustomerList = () => {
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h2 className="text-xl md:text-2xl font-bold mt-8 md:mt-0">Consulta de Clientes</h2>
-        <Link to="/customers/new" className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center">
-          Novo Cliente
-        </Link>
+        <div className="flex w-full md:w-auto gap-2">
+          <button
+              onClick={window.print}
+              className="flex-1 md:flex-none bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <Download size={18} />
+            <span>Gerar PDF</span>
+          </button>
+          <Link to="/customers/new" className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center">
+            Novo Cliente
+          </Link>
+        </div>
       </div>
 
       <div className="mb-6">

@@ -13,6 +13,76 @@ import {toast} from "sonner";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_API_KEY;
 
+// -- PESQUISA POR CLIENTE ---
+const CustomerSearch = ({ customers, onSelect, selectedCustomerId }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    if (!selectedCustomerId || customers.length === 0) return;
+
+    const customer = customers.find(
+        c => String(c.id) === String(selectedCustomerId)
+    );
+
+    if (customer) {
+      setSearchTerm(customer.fullName);
+    }
+  }, [selectedCustomerId, customers]);
+
+  const selectedCustomer = selectedCustomerId
+      ? customers.find(c => String(c.id) === String(selectedCustomerId))
+      : null;
+
+  const filtered = customers.filter(c => {
+    const term = searchTerm.toLowerCase();
+    return c.fullName.toLowerCase().includes(term) || (c.document && c.document.includes(term));
+  });
+
+  return (
+      <div className="relative" ref={wrapperRef}>
+        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+          <User size={12}/> Cliente
+        </label>
+        <div className="relative">
+          <input
+              type="text"
+              placeholder="Buscar cliente por nome ou CPF/CNPJ..."
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 pl-9 text-sm text-white focus:border-blue-500 outline-none"
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
+              onFocus={() => { setIsOpen(true); }}
+          />
+          <Search size={16} className="absolute left-3 top-3 text-gray-500" />
+        </div>
+
+        {isOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl max-h-60 overflow-y-auto">
+              {filtered.length > 0 ? (
+                  filtered.map(c => (
+                      <div
+                          key={c.id}
+                          className="p-3 hover:bg-blue-600 cursor-pointer border-b border-gray-700 last:border-0 transition-colors"
+                          onClick={() => {
+                            onSelect(c.id.toString());
+                            setSearchTerm(c.fullName);
+                            setIsOpen(false);
+                          }}
+                      >
+                        <div className="text-sm font-bold text-white">{c.fullName}</div>
+                        <div className="text-[10px] text-gray-400 uppercase">{c.document || 'Sem documento'}</div>
+                      </div>
+                  ))
+              ) : (
+                  <div className="p-4 text-sm text-gray-500 text-center">Cliente não encontrado</div>
+              )}
+            </div>
+        )}
+      </div>
+  );
+};
+
 // --- BUSCA DE EQUIPAMENTO ---
 const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedIds }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +96,15 @@ const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedId
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!item.equipmentId || equipments.length === 0) return;
+
+    const equipment = equipments.find(e => e.id === item.equipmentId);
+    if (equipment) {
+      setSearchTerm(`${equipment.name} (${equipment.serialNumber})`);
+    }
+  }, [item.equipmentId, equipments]);
 
   const selectedEquipment = equipments.find(e => e.id === item.equipmentId);
 
@@ -44,9 +123,9 @@ const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedId
               type="text"
               placeholder="Buscar nome ou serial..."
               className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 pl-8 text-sm text-white focus:border-blue-500 outline-none"
-              value={isOpen ? searchTerm : (selectedEquipment ? `${selectedEquipment.name} (${selectedEquipment.serialNumber})` : searchTerm)}
+              value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
-              onFocus={() => { setSearchTerm(''); setIsOpen(true); }}
+              onFocus={() => { setIsOpen(true); }}
           />
           <Search size={14} className="absolute left-2.5 top-3 text-gray-500" />
         </div>
@@ -60,8 +139,8 @@ const InternalEquipmentSearch = ({ index, item, equipments, onSelect, selectedId
                           className="p-2 hover:bg-blue-600 cursor-pointer border-b border-gray-700 last:border-0 transition-colors"
                           onClick={() => {
                             onSelect(index, 'equipmentId', e.id);
+                            setSearchTerm(`${e.name} (${e.serialNumber})`);
                             setIsOpen(false);
-                            setSearchTerm('');
                           }}
                       >
                         <div className="text-xs font-bold text-white">{e.name}</div>
@@ -245,12 +324,6 @@ const RentalForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Verificação básica antes de tentar enviar
-    if (!formData.customerId) {
-      toast.warning("Por favor, selecione um cliente.");
-      return;
-    }
-
     if (!formData.fullAddress) {
       toast.warning("Por favor, selecione um endereço válido no mapa");
       return;
@@ -303,17 +376,14 @@ const RentalForm = () => {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700 shadow-xl">
               {/* Cliente */}
-              <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1"><User size={12}/> Cliente</label>
-                <select
-                    required
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
-                    value={formData.customerId}
-                    onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                >
-                  <option value="">Selecione um cliente...</option>
-                  {customers.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
-                </select>
+              <div className="lg:col-span-1">
+                <div className="bg-gray-800 p-4 md:p-6 rounded-xl">
+                  <CustomerSearch
+                      customers={customers}
+                      selectedCustomerId={formData.customerId}
+                      onSelect={(id) => setFormData({ ...formData, customerId: id })}
+                  />
+                </div>
               </div>
 
               {/* Equipamentos */}
