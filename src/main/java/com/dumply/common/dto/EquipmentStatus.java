@@ -1,5 +1,5 @@
 package com.dumply.common.dto;
 
-public enum EquipmentStatus {
+public enum  EquipmentStatus {
     AVAILABLE, RENTED, MAINTENANCE
 }

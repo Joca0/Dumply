@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { getInvoices } from '../api';
 import {Search, FileText, Eye, Plus, Printer, Calendar, User, Download} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {a} from "framer-motion/m";
 
 const InvoiceList = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [filter, setFilter] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState('all');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -30,14 +32,26 @@ const InvoiceList = () => {
       new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
   // --- FILTRAGEM ---
+  const statusPriority = { PAID: 2, PENDING: 1, CANCELLED: 3 };
+
   const filteredInvoices = Array.isArray(invoices) ? invoices.filter(i => {
     const invoiceDate = i.createdAt.substring(0, 7);
+    const matchesStatus = filter === 'all' || i.status === filter;
     const matchesMonth = !selectedMonth || invoiceDate === selectedMonth;
     const matchesCustomer = selectedCustomer === 'all' || i.customer.id.toString() === selectedCustomer;
     const matchesSearch = i.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         i.id.toString().includes(searchTerm);
-    return matchesMonth && matchesCustomer && matchesSearch;
-  }) : [];
+    return matchesMonth && matchesCustomer && matchesSearch && matchesStatus;
+  })
+          .sort((a, b) => {
+            const priorityA = statusPriority[a.status] || 99;
+            const priorityB = statusPriority[b.status] || 99;
+            if (priorityA !== priorityB) {
+              return priorityA - priorityB;
+            }
+
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          }): [];
 
   // --- CÁLCULO DOS RELATÓRIOS ---
   const stats = filteredInvoices.reduce((acc, curr) => {
@@ -91,16 +105,16 @@ const InvoiceList = () => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-400 font-medium ml-1">CLIENTE</label>
+            <label className="text-xs text-gray-400 font-medium ml-1">STATUS</label>
             <select
                 className="bg-gray-800 border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-blue-500"
-                value={selectedCustomer}
-                onChange={(e) => setSelectedCustomer(e.target.value)}
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
             >
-              <option value="all">Todos os Clientes</option>
-              {[...new Map(invoices.map(i => [i.customer.id, i.customer])).values()].map(c => (
-                  <option key={c.id} value={c.id}>{c.fullName}</option>
-              ))}
+              <option value="all">Todos os Status</option>
+              <option value="PAID">Pago</option>
+              <option value="PENDING">Pendente</option>
+              <option value="CANCELLED">Cancelado</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">
@@ -109,7 +123,7 @@ const InvoiceList = () => {
               <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
               <input
                   type="text"
-                  placeholder="Buscar..."
+                  placeholder="Buscar por nome ou ID da fatura..."
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white outline-none focus:border-blue-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}

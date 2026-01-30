@@ -27,6 +27,8 @@ const RentalList = () => {
   }, []);
 
   // --- LÓGICA DE FILTRAGEM ---
+  const statusPriority = { ACTIVE: 1, FINISHED: 2 };
+
   const filteredRentals = Array.isArray(rentals) ? rentals.filter(r => {
     const rentalDate = r.startDate.substring(0, 7); // Filtra pela data de início
     const matchesMonth = !selectedMonth || rentalDate === selectedMonth;
@@ -36,7 +38,17 @@ const RentalList = () => {
     const matchesSearch = customerName.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesMonth && matchesCustomer && matchesStatus && matchesSearch;
-  }) : [];
+  })
+      .sort((a, b) => {
+        const priorityA = statusPriority[a.status] || 99;
+        const priorityB = statusPriority[b.status] || 99;
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+
+      }): [];
 
 
   // Funções de ação
