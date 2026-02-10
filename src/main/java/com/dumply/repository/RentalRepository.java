@@ -1,6 +1,7 @@
 package com.dumply.repository;
 
 import com.dumply.common.dto.RentalStatus;
+import com.dumply.model.Equipment;
 import com.dumply.model.Rental;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,8 @@ public interface RentalRepository extends JpaRepository<Rental, Long>, JpaSpecif
     where r.status = com.dumply.common.dto.RentalStatus.SCHEDULED
 """)
     Page<Rental> findScheduledRentals(Pageable pageable);
+
+    boolean existsByEquipmentAndStatus(Equipment equipment, RentalStatus status);
 
     @EntityGraph(attributePaths = {"customer", "equipment", "invoice"})
     List<Rental> findByStatus(RentalStatus status);

@@ -54,15 +54,19 @@ public class RentalService {
             rental.setCharge(item.charge());
 
             if (item.equipmentId() != null) {
+
                 Equipment equipment = equipmentRepository.findById(item.equipmentId())
                         .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
 
+                boolean hasActiveRental =
+                        rentalRepository.existsByEquipmentAndStatus(equipment, RentalStatus.ACTIVE);
+
+                if (hasActiveRental) {
+                    throw new RuntimeException("Equipamento já possui aluguel ativo");
+                }
+
                 rental.setEquipment(equipment);
                 rental.setStatus(RentalStatus.ACTIVE);
-
-                if (equipment.getStatus() != EquipmentStatus.AVAILABLE) {
-                    throw new RuntimeException("Equipamento " + equipment.getName() + " indisponível");
-                }
 
                 equipment.setStatus(EquipmentStatus.RENTED);
                 equipmentRepository.save(equipment);
