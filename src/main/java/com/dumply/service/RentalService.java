@@ -57,12 +57,13 @@ public class RentalService {
                 Equipment equipment = equipmentRepository.findById(item.equipmentId())
                         .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
 
+                rental.setEquipment(equipment);
+                rental.setStatus(RentalStatus.ACTIVE);
+
                 if (equipment.getStatus() != EquipmentStatus.AVAILABLE) {
                     throw new RuntimeException("Equipamento " + equipment.getName() + " indisponível");
                 }
 
-                rental.setEquipment(equipment);
-                rental.setStatus(RentalStatus.ACTIVE);
                 equipment.setStatus(EquipmentStatus.RENTED);
                 equipmentRepository.save(equipment);
             } else {
