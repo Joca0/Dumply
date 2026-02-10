@@ -1,9 +1,13 @@
 package com.dumply.controller;
 
+import com.dumply.common.dto.EquipmentAutocomplete;
 import com.dumply.common.dto.EquipmentDTO;
 import com.dumply.model.Equipment;
 import com.dumply.service.EquipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,9 +35,14 @@ public class EquipmentController {
         return equipmentService.findById(id);
     }
 
+    @GetMapping("/autocomplete")
+    public List<EquipmentAutocomplete> equipmentAutocomplete(@RequestParam(value = "q", required = false) String q) {
+        return equipmentService.searchForSelect(q);
+    }
+
     @GetMapping
-    public List<Equipment> getAllEquipments() {
-        return equipmentService.getAllEquipments();
+    public Page<Equipment> getAllEquipments(@RequestParam(required = false) String search,@PageableDefault(size = 10) Pageable pageable) {
+        return equipmentService.getAllEquipments(search, pageable);
     }
 
     @PutMapping("/{id}")

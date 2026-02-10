@@ -32,7 +32,7 @@ public class Invoice {
     
     private BigDecimal totalAmount;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private InvoiceStatus status;
 
     public Invoice() {

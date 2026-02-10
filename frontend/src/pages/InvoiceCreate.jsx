@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef} from 'react';
-import { getCustomers, getUninvoicedRentals, createInvoice } from '../api';
+import {  getUninvoicedRentals, createInvoice, autocompleteCustomers, getCustomer } from '../api';
 import { User, Search, Plus, Check, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {toast} from "sonner";
 
 
 // -- PESQUISA POR CLIENTE ---
-const CustomerSearch = ({ customers, onSelect, selectedCustomerId }) => {
+const CustomerSearch = ({ onSelect, selectedCustomerId }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -19,12 +20,46 @@ const CustomerSearch = ({ customers, onSelect, selectedCustomerId }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedCustomer = customers.find(c => c.id.toString() === selectedCustomerId.toString());
+  // Lógica de Autocomplete (Chamada API)
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchTerm.length >= 2) {
+        try {
+          const res = await autocompleteCustomers(searchTerm);
+          
+          if (res.data.length === 1 && res.data[0].fullName === searchTerm) {
+            setSuggestions([]);
+          } else {
+            setSuggestions(res.data);
+            setIsOpen(true);
+          }
+        } catch (err) {
+          console.error("Erro ao buscar clientes", err);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    }, 300);
 
-  const filtered = customers.filter(c => {
-    const term = searchTerm.toLowerCase();
-    return c.fullName.toLowerCase().includes(term) || (c.document && c.document.includes(term));
-  });
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  // Efeito para buscar o nome do cliente quando selectedCustomerId mudar
+  useEffect(() => {
+    if (selectedCustomerId && !searchTerm) {
+      const fetchCustomerName = async () => {
+        try {
+          const res = await getCustomer(selectedCustomerId);
+          if (res.data) {
+            setSearchTerm(res.data.fullName);
+          }
+        } catch (err) {
+          console.error("Erro ao carregar nome do cliente", err);
+        }
+      };
+      fetchCustomerName();
+    }
+  }, [selectedCustomerId]);
 
   return (
       <div className="relative" ref={wrapperRef}>
@@ -36,33 +71,29 @@ const CustomerSearch = ({ customers, onSelect, selectedCustomerId }) => {
               type="text"
               placeholder="Buscar cliente por nome ou CPF/CNPJ..."
               className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 pl-9 text-sm text-white focus:border-blue-500 outline-none"
-              value={isOpen ? searchTerm : (selectedCustomer ? selectedCustomer.fullName : searchTerm)}
+              value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
-              onFocus={() => { setSearchTerm(''); setIsOpen(true); }}
+              onFocus={() => { setIsOpen(true); }}
           />
           <Search size={16} className="absolute left-3 top-3 text-gray-500" />
         </div>
 
-        {isOpen && (
+        {isOpen && suggestions.length > 0 && (
             <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl max-h-60 overflow-y-auto">
-              {filtered.length > 0 ? (
-                  filtered.map(c => (
-                      <div
-                          key={c.id}
-                          className="p-3 hover:bg-blue-600 cursor-pointer border-b border-gray-700 last:border-0 transition-colors"
-                          onClick={() => {
-                            onSelect(c.id.toString());
-                            setIsOpen(false);
-                            setSearchTerm('');
-                          }}
-                      >
-                        <div className="text-sm font-bold text-white">{c.fullName}</div>
-                        <div className="text-[10px] text-gray-400 uppercase">{c.document || 'Sem documento'}</div>
-                      </div>
-                  ))
-              ) : (
-                  <div className="p-4 text-sm text-gray-500 text-center">Cliente não encontrado</div>
-              )}
+              {suggestions.map(c => (
+                  <div
+                      key={c.id}
+                      className="p-3 hover:bg-blue-600 cursor-pointer border-b border-gray-700 last:border-0 transition-colors"
+                      onClick={() => {
+                        onSelect(c.id.toString());
+                        setSearchTerm(c.fullName);
+                        setIsOpen(false);
+                      }}
+                  >
+                    <div className="text-sm font-bold text-white">{c.fullName}</div>
+                    <div className="text-[10px] text-gray-400 uppercase">{c.document || 'Sem documento'}</div>
+                  </div>
+              ))}
             </div>
         )}
       </div>
@@ -71,25 +102,12 @@ const CustomerSearch = ({ customers, onSelect, selectedCustomerId }) => {
 
 
 const InvoiceCreate = () => {
-  const [customers, setCustomers] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [rentals, setRentals] = useState([]);
   const [selectedRentalIds, setSelectedRentalIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchingRentals, setFetchingRentals] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const res = await getCustomers();
-        setCustomers(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchCustomers();
-  }, []);
 
   useEffect(() => {
     if (selectedCustomerId) {
@@ -148,7 +166,6 @@ const InvoiceCreate = () => {
         <div className="lg:col-span-1">
           <div className="bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700">
             <CustomerSearch
-                customers={customers}
                 selectedCustomerId={selectedCustomerId}
                 onSelect={setSelectedCustomerId}
             />
@@ -195,8 +212,9 @@ const InvoiceCreate = () => {
                           </div>
                         </td>
                         <td className="p-4">
-                          <div className="font-medium text-sm">{rental.equipment.name}</div>
-                          <div className="text-[10px] text-gray-500 truncate max-w-[150px]">{rental.fullAddress}</div>
+                          <div className="font-medium text-sm">{rental.equipment?.name}</div>
+                          <div className={`text-[10px] text-gray-500 truncate max-w-37.5`}>Número de série: {rental.equipment?.serialNumber}</div>
+                          <div className="text-[10px] text-gray-500 truncate max-w-37.5">{rental.fullAddress}</div>
                         </td>
                         <td className="p-4 text-[10px] md:text-sm">
                           {new Date(rental.startDate).toLocaleDateString()} - {new Date(rental.endDate).toLocaleDateString()}

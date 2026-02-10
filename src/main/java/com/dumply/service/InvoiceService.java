@@ -1,6 +1,7 @@
 package com.dumply.service;
 
 import com.dumply.common.dto.InvoiceRequest;
+import com.dumply.common.dto.InvoiceStatsDTO;
 import com.dumply.common.dto.InvoiceStatus;
 import com.dumply.model.Customer;
 import com.dumply.model.Invoice;
@@ -8,10 +9,17 @@ import com.dumply.model.Rental;
 import com.dumply.repository.CustomerRepository;
 import com.dumply.repository.InvoiceRepository;
 import com.dumply.repository.RentalRepository;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -61,8 +69,31 @@ public class InvoiceService {
         return rentalRepository.findByCustomerIdAndInvoiceIsNull(customerId);
     }
 
-    public List<Invoice> getAllInvoices() {
-        return invoiceRepository.findAll();
+    public Page<Invoice> getAllInvoices(String search, String month, InvoiceStatus status, Pageable pageable) {
+        Specification<Invoice> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (search != null && !search.isBlank()) {
+                String likeTerm = "%" + search.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("customer").get("fullName")), likeTerm),
+                        cb.like(root.get("id").as(String.class), likeTerm)
+                ));
+            }
+            if (month != null && !month.isBlank()) {
+                LocalDateTime start = LocalDate.parse(month + "-01").atStartOfDay();
+                LocalDateTime end = start.plusMonths(1);
+                predicates.add(cb.between(root.get("createdAt"), start, end));
+            }
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        return invoiceRepository.findAll(spec, pageable);
+    }
+
+    public InvoiceStatsDTO getInvoiceStats() {
+        return invoiceRepository.getInvoiceReportStats();
     }
 
     public Invoice getInvoiceById(Long id) {

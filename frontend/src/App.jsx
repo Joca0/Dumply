@@ -15,6 +15,7 @@ import InvoiceDetail from './pages/InvoiceDetail';
 import InvoiceCreate from './pages/InvoiceCreate';
 import LoginForm from "@/pages/LoginForm.jsx";
 import {AuthProvider} from "@/context/AuthContext.jsx";
+import ScheduledList from "@/pages/ScheduledList.jsx";
 
 
 
@@ -54,6 +55,7 @@ function App() {
             <Route path="rentals/edit/:id" element={<RentalForm/>}/>
             <Route path="rentals/new" element={<RentalForm/>}/>
             <Route path="rentals" element={<RentalList/>}/>
+            <Route path="scheduled" element={<ScheduledList />}/>
             <Route path="invoices" element={<InvoiceList/>}/>
             <Route path="invoices/new" element={<InvoiceCreate/>}/>
             <Route path="invoices/:id" element={<InvoiceDetail/>}/>

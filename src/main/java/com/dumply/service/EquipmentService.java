@@ -1,10 +1,14 @@
 package com.dumply.service;
 
+import com.dumply.common.dto.EquipmentAutocomplete;
 import com.dumply.common.dto.EquipmentDTO;
 import com.dumply.model.Equipment;
 import com.dumply.repository.EquipmentRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,8 +39,27 @@ public class EquipmentService {
                 })
                 .orElseThrow(() -> new RuntimeException("Erro ao atualizar equipamento: " + id));
     }
-    public List<Equipment> getAllEquipments() {
-        return equipmentRepository.findAll();
+
+    public List<EquipmentAutocomplete> searchForSelect(String search) {
+        if (search == null || search.isBlank()) {
+            return List.of();
+        }
+        return equipmentRepository.searchForSelect(search.toLowerCase());
+    }
+
+    public Page<Equipment> getAllEquipments(String search, Pageable pageable) {
+        if ( search == null || search.isBlank()) {
+            return equipmentRepository.findAll(pageable);
+        }
+
+        Specification<Equipment> spec = (root, query, cb) -> {
+            String likeTerm = "%" + search.toLowerCase() + "%";
+            return cb.or(
+                    cb.like(cb.lower(root.get("name")), likeTerm),
+                    cb.like(cb.lower(root.get("serialNumber")), likeTerm)
+            );
+        };
+        return equipmentRepository.findAll(spec, pageable);
     }
 
     //Método criado para injetar vários equipamentos de uma vez

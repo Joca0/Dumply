@@ -31,6 +31,10 @@ api.interceptors.response.use(
         );
       }
 
+      if (status === 401) {
+        toast.error(typeof data === 'string' ? data : 'Não autorizado ou sessão expirada');
+      }
+
       if (status === 409) {
         toast.warning(typeof data === 'string' ? data : 'Conflito de dados');
       }
@@ -45,19 +49,32 @@ api.interceptors.response.use(
 export const login = (credentials) => api.post('/auth/login', credentials);
 export const profile = (data) => api.get('/auth/me', data);
 
-export const getEquipments = () => api.get('/equipments');
+export const getDashboardStats = () => api.get('/dashboard/stats');
+
+export const autocompleteEquipments = (search) => api.get(`/equipments/autocomplete?q=${search}`);
+export const autocompleteCustomers = (search) => api.get(`/customers/autocomplete?q=${search}`);
+
+export const getEquipments = (page = 0, size = 10, search = '') => api.get(`/equipments?page=${page}&size=${size}&search=${search}`);
 export const getEquipment = (id) => api.get(`/equipments/${id}`);
 export const createEquipment = (data) => api.post('/equipments', data);
 export const updateEquipment = (id, data) => api.put(`/equipments/${id}`, data);
 export const deleteEquipment = (id) => api.delete(`/equipments/${id}`);
 
-export const getCustomers = () => api.get('/customers');
+export const getCustomers = (page = 0, size = 10, search = '') => api.get(`/customers?page=${page}&size=${size}&search=${search}`);
 export const getCustomer = (id) => api.get(`/customers/${id}`);
 export const createCustomer = (data) => api.post('/customers', data);
 export const updateCustomer = (id, data) => api.put(`/customers/${id}`, data);
 export const deleteCustomer = (id) => api.delete(`/customers/${id}`);
 
-export const getRentals = () => api.get('/rentals');
+export const getRentals = (page = 0, size = 10, filters = {}) => {
+  const params = new URLSearchParams({ page, size, ...filters });
+  return api.get(`/rentals?${params.toString()}`);
+}
+export const getScheduledRentals = (page = 0, size = 10, filters = {}) => {
+  const params = new URLSearchParams({ page, size, ...filters });
+  return api.get(`/rentals/scheduled?${params.toString()}`);
+}
+export const activateRental = (id) => api.post(`/rentals/${id}/activate`);
 export const getRental = (id) => api.get(`/rentals/${id}`);
 export const getActiveRentals = () => api.get('/rentals/active');
 export const createRental = (data) => api.post('/rentals', data);
@@ -65,7 +82,11 @@ export const updateRental = (id, data) => api.put(`/rentals/${id}`, data)
 export const returnRental = (id) => api.post(`/rentals/${id}/return`);
 export const deleteRental = (id) => api.delete(`/rentals/${id}`);
 
-export const getInvoices = () => api.get('/invoices');
+export const getInvoices = (page = 0, size = 10, filters = {}) => {
+  const params = new URLSearchParams({ page, size, ...filters });
+  return api.get(`/invoices?${params.toString()}`);
+}
+export const getInvoiceStats = () => api.get('/invoices/stats');
 export const getInvoice = (id) => api.get(`/invoices/${id}`);
 export const createInvoice = (data) => api.post('/invoices', data);
 export const getUninvoicedRentals = (customerId) => api.get(`/invoices/uninvoiced/${customerId}`);

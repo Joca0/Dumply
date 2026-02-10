@@ -1,11 +1,17 @@
 package com.dumply.controller;
 
 import com.dumply.common.dto.InvoiceRequest;
+import com.dumply.common.dto.InvoiceStatsDTO;
 import com.dumply.common.dto.InvoiceStatus;
 import com.dumply.model.Invoice;
 import com.dumply.model.Rental;
 import com.dumply.service.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +34,21 @@ public class InvoiceController {
     }
 
     @GetMapping
-    public List<Invoice> getAllInvoices() {
-        return invoiceService.getAllInvoices();
+    public Page<Invoice> getAllInvoices(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String month,
+            @RequestParam(required = false) InvoiceStatus status,
+            @PageableDefault(size = 10)
+            @SortDefault.SortDefaults({
+                    @SortDefault(sort = "status", direction = Sort.Direction.ASC),
+                    @SortDefault(sort = "createdAt", direction = Sort.Direction.DESC)
+            }) Pageable pageable) {
+        return invoiceService.getAllInvoices(search, month, status, pageable);
+    }
+
+    @GetMapping("/stats")
+    public InvoiceStatsDTO getInvoiceStats() {
+        return invoiceService.getInvoiceStats();
     }
 
     @GetMapping("/{id}")

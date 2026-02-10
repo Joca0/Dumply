@@ -25,7 +25,7 @@ const EquipmentForm = () => {
           });
         } catch (err) {
           console.error(err);
-          alert('Erro ao carregar dados do equipamento.');
+          toast.error('Erro ao carregar dados do equipamento.');
           navigate('/equipments');
         } finally {
           setFetching(false);

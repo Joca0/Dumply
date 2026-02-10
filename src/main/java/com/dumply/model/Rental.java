@@ -32,7 +32,7 @@ public class Rental {
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private RentalStatus status;
     @Enumerated(EnumType.STRING)
     private InvoiceStatus invoiceStatus = InvoiceStatus.PENDING;
@@ -41,7 +41,7 @@ public class Rental {
     private double longitude;
 
     @ManyToOne
-    @JoinColumn(name = "equipment_id", nullable = false)
+    @JoinColumn(name = "equipment_id", nullable = true)
     private Equipment equipment;
 
     @ManyToOne

@@ -1,36 +1,25 @@
-# Changelog DUMPLY.
+## [1.7] - 09-02-2026
 
-## [1.6] - 19-01-2026
+### Gestão de Aluguéis & Agendamentos
+- **Sistema de Agendamento**: Implementada a possibilidade de criar aluguéis sem equipamento atribuído inicialmente (status `SCHEDULED`).
+- **Nova Tela de Agendamentos**: Adicionada página exclusiva para gerenciar locações agendadas.
+- **Ativação de Aluguel**: Fluxo para atribuir um equipamento e ativar um agendamento pendente.
+- **Melhorias no Formulário**: O formulário de aluguel agora suporta a criação simplificada e dinâmica de itens.
 
-### Segurança & Autenticação
-- Implementada autenticação com JWT
-- Persistência de sessão com refresh do usuário
-- Correções no fluxo de login/logout para evitar inconsistências de perfil
+### Dashboards & Estatísticas
+- **Métricas de Faturamento**: Novo endpoint e interface para visualização de estatísticas financeiras (Total, Pendente, Pago).
+- **Cards Dinâmicos**: O Dashboard principal agora exibe contagens reais de aluguéis ativos e faturas pendentes.
 
-### Back-end
-- Criação da entidade `User`, repositório e fluxo de registro
-- Adição de novos DTOs para garantir conformidade e segurança dos dados
+### Back-end (Core)
+- **Filtros Avançados**: Implementada busca dinâmica e filtros por período (mês/ano) em Aluguéis e Faturas utilizando `JpaSpecification`.
+- **Paginação Robusta**: Integração completa de paginação em todos os endpoints de listagem.
+- **Novos DTOs**: Estruturação de dados para Autocomplete, Estatísticas e Requisições de Aluguel.
 
-### Dashboard & Gestão
-- Modificações no dashboard inicial
-- Adição de cards de acesso rápido (Faturas, Aluguéis, Equipamentos e Clientes)
-- Melhorias gerais na UI do dashboard
+### Front-end (UX/UI)
+- **Barra Lateral**: Menu lateral atualizado com novas opções e exibição do perfil do usuário logado.
+- **Filtros em Tempo Real**: Adicionados campos de busca e seleção de mês nas listagens de Clientes, Equipamentos, Aluguéis e Faturas.
+- **Reformulação Completa no Visual**: Remodelação total nas páginas, um visual moderno com a usabilidade consequentemente mais fácil.
+- **Feedback Visual**: Melhorias nas tabelas com badges de status coloridos e formatação de datas/moedas.
 
-### Aluguéis & Equipamentos
-- Correção de regras para evitar cobrança duplicada de equipamentos
-- Adicionada ação “Ver no Mapa” na listagem de aluguéis
-
-### Localização em Mapa
-- Ajustes no comportamento do mapa
-- Remoção de pontos de interesse padrão para melhor visualização
-
-### Front-end
-- Início do processo de responsividade
-- Correções de warnings e erros relacionados a hooks no React
-- Atualização de ícones
-- Layout agora exibe o usuário logado e sua role (em fase de teste)
-
-### Infraestrutura
-- Testes e otimizações de deploy na Oracle Cloud
-- Aprendizados sobre limites de recursos e escalabilidade
-- Preparação do ambiente para evolução futura como SaaS
+### Segurança
+- **Filtro de Autenticação**: Refinamento no `SecurityFilter` para melhor tratamento de erros de autorização no contexto da API.

@@ -12,8 +12,14 @@ import com.dumply.repository.EquipmentRepository;
 import com.dumply.repository.RentalRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,29 +34,17 @@ public class RentalService {
 
     @Autowired
     private EquipmentRepository equipmentRepository;
-    
+
 
     @Transactional
     public List<Rental> createRental(RentalRequest request) {
         Customer customer = customerRepository.findById(request.customerId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        if (request.endDate().isBefore(request.startDate())) {
-            throw new InvalidRentalDateException("Data final deve ser maior que a data inicial");
-        }
-
         List<Rental> rentals = new ArrayList<>();
 
         for (var item : request.items()) {
-            Equipment equipment = equipmentRepository.findById(item.equipmentId())
-                    .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
-
-            if (equipment.getStatus() != EquipmentStatus.AVAILABLE) {
-                throw new RuntimeException("Equipamento " + equipment.getName() + " indisponível para locação");
-            }
-
             Rental rental = new Rental();
-            rental.setEquipment(equipment);
             rental.setCustomer(customer);
             rental.setStartDate(request.startDate());
             rental.setEndDate(request.endDate());
@@ -58,15 +52,27 @@ public class RentalService {
             rental.setLatitude(request.latitude());
             rental.setLongitude(request.longitude());
             rental.setCharge(item.charge());
-            rental.setStatus(RentalStatus.ACTIVE);
 
-            // Atualiza status do ativo
-            equipment.setStatus(EquipmentStatus.RENTED);
-            equipmentRepository.save(equipment);
+            if (item.equipmentId() != null) {
+                Equipment equipment = equipmentRepository.findById(item.equipmentId())
+                        .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+
+                if (equipment.getStatus() != EquipmentStatus.AVAILABLE) {
+                    throw new RuntimeException("Equipamento " + equipment.getName() + " indisponível");
+                }
+
+                rental.setEquipment(equipment);
+                rental.setStatus(RentalStatus.ACTIVE);
+                equipment.setStatus(EquipmentStatus.RENTED);
+                equipmentRepository.save(equipment);
+            } else {
+                // AGENDAMENTO
+                rental.setEquipment(null);
+                rental.setStatus(RentalStatus.SCHEDULED);
+            }
 
             rentals.add(rentalRepository.save(rental));
         }
-
         return rentals;
     }
 
@@ -115,35 +121,94 @@ public class RentalService {
             var itemDto = dto.items().get(0); // Pega o equipamento selecionado no form
 
             // Se o equipamento mudou, gerenciar os status
-            if (!rental.getEquipment().getId().equals(itemDto.equipmentId())) {
+            if (rental.getEquipment() == null || !rental.getEquipment().getId().equals(itemDto.equipmentId())) {
 
-                // Libera o equipamento antigo
-                Equipment oldEquip = rental.getEquipment();
-                oldEquip.setStatus(EquipmentStatus.AVAILABLE);
-                equipmentRepository.save(oldEquip);
+                // Só libera o antigo se ele existir
+                if (rental.getEquipment() != null) {
+                    Equipment oldEquip = rental.getEquipment();
+                    oldEquip.setStatus(EquipmentStatus.AVAILABLE);
+                    equipmentRepository.save(oldEquip);
+                }
 
-                // Reserva o novo equipamento
+                // Busca e reserva o novo
                 Equipment newEquip = equipmentRepository.findById(itemDto.equipmentId())
-                        .orElseThrow(() -> new RuntimeException("Novo equipamento não encontrado"));
+                        .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
 
                 if (newEquip.getStatus() != EquipmentStatus.AVAILABLE) {
-                    throw new RuntimeException("O novo equipamento selecionado não está disponível.");
+                    throw new RuntimeException("Equipamento indisponível");
                 }
 
                 newEquip.setStatus(EquipmentStatus.RENTED);
                 rental.setEquipment(newEquip);
                 equipmentRepository.save(newEquip);
             }
-
-            // Atualiza o valor
             rental.setCharge(itemDto.charge());
         }
 
         return rentalRepository.save(rental);
     }
 
-    public List<Rental> getAllRentals() {
-        return rentalRepository.findAll();
+    public Page<Rental> getAllRentals(String search, String month, Long customerId, RentalStatus status, Pageable pageable) {
+        Specification<Rental> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (search != null && !search.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("customer").get("fullName")), "%" + search.toLowerCase() + "%"));
+            }
+            if (month != null && !month.isBlank()) {
+                // Filtro por mês
+                LocalDateTime start = LocalDate.parse(month + "-01").atStartOfDay();
+                LocalDateTime end = start.plusMonths(1);
+                predicates.add(cb.between(root.get("startDate"), start, end));
+            }
+            if (customerId != null) {
+                predicates.add(cb.equal(root.get("customer").get("id"), customerId));
+            }
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            } else {
+                predicates.add(root.get("status").in(
+                        RentalStatus.ACTIVE,
+                        RentalStatus.FINISHED
+                ));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        return rentalRepository.findAll(spec, pageable);
+    }
+
+    public Page<Rental> getAllScheduledRentals(String search, String month, Pageable pageable) {
+        Specification<Rental> spec = ((root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (search != null && !search.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("customer").get("fullName")), "%" + search.toLowerCase() + "%"));
+            }
+            if (month != null && !month.isBlank()) {
+                // Filtro por mês
+                LocalDateTime start = LocalDate.parse(month + "-01").atStartOfDay();
+                LocalDateTime end = start.plusMonths(1);
+                predicates.add(cb.between(root.get("startDate"), start, end));
+            }
+            predicates.add(cb.equal(root.get("status"), RentalStatus.SCHEDULED));
+            return cb.and(predicates.toArray(new Predicate[0]));
+        });
+        return rentalRepository.findAll(spec, pageable);
+    }
+
+    @Transactional
+    public Rental activateRental(Long rentalId) {
+        Rental rental = rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new RuntimeException("Aluguel não encontrado"));
+
+        if (rental.getStatus() != RentalStatus.SCHEDULED) {
+            throw new RuntimeException("Apenas aluguéis agendados podem ser ativados");
+        }
+
+        if (rental.getEquipment() == null) {
+            throw new RuntimeException("Atribua um equipamento antes de ativar o aluguel");
+        }
+
+        rental.setStatus(RentalStatus.ACTIVE);
+        return rentalRepository.save(rental);
     }
 
     public void deleteRental(Long rentalId) {

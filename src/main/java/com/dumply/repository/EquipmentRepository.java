@@ -1,7 +1,30 @@
 package com.dumply.repository;
 
+import com.dumply.common.dto.EquipmentAutocomplete;
 import com.dumply.model.Equipment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
+import java.util.List;
+
+public interface EquipmentRepository extends JpaRepository<Equipment, Long>, JpaSpecificationExecutor<Equipment> {
+
+    @Override
+    Page<Equipment> findAll(Pageable pageable);
+
+    @Query("""
+    SELECT new com.dumply.common.dto.EquipmentAutocomplete(e.id, e.name, e.serialNumber)
+    FROM Equipment e
+    WHERE e.status = com.dumply.common.dto.EquipmentStatus.AVAILABLE
+      AND (
+           LOWER(e.name) LIKE %:q%
+        OR e.serialNumber LIKE %:q%
+      )
+    ORDER BY e.name
+""")
+    List<EquipmentAutocomplete> searchForSelect(@Param("q") String q);
 }

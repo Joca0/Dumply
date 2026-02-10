@@ -9,6 +9,6 @@ public record RentalRequest(
         LocalDateTime startDate,
         LocalDateTime endDate,
         String fullAddress,
-        double latitude,
-        double longitude
+        Double latitude,
+        Double longitude
 ) {}
