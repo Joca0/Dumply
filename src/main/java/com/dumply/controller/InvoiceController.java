@@ -38,11 +38,7 @@ public class InvoiceController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String month,
             @RequestParam(required = false) InvoiceStatus status,
-            @PageableDefault(size = 10)
-            @SortDefault.SortDefaults({
-                    @SortDefault(sort = "status", direction = Sort.Direction.ASC),
-                    @SortDefault(sort = "createdAt", direction = Sort.Direction.DESC)
-            }) Pageable pageable) {
+            @PageableDefault(size = 10) Pageable pageable) {
         return invoiceService.getAllInvoices(search, month, status, pageable);
     }
 

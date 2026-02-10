@@ -1,10 +1,15 @@
 package com.dumply.repository;
 
 import com.dumply.common.dto.InvoiceStatsDTO;
+import com.dumply.common.dto.InvoiceStatus;
 import com.dumply.model.Invoice;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,5 +31,20 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
     FROM Invoice i
 """)
     InvoiceStatsDTO getInvoiceReportStats();
+
+    @Query("""
+    select i
+    from Invoice i
+    where (:status is null or i.status = :status)
+    order by
+        case i.status
+            when com.dumply.common.dto.InvoiceStatus.PENDING then 1
+            when com.dumply.common.dto.InvoiceStatus.PAID then 2
+            when com.dumply.common.dto.InvoiceStatus.CANCELLED then 3
+            else 4
+        end,
+        i.createdAt desc
+""")
+    Page<Invoice> getAllInvoices(@Param("status") InvoiceStatus status, Pageable pageable);
 
 }

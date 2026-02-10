@@ -87,6 +87,17 @@ public class InvoiceService {
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));
             }
+            query.orderBy(
+                cb.asc(
+                    cb.selectCase(root.get("status"))
+                        .when(InvoiceStatus.PENDING, 1)
+                        .when(InvoiceStatus.PAID, 2)
+                        .when(InvoiceStatus.CANCELLED, 3)
+                        .otherwise(4)
+                ),
+                cb.desc(root.get("createdAt"))
+            );
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
         return invoiceRepository.findAll(spec, pageable);
