@@ -32,7 +32,7 @@ public class Rental {
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private RentalStatus status;
     @Enumerated(EnumType.STRING)
     private InvoiceStatus invoiceStatus = InvoiceStatus.PENDING;
