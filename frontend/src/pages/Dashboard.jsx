@@ -10,7 +10,7 @@ import {
   Users,
   Box,
   Receipt,
-  PlusCircle
+  PlusCircle, CalendarClock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -39,6 +39,7 @@ const Dashboard = () => {
     { title: 'Logística', sub: 'Mapa em tempo real', to: '/map', icon: <MapIcon size={24} />, color: 'text-indigo-400' },
     { title: 'Locações', sub: 'Contratos ativos', to: '/rentals', icon: <Truck size={24} />, color: 'text-amber-400' },
     { title: 'Faturas', sub: 'Financeiro', to: '/invoices', icon: <Receipt size={24} />, color: 'text-emerald-400' },
+    { title: 'Agendamentos', sub: 'Contratos agendados', to: '/scheduled', icon: <CalendarClock size={24} />, color: 'text-indigo-400'},
     { title: 'Equipamentos', sub: 'Base de equipamentos', to: '/equipments', icon: <Box size={24} />, color: 'text-blue-400' },
     { title: 'Clientes', sub: 'Base de dados', to: '/customers', icon: <Users size={24} />, color: 'text-purple-400' },
   ];

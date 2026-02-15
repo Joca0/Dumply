@@ -11,6 +11,7 @@ import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "rentals")
@@ -24,7 +25,11 @@ import java.time.LocalDateTime;
         }
 )
 @Filter(name = "filtroMesAluguel", condition = "startDate BETWEEN :startDate AND :endDate")
-public class Rental {
+@Filter(
+        name = "companyFilter",
+        condition = "company_id = :companyId"
+)
+public class Rental extends CompanySuperEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +44,11 @@ public class Rental {
     private String fullAddress;
     private double latitude;
     private double longitude;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Company company;
 
     @ManyToOne
     @JoinColumn(name = "equipment_id", nullable = true)

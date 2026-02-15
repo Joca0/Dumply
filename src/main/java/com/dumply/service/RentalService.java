@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class RentalService {
+@Transactional
+public class RentalService extends TenantAwareService{
 
     @Autowired
     private RentalRepository rentalRepository;
@@ -38,7 +39,7 @@ public class RentalService {
 
     @Transactional
     public List<Rental> createRental(RentalRequest request) {
-        Customer customer = customerRepository.findById(request.customerId())
+        Customer customer = customerRepository.findByIdAndCompanyId(request.customerId(), getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         List<Rental> rentals = new ArrayList<>();
@@ -52,14 +53,19 @@ public class RentalService {
             rental.setLatitude(request.latitude());
             rental.setLongitude(request.longitude());
             rental.setCharge(item.charge());
+            rental.setCompany(getCurrentCompany());
 
             if (item.equipmentId() != null) {
 
-                Equipment equipment = equipmentRepository.findById(item.equipmentId())
+                Equipment equipment = equipmentRepository.findByIdAndCompanyId(item.equipmentId(), getCurrentCompany().getId())
                         .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
 
                 boolean hasActiveRental =
-                        rentalRepository.existsByEquipmentAndStatus(equipment, RentalStatus.ACTIVE);
+                        rentalRepository.existsActiveRentalForCompany(
+                                equipment,
+                                RentalStatus.ACTIVE,
+                                getCurrentCompany().getId()
+                        );
 
                 if (hasActiveRental) {
                     throw new RuntimeException("Equipamento já possui aluguel ativo");
@@ -82,17 +88,21 @@ public class RentalService {
     }
 
     public List<Rental> getActiveRentalsForMap() {
-        return rentalRepository.findByStatus(RentalStatus.ACTIVE);
+        enableTenantFilterOnCurrentSession();
+        return rentalRepository.findByStatus(
+                RentalStatus.ACTIVE,
+                getCurrentCompany().getId()
+        );
     }
 
     public Rental getRentalById(Long id) {
-        return rentalRepository.findById(id)
+        return rentalRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Aluguel com esse ID não encontrado"));
     }
 
     @Transactional
     public Rental returnRental(Long rentalId) {
-        Rental rental = rentalRepository.findById(rentalId)
+        Rental rental = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Aluguel não encontrado"));
 
         if (rental.getStatus() == RentalStatus.FINISHED) {
@@ -112,7 +122,7 @@ public class RentalService {
 
     @Transactional
     public Rental updateRental(Long id, RentalRequest dto) {
-        Rental rental = rentalRepository.findById(id)
+        Rental rental = rentalRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Aluguel não encontrado com id: " + id));
 
         rental.setStartDate(dto.startDate());
@@ -136,7 +146,7 @@ public class RentalService {
                 }
 
                 // Busca e reserva o novo
-                Equipment newEquip = equipmentRepository.findById(itemDto.equipmentId())
+                Equipment newEquip = equipmentRepository.findByIdAndCompanyId(itemDto.equipmentId(), getCurrentCompany().getId())
                         .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
 
                 if (newEquip.getStatus() != EquipmentStatus.AVAILABLE) {
@@ -154,6 +164,7 @@ public class RentalService {
     }
 
     public Page<Rental> getAllRentals(String search, String month, Long customerId, RentalStatus status, Pageable pageable) {
+        enableTenantFilterOnCurrentSession();
         Specification<Rental> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (search != null && !search.isBlank()) {
@@ -182,6 +193,7 @@ public class RentalService {
     }
 
     public Page<Rental> getAllScheduledRentals(String search, String month, Pageable pageable) {
+        enableTenantFilterOnCurrentSession();
         Specification<Rental> spec = ((root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (search != null && !search.isBlank()) {
@@ -201,7 +213,7 @@ public class RentalService {
 
     @Transactional
     public Rental activateRental(Long rentalId) {
-        Rental rental = rentalRepository.findById(rentalId)
+        Rental rental = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Aluguel não encontrado"));
 
         if (rental.getStatus() != RentalStatus.SCHEDULED) {
@@ -217,6 +229,8 @@ public class RentalService {
     }
 
     public void deleteRental(Long rentalId) {
-        rentalRepository.deleteById(rentalId);
+        Rental r = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
+                .orElseThrow(() -> new RuntimeException("Aluguel não encontrado"));
+        rentalRepository.delete(r);
     }
 }

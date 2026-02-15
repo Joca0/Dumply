@@ -1,8 +1,6 @@
 package com.dumply.common.dto;
 
 public enum Role {
-    ADMINISTRADOR,
-    USER,
-    AMBIECO,
+    OWNER, ADMIN, MANAGER, USER, DRIVER
 
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, Navigate } from 'react-router-dom';
 import {
   Home,
   Map as MapIcon,
@@ -86,6 +86,10 @@ const Layout = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth/login" replace />;
   }
 
   return (

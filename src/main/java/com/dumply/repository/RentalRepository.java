@@ -12,25 +12,58 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface RentalRepository extends JpaRepository<Rental, Long>, JpaSpecificationExecutor<Rental> {
+
+    Optional<Rental> findByIdAndCompanyId(Long id, UUID companyId);
     @EntityGraph(attributePaths = {"customer", "equipment", "invoice"})
     Page<Rental> findAll(Pageable pageable);
 
-    @Query("select count(r) from Rental r where r.status = com.dumply.common.dto.RentalStatus.ACTIVE")
-    Long countActiveRentals();
+    @Query("""
+    select count(r)
+    from Rental r
+    where r.status = com.dumply.common.dto.RentalStatus.ACTIVE
+      and r.company.id = :companyId
+""")
+    Long countActiveRentals(@Param("companyId") UUID companyId);
 
     @Query("""
     select r
     from Rental r
     where r.status = com.dumply.common.dto.RentalStatus.SCHEDULED
+      and r.company.id = :companyId
 """)
-    Page<Rental> findScheduledRentals(Pageable pageable);
+    Page<Rental> findScheduledRentals(
+            @Param("companyId") UUID companyId,
+            Pageable pageable
+    );
 
-    boolean existsByEquipmentAndStatus(Equipment equipment, RentalStatus status);
+    @Query("""
+    select count(r) > 0
+    from Rental r
+    where r.equipment = :equipment
+      and r.status = :status
+      and r.company.id = :companyId
+""")
+    boolean existsActiveRentalForCompany(
+            @Param("equipment") Equipment equipment,
+            @Param("status") RentalStatus status,
+            @Param("companyId") UUID companyId
+    );
 
-    @EntityGraph(attributePaths = {"customer", "equipment", "invoice"})
-    List<Rental> findByStatus(RentalStatus status);
+    @Query("""
+    select r
+    from Rental r
+    where r.status = :status
+      and r.company.id = :companyId
+""")
+    List<Rental> findByStatus(
+            @Param("status") RentalStatus status,
+            @Param("companyId") UUID companyId
+    );
+
     @Query("SELECT r FROM Rental r WHERE r.customer.id = :customerId AND r.invoice IS NULL AND r.status IN (com.dumply.common.dto.RentalStatus.ACTIVE, com.dumply.common.dto.RentalStatus.FINISHED)")
     List<Rental> findByCustomerIdAndInvoiceIsNull(@Param("customerId") Long customerId);
 }

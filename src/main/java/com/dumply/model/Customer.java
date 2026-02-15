@@ -5,14 +5,26 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
-import java.util.List;
+import java.util.UUID;
 
 @Entity
-@Table(name = "customers")
 @Getter
 @Setter
-public class Customer {
+@Filter(
+        name = "companyFilter",
+        condition = "company_id = :companyId"
+)
+@Table(
+        name = "customers",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"company_id", "document"})
+        }
+)
+public class Customer extends CompanySuperEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,12 +34,15 @@ public class Customer {
     private String fullName;
 
     @NotNull
-    @Column(unique = true)
-    @CPFCNPJ
     private String document;
 
     private String email;
     private String phone;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Company company;
 
 
     public Customer() {

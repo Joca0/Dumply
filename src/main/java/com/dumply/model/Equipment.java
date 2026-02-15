@@ -4,12 +4,21 @@ import com.dumply.common.dto.EquipmentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "equipments")
 @Getter
 @Setter
-public class Equipment {
+@Filter(
+        name = "companyFilter",
+        condition = "company_id = :companyId"
+)
+public class Equipment extends CompanySuperEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +28,11 @@ public class Equipment {
     private String serialNumber;
     private String category;
     private EquipmentStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Company company;
 
     public Equipment() {
 

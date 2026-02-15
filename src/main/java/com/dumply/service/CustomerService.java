@@ -4,6 +4,7 @@ import com.dumply.common.dto.CustomerAutocomplete;
 import com.dumply.common.exception.BusinessException;
 import com.dumply.model.Customer;
 import com.dumply.repository.CustomerRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -14,26 +15,28 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class CustomerService {
+@Transactional
+public class CustomerService extends TenantAwareService {
 
     @Autowired
     private CustomerRepository customerRepository;
 
     public Customer createCustomer(Customer customer) {
         try {
+            customer.setCompany(getCurrentCompany());
             return customerRepository.save(customer);
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Cliente já cadastrado");
         }
     }
     public Customer findById(Long id) {
-        return customerRepository.findById(id)
+        return customerRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("ID não encontrado"));
     }
 
     public Customer updateCustomer(Long id, Customer updatedCustomer) {
         try {
-            return customerRepository.findById(id)
+            return customerRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                     .map(customer -> {
                         customer.setCompanyName(updatedCustomer.getCompanyName());
                         customer.setFullName(updatedCustomer.getFullName());
@@ -53,10 +56,14 @@ public class CustomerService {
         if (search == null || search.isBlank()) {
             return List.of();
         }
-        return customerRepository.searchForSelect(search.toLowerCase());
+        return customerRepository.searchForSelect(
+                search.toLowerCase(),
+                getCurrentCompany().getId()
+        );
     }
 
     public Page<Customer> findAll(String search, Pageable pageable) {
+        enableTenantFilterOnCurrentSession();
         if (search == null || search.isBlank()) {
             return customerRepository.findAll(pageable);
         }
@@ -72,7 +79,9 @@ public class CustomerService {
     }
 
     public void delete(Long id) {
-        customerRepository.deleteById(id);
+        Customer c = customerRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
+                .orElseThrow(() -> new RuntimeException("ID não encontrado"));
+        customerRepository.delete(c);
     }
 
 

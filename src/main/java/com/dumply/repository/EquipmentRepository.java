@@ -10,21 +10,29 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface EquipmentRepository extends JpaRepository<Equipment, Long>, JpaSpecificationExecutor<Equipment> {
 
     @Override
     Page<Equipment> findAll(Pageable pageable);
 
+    Optional<Equipment> findByIdAndCompanyId(Long id, UUID companyId);
+
     @Query("""
     SELECT new com.dumply.common.dto.EquipmentAutocomplete(e.id, e.name, e.serialNumber)
     FROM Equipment e
-    WHERE e.status = com.dumply.common.dto.EquipmentStatus.AVAILABLE
+    WHERE e.company.id = :companyId
+      AND e.status = com.dumply.common.dto.EquipmentStatus.AVAILABLE
       AND (
            LOWER(e.name) LIKE %:q%
         OR e.serialNumber LIKE %:q%
       )
     ORDER BY e.name
 """)
-    List<EquipmentAutocomplete> searchForSelect(@Param("q") String q);
+    List<EquipmentAutocomplete> searchForSelect(
+            @Param("q") String q,
+            @Param("companyId") UUID companyId
+    );
 }

@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class InvoiceService {
+@Transactional
+public class InvoiceService extends TenantAwareService {
 
     @Autowired
     private InvoiceRepository invoiceRepository;
@@ -36,7 +37,8 @@ public class InvoiceService {
 
     @Transactional
     public Invoice createInvoice(InvoiceRequest request) {
-        Customer customer = customerRepository.findById(request.customerId())
+        enableTenantFilterOnCurrentSession();
+        Customer customer = customerRepository.findByIdAndCompanyId(request.customerId(), getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         List<Rental> rentals = rentalRepository.findAllById(request.rentalIds());
@@ -54,7 +56,9 @@ public class InvoiceService {
             }
         }
 
+
         Invoice invoice = new Invoice(customer, rentals);
+        invoice.setCompany(getCurrentCompany());
         Invoice savedInvoice = invoiceRepository.save(invoice);
 
         for (Rental rental : rentals) {
@@ -65,11 +69,15 @@ public class InvoiceService {
         return savedInvoice;
     }
 
+    @Transactional
     public List<Rental> getUninvoicedRentals(Long customerId) {
+        enableTenantFilterOnCurrentSession();
         return rentalRepository.findByCustomerIdAndInvoiceIsNull(customerId);
     }
 
+    @Transactional
     public Page<Invoice> getAllInvoices(String search, String month, InvoiceStatus status, Pageable pageable) {
+        enableTenantFilterOnCurrentSession();
         Specification<Invoice> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (search != null && !search.isBlank()) {
@@ -104,17 +112,22 @@ public class InvoiceService {
     }
 
     public InvoiceStatsDTO getInvoiceStats() {
-        return invoiceRepository.getInvoiceReportStats();
+        enableTenantFilterOnCurrentSession();
+        return invoiceRepository.getInvoiceReportStats(getCurrentCompany().getId());
     }
 
     public Invoice getInvoiceById(Long id) {
-        return invoiceRepository.findById(id)
+        enableTenantFilterOnCurrentSession();
+        return invoiceRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Fatura não encontrada"));
+
+
 
     }
 
     public Invoice updateInvoiceStatus(Long id, InvoiceStatus newStatus) {
-        return invoiceRepository.findById(id)
+        enableTenantFilterOnCurrentSession();
+        return invoiceRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .map(invoice -> {
                     invoice.setStatus(newStatus);
                     return invoiceRepository.save(invoice);
@@ -123,7 +136,10 @@ public class InvoiceService {
     }
 
     public void deleteInvoice(Long id) {
-        invoiceRepository.deleteById(id);
+        enableTenantFilterOnCurrentSession();
+        Invoice inv = invoiceRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
+                .orElseThrow(() -> new RuntimeException("Fatura não encontrada"));
+        invoiceRepository.delete(inv);
     }
 
 }

@@ -1,20 +1,30 @@
 package com.dumply.model;
 
 import com.dumply.common.dto.InvoiceStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "invoices")
 @Getter
 @Setter
-public class Invoice {
+@Filter(
+        name = "companyFilter",
+        condition = "company_id = :companyId"
+)
+public class Invoice extends CompanySuperEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +44,11 @@ public class Invoice {
 
     @Enumerated(EnumType.STRING)
     private InvoiceStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Company company;
 
     public Invoice() {
         this.createdAt = LocalDateTime.now();

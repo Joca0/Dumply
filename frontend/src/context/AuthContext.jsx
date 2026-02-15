@@ -12,23 +12,30 @@ export const AuthProvider = ({ children }) => {
 
     const refreshUser = async () => {
         const token = localStorage.getItem('@dumply:token');
+
         if (!token) {
             setUser(null);
-            navigate('/auth/login');
+            setLoading(false);
             return;
         }
 
         try {
-            const res = await profile();
+            const res = await profile(); // GET /me
             setUser(res.data);
         } catch (err) {
-            setUser(null);
-            navigate('/auth/login');
+            if (err.response?.status === 401) {
+                localStorage.removeItem('@dumply:token');
+                setUser(null);
+            } else {
+                console.error(err);
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        refreshUser().finally(() => setLoading(false));
+        refreshUser();
     }, []);
 
     const logout = (reason) => {

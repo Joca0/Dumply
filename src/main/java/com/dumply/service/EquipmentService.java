@@ -15,22 +15,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class EquipmentService {
+@Transactional
+public class EquipmentService extends TenantAwareService{
 
     @Autowired
     private EquipmentRepository equipmentRepository;
 
     public Equipment createEquipment(Equipment equipment) {
+        equipment.setCompany(getCurrentCompany());
         return equipmentRepository.save(equipment);
     }
 
     public Equipment findById(Long id) {
-        return equipmentRepository.findById(id)
+        return equipmentRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
     }
 
     public Equipment updateEquipment(Long id, Equipment updatedEquipment) {
-        return equipmentRepository.findById(id)
+        return equipmentRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .map(equipment -> {
                         equipment.setName(updatedEquipment.getName());
                         equipment.setSerialNumber(updatedEquipment.getSerialNumber());
@@ -44,10 +46,14 @@ public class EquipmentService {
         if (search == null || search.isBlank()) {
             return List.of();
         }
-        return equipmentRepository.searchForSelect(search.toLowerCase());
+        return equipmentRepository.searchForSelect(
+                search.toLowerCase(),
+                getCurrentCompany().getId()
+        );
     }
 
     public Page<Equipment> getAllEquipments(String search, Pageable pageable) {
+        enableTenantFilterOnCurrentSession();
         if ( search == null || search.isBlank()) {
             return equipmentRepository.findAll(pageable);
         }
@@ -72,6 +78,7 @@ public class EquipmentService {
 
                     entity.setName(dto.name());
                     entity.setSerialNumber(dto.serialNumber());
+                    entity.setCompany(getCurrentCompany());
                     entity.setCategory(dto.category());
                     entity.setStatus(dto.status());
                     return entity;
@@ -82,6 +89,8 @@ public class EquipmentService {
     }
 
     public void deleteEquipment(Long equipmentId) {
-        equipmentRepository.deleteById(equipmentId);
+        Equipment e = equipmentRepository.findByIdAndCompanyId(equipmentId, getCurrentCompany().getId())
+                .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+        equipmentRepository.delete(e);
     }
 }

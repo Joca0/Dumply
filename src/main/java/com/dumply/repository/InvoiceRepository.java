@@ -5,6 +5,8 @@ import com.dumply.common.dto.InvoiceStatus;
 import com.dumply.model.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -14,12 +16,18 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpecificationExecutor<Invoice> {
 
-    @Query("SELECT COUNT(i) FROM Invoice i WHERE i.status = com.dumply.common.dto.InvoiceStatus.PENDING")
-    Long countPendingInvoices();
+    @Query("""
+    SELECT COUNT(i)
+    FROM Invoice i
+    WHERE i.status = com.dumply.common.dto.InvoiceStatus.PENDING
+      AND i.company.id = :companyId
+""")
+    Long countPendingInvoices(@Param("companyId") UUID companyId);
 
     @Query("""
     SELECT new com.dumply.common.dto.InvoiceStatsDTO(
@@ -29,13 +37,16 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
         COUNT(CASE WHEN i.status = com.dumply.common.dto.InvoiceStatus.PENDING THEN 1 ELSE NULL END)
     )
     FROM Invoice i
+        WHERE i.company.id = :companyId
 """)
-    InvoiceStatsDTO getInvoiceReportStats();
+    InvoiceStatsDTO getInvoiceReportStats(@Param("companyId") UUID companyId);
 
+    @EntityGraph(attributePaths = {"items", "items.equipment", "customer"})
     @Query("""
     select i
     from Invoice i
-    where (:status is null or i.status = :status)
+    where i.company.id = :companyId
+          and (:status is null or i.status = :status)
     order by
         case i.status
             when com.dumply.common.dto.InvoiceStatus.PENDING then 1
@@ -45,6 +56,12 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
         end,
         i.createdAt desc
 """)
-    Page<Invoice> getAllInvoices(@Param("status") InvoiceStatus status, Pageable pageable);
+    Page<Invoice> getAllInvoices(@Param("status") InvoiceStatus status, Pageable pageable, @Param("companyId") UUID companyId);
 
+    @EntityGraph(attributePaths = {"items", "items.equipment", "customer"})
+    Optional<Invoice> findByIdAndCompanyId(Long id, UUID companyId);
+
+    @Override
+    @EntityGraph(attributePaths = {"items", "items.equipment", "customer"})
+    Page<Invoice> findAll(Specification<Invoice> spec, Pageable pageable);
 }
