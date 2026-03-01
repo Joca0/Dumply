@@ -64,6 +64,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long>, JpaSpecif
             @Param("companyId") UUID companyId
     );
 
-    @Query("SELECT r FROM Rental r WHERE r.customer.id = :customerId AND r.invoice IS NULL AND r.status IN (com.dumply.common.dto.RentalStatus.ACTIVE, com.dumply.common.dto.RentalStatus.FINISHED)")
-    List<Rental> findByCustomerIdAndInvoiceIsNull(@Param("customerId") Long customerId);
+    @Query("SELECT r FROM Rental r WHERE r.customer.id = :customerId AND r.company.id = :companyId AND r.invoice IS NULL AND r.status IN (com.dumply.common.dto.RentalStatus.ACTIVE, com.dumply.common.dto.RentalStatus.FINISHED)")
+    List<Rental> findByCustomerIdAndInvoiceIsNull(@Param("customerId") Long customerId, @Param("companyId") UUID companyId);
 }

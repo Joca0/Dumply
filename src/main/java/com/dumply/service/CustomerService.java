@@ -4,7 +4,9 @@ import com.dumply.common.dto.CustomerAutocomplete;
 import com.dumply.common.exception.BusinessException;
 import com.dumply.model.Customer;
 import com.dumply.repository.CustomerRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.hibernate.usertype.BaseUserTypeSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -31,7 +33,7 @@ public class CustomerService extends TenantAwareService {
     }
     public Customer findById(Long id) {
         return customerRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("ID não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("ID não encontrado"));
     }
 
     public Customer updateCustomer(Long id, Customer updatedCustomer) {
@@ -45,7 +47,7 @@ public class CustomerService extends TenantAwareService {
                         customer.setPhone(updatedCustomer.getPhone());
                         return customerRepository.save(customer);
                     })
-                    .orElseThrow(() -> new RuntimeException("Erro ao atualizar cliente: " + id));
+                    .orElseThrow(() -> new BusinessException("Erro ao atualizar cliente: " + id));
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Já existe um cliente com esse documento");
         }
@@ -80,7 +82,7 @@ public class CustomerService extends TenantAwareService {
 
     public void delete(Long id) {
         Customer c = customerRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("ID não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("ID não encontrado"));
         customerRepository.delete(c);
     }
 

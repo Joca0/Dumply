@@ -1,5 +1,6 @@
 package com.dumply.config.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dumply.config.tenant.TenantContext;
 import com.dumply.model.User;
 import com.dumply.repository.UserRepository;
@@ -18,6 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
@@ -27,6 +30,9 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -53,7 +59,7 @@ public class SecurityFilter extends OncePerRequestFilter {
                 // Garantir que o usuário pertence à empresa do token (defesa em profundidade)
                 if (!user.getCompany().getId().equals(companyId)) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Forbidden");
+                    writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Acesso proibido: Usuário não pertence a esta empresa.");
                     return;
                 }
 
@@ -72,8 +78,8 @@ public class SecurityFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception ex) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Unauthorized");
+                // Token inválido, expirado ou erro na busca do usuário
+                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou expirado.");
                 return;
             }
         }
@@ -90,5 +96,13 @@ public class SecurityFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
         return authHeader.substring(7);
+    }
+
+    private void writeErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        Map<String, String> error = new HashMap<>();
+        error.put("message", message);
+        response.getWriter().write(objectMapper.writeValueAsString(error));
     }
 }

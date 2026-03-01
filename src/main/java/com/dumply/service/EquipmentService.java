@@ -2,8 +2,10 @@ package com.dumply.service;
 
 import com.dumply.common.dto.EquipmentAutocomplete;
 import com.dumply.common.dto.EquipmentDTO;
+import com.dumply.common.exception.BusinessException;
 import com.dumply.model.Equipment;
 import com.dumply.repository.EquipmentRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,7 +30,7 @@ public class EquipmentService extends TenantAwareService{
 
     public Equipment findById(Long id) {
         return equipmentRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
     }
 
     public Equipment updateEquipment(Long id, Equipment updatedEquipment) {
@@ -39,7 +41,7 @@ public class EquipmentService extends TenantAwareService{
                         equipment.setCategory(updatedEquipment.getCategory());
                         return equipmentRepository.save(equipment);
                 })
-                .orElseThrow(() -> new RuntimeException("Erro ao atualizar equipamento: " + id));
+                .orElseThrow(() -> new BusinessException("Erro ao atualizar equipamento: " + id));
     }
 
     public List<EquipmentAutocomplete> searchForSelect(String search) {
@@ -90,7 +92,7 @@ public class EquipmentService extends TenantAwareService{
 
     public void deleteEquipment(Long equipmentId) {
         Equipment e = equipmentRepository.findByIdAndCompanyId(equipmentId, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
         equipmentRepository.delete(e);
     }
 }

@@ -14,9 +14,11 @@ import {
   CreditCard,
   Filter
 } from 'lucide-react';
+import { usePDFDownload } from "@/hooks/usePDFDownload.jsx";
 import { useNavigate } from 'react-router-dom';
 
 const InvoiceList = () => {
+  const { handleDownloadPDF: downloadPDF } = usePDFDownload();
   const [invoices, setInvoices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -96,13 +98,6 @@ const InvoiceList = () => {
             <p className="text-gray-400 text-sm mt-1">Gestão de recebíveis e conciliação financeira.</p>
           </div>
           <div className="flex w-full md:w-auto gap-3 no-print">
-            <button
-                onClick={() => window.print()}
-                className="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-gray-300 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border border-gray-700 transition-all"
-            >
-              <Download size={18} />
-              <span>Relatório</span>
-            </button>
             <button
                 onClick={() => navigate('/invoices/new')}
                 className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95"
@@ -299,6 +294,14 @@ const InvoiceList = () => {
                   Próxima <ChevronRight size={14} />
                 </button>
               </div>
+            </div>
+        )}
+
+        {/* LOADING OVERLAY (Ao trocar de página) */}
+        {loading && invoices.length > 0 && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-800/90 backdrop-blur-md border border-gray-700 text-gray-200 px-5 py-2.5 rounded-full shadow-2xl">
+              <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              <span className="text-xs font-bold tracking-wide">ATUALIZANDO...</span>
             </div>
         )}
       </div>

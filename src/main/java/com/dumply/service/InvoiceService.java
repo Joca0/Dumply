@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -72,7 +73,7 @@ public class InvoiceService extends TenantAwareService {
     @Transactional
     public List<Rental> getUninvoicedRentals(Long customerId) {
         enableTenantFilterOnCurrentSession();
-        return rentalRepository.findByCustomerIdAndInvoiceIsNull(customerId);
+        return rentalRepository.findByCustomerIdAndInvoiceIsNull(customerId, getCurrentCompany().getId());
     }
 
     @Transactional

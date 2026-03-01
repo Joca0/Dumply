@@ -3,13 +3,14 @@ package com.dumply.service;
 import com.dumply.common.dto.EquipmentStatus;
 import com.dumply.common.dto.RentalRequest;
 import com.dumply.common.dto.RentalStatus;
-import com.dumply.common.exception.InvalidRentalDateException;
+import com.dumply.common.exception.BusinessException;
 import com.dumply.model.Customer;
 import com.dumply.model.Equipment;
 import com.dumply.model.Rental;
 import com.dumply.repository.CustomerRepository;
 import com.dumply.repository.EquipmentRepository;
 import com.dumply.repository.RentalRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,7 +42,7 @@ public class RentalService extends TenantAwareService{
     @Transactional
     public List<Rental> createRental(RentalRequest request) {
         Customer customer = customerRepository.findByIdAndCompanyId(request.customerId(), getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
 
         List<Rental> rentals = new ArrayList<>();
 
@@ -49,16 +51,22 @@ public class RentalService extends TenantAwareService{
             rental.setCustomer(customer);
             rental.setStartDate(request.startDate());
             rental.setEndDate(request.endDate());
+            if (request.endDate() != null && request.endDate().isBefore(request.startDate())) {
+                throw new BusinessException("A data final não pode ser anterior à data de início");
+            }
             rental.setFullAddress(request.fullAddress());
             rental.setLatitude(request.latitude());
             rental.setLongitude(request.longitude());
             rental.setCharge(item.charge());
+            if (item.charge().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("O valor do aluguel não pode ser zero ou negativo");
+            }
             rental.setCompany(getCurrentCompany());
 
             if (item.equipmentId() != null) {
 
                 Equipment equipment = equipmentRepository.findByIdAndCompanyId(item.equipmentId(), getCurrentCompany().getId())
-                        .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+                        .orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
 
                 boolean hasActiveRental =
                         rentalRepository.existsActiveRentalForCompany(
@@ -68,7 +76,7 @@ public class RentalService extends TenantAwareService{
                         );
 
                 if (hasActiveRental) {
-                    throw new RuntimeException("Equipamento já possui aluguel ativo");
+                    throw new BusinessException("Equipamento já possui aluguel ativo");
                 }
 
                 rental.setEquipment(equipment);
@@ -97,16 +105,16 @@ public class RentalService extends TenantAwareService{
 
     public Rental getRentalById(Long id) {
         return rentalRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Aluguel com esse ID não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Aluguel com esse ID não encontrado"));
     }
 
     @Transactional
     public Rental returnRental(Long rentalId) {
         Rental rental = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Aluguel não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado"));
 
         if (rental.getStatus() == RentalStatus.FINISHED) {
-            throw new RuntimeException("Aluguel já finalizado");
+            throw new BusinessException("Aluguel já finalizado");
         }
 
         rental.setStatus(RentalStatus.FINISHED);
@@ -123,7 +131,7 @@ public class RentalService extends TenantAwareService{
     @Transactional
     public Rental updateRental(Long id, RentalRequest dto) {
         Rental rental = rentalRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Aluguel não encontrado com id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado com id: " + id));
 
         rental.setStartDate(dto.startDate());
         rental.setEndDate(dto.endDate());
@@ -147,10 +155,10 @@ public class RentalService extends TenantAwareService{
 
                 // Busca e reserva o novo
                 Equipment newEquip = equipmentRepository.findByIdAndCompanyId(itemDto.equipmentId(), getCurrentCompany().getId())
-                        .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+                        .orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
 
                 if (newEquip.getStatus() != EquipmentStatus.AVAILABLE) {
-                    throw new RuntimeException("Equipamento indisponível");
+                    throw new BusinessException("Equipamento indisponível");
                 }
 
                 newEquip.setStatus(EquipmentStatus.RENTED);
@@ -214,14 +222,14 @@ public class RentalService extends TenantAwareService{
     @Transactional
     public Rental activateRental(Long rentalId) {
         Rental rental = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Aluguel não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado"));
 
         if (rental.getStatus() != RentalStatus.SCHEDULED) {
-            throw new RuntimeException("Apenas aluguéis agendados podem ser ativados");
+            throw new BusinessException("Apenas aluguéis agendados podem ser ativados");
         }
 
         if (rental.getEquipment() == null) {
-            throw new RuntimeException("Atribua um equipamento antes de ativar o aluguel");
+            throw new BusinessException("Atribua um equipamento antes de ativar o aluguel");
         }
 
         rental.setStatus(RentalStatus.ACTIVE);
@@ -230,7 +238,7 @@ public class RentalService extends TenantAwareService{
 
     public void deleteRental(Long rentalId) {
         Rental r = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Aluguel não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado"));
         rentalRepository.delete(r);
     }
 }

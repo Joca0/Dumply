@@ -1,3 +1,19 @@
+## [1.8] - 28-02-2026
+
+### Gestão de Documentos & Exportação
+- **Exportação em PDF**: Implementado hook `usePDFDownload` para geração de PDFs a partir de elementos HTML (Faturas/Recibos) utilizando `html2canvas-pro` e `jsPDF`.
+- **Máscaras de Entrada**: Novos hooks `useDocumentMask` e `usePhoneMask` para padronização e facilitação do preenchimento de documentos (CPF/CNPJ) e telefones.
+
+### Front-end (UX/UI & Feedback)
+- **Alertas Animados**: Introdução de `CustomAlert` e `MainAlert` utilizando `framer-motion` para feedbacks visuais mais fluidos e modernos.
+- **Página 404**: Adicionada página de erro customizada para rotas não encontradas.
+- **Melhorias de Estilo**: Ajustes globais de layout e aplicação de novas dependências visuais.
+
+### Back-end (Estabilidade & Padronização)
+- **Tratamento Global de Exceções**: Expansão do `GlobalExceptionHandler` para captura e resposta padronizada de erros (404 Not Found, 400 Bad Request, 401 Unauthorized, 403 Forbidden e 500 Internal Error).
+- **Refatoração de Enums**: Reorganização de tipos enumerados para melhor manutenção do código.
+- **Validação de Dados**: Melhoria nas respostas de erros de validação de formulários da API.
+
 ## [1.7] - 09-02-2026
 
 ### Gestão de Aluguéis & Agendamentos

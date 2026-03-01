@@ -3,8 +3,10 @@ import { getEquipments, deleteEquipment } from '../api';
 import {Search, Box, Edit2, Trash2, ChevronLeft, ChevronRight, Tag, Hash, AlertCircle, Receipt} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from "sonner";
+import { useAlert } from "@/components/ui/MainAlert.jsx";
 
 const EquipmentList = () => {
+  const { showConfirm } = useAlert();
   const [equipments, setEquipments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -37,15 +39,19 @@ const EquipmentList = () => {
   }, [page]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Deseja realmente excluir este equipamento?')) {
-      try {
-        await deleteEquipment(id);
-        toast.success('Equipamento excluído com sucesso!');
-        fetchEquipments(page);
-      } catch (err) {
-        toast.error('Erro ao excluir. O equipamento pode estar vinculado a um aluguel.');
-      }
-    }
+    showConfirm(
+        'Tem certeza?',
+        'Você deseja excluir este equipamento?',
+        async () => {
+          try {
+            await deleteEquipment(id);
+            toast.success('Equipamento excluído com sucesso!');
+            fetchEquipments(page);
+          } catch (err) {
+            toast.error('Erro ao excluir. O equipamento pode estar vinculado a um aluguel.');
+          }
+        }
+    )
   };
 
   //Estilização dos status
@@ -226,6 +232,14 @@ const EquipmentList = () => {
             </button>
           </div>
         </div>
+
+        {/* LOADING OVERLAY (Ao trocar de página) */}
+        {loading && equipments.length > 0 && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-800/90 backdrop-blur-md border border-gray-700 text-gray-200 px-5 py-2.5 rounded-full shadow-2xl">
+              <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              <span className="text-xs font-bold tracking-wide">ATUALIZANDO...</span>
+            </div>
+        )}
       </div>
   );
 };

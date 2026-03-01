@@ -33,7 +33,7 @@ const CustomerSearch = ({ onSelect, selectedCustomerId }) => {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (searchTerm.length >= 2) {
+      if (searchTerm.length >= 1) {
         try {
           const res = await autocompleteCustomers(searchTerm);
           const exactMatch = res.data.length === 1 && res.data[0].fullName === searchTerm;

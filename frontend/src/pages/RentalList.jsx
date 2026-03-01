@@ -15,9 +15,13 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { Link } from "react-router-dom";
+import { useAlert } from "@/components/ui/MainAlert.jsx";
+import { usePDFDownload } from "@/hooks/usePDFDownload.jsx";
 import { toast } from "sonner";
 
 const RentalList = () => {
+  const { showConfirm } = useAlert();
+  const { handleDownloadPDF: downloadPDF} = usePDFDownload();
   const [rentals, setRentals] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -25,6 +29,7 @@ const RentalList = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [processingId, setProcessingId] = useState(null);
 
   // Debounce na busca
   useEffect(() => {
@@ -53,16 +58,27 @@ const RentalList = () => {
   }, [page, searchTerm, selectedMonth, selectedStatus]);
 
   const handleReturn = async (id) => {
-    if (window.confirm("Confirmar a devolução e encerrar cobrança?")) {
-      try {
-        await returnRental(id);
-        toast.success("Aluguel finalizado com sucesso!");
-        fetchRentals();
-      } catch (err) {
-        toast.error("Erro ao finalizar aluguel.");
-      }
-    }
+    showConfirm(
+        'Tem certeza?',
+        'Você deseja finalizar o aluguél?',
+        async () => {
+          setProcessingId(id);
+          try {
+            await returnRental(id);
+            toast.success("Aluguel finalizado com sucesso!");
+            fetchRentals();
+          } catch (err) {
+            toast.error("Erro ao finalizar aluguel.");
+          } finally {
+            setProcessingId(null);
+          }
+        }
+    )
   };
+
+  const handleDownloadPDF = () => {
+    downloadPDF('printable', 'lista-de-alugueis')
+  }
 
   const getStatusBadge = (status) => {
     const isMobile = window.innerWidth < 768;
@@ -113,7 +129,7 @@ const RentalList = () => {
           </div>
           <div className="flex w-full md:w-auto gap-3 no-print">
             <button
-                onClick={() => window.print()}
+                onClick={() => handleDownloadPDF()}
                 className="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-gray-300 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border border-gray-700 transition-all"
             >
               <Download size={18} />
@@ -234,9 +250,10 @@ const RentalList = () => {
                   {rental.status === 'ACTIVE' && (
                       <button
                           onClick={() => handleReturn(rental.id)}
-                          className="col-span-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg py-2 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                          disabled={processingId === rental.id}
+                          className="col-span-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg py-2 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50 disabled:pointer-events-none"
                       >
-                        <CheckCircle size={14} /> Finalizar
+                        {processingId === rental.id ? <div className="animate-spin h-3 w-3 border-2 border-emerald-400 border-t-transparent rounded-full"/> : <CheckCircle size={14} />} {processingId === rental.id ? 'Enviando...' : 'Finalizar'}
                       </button>
                   )}
                   <Link
@@ -259,7 +276,7 @@ const RentalList = () => {
         </div>
 
         {/* --- DESKTOP --- */}
-        <div className="hidden md:block bg-gray-900/40 rounded-2xl border border-gray-800 backdrop-blur-sm overflow-hidden shadow-xl mb-6">
+        <div id="printable" className="hidden md:block bg-gray-900/40 rounded-2xl border border-gray-800 backdrop-blur-sm overflow-hidden shadow-xl mb-6">
           <table className="w-full text-left border-separate border-spacing-0">
             <thead>
             <tr className="bg-gray-800/50">
@@ -373,6 +390,14 @@ const RentalList = () => {
                   Próxima <ChevronRight size={14} />
                 </button>
               </div>
+            </div>
+        )}
+
+        {/* LOADING OVERLAY (Ao trocar de página) */}
+        {loading && rentals.length > 0 && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-800/90 backdrop-blur-md border border-gray-700 text-gray-200 px-5 py-2.5 rounded-full shadow-2xl">
+              <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              <span className="text-xs font-bold tracking-wide">ATUALIZANDO...</span>
             </div>
         )}
       </div>

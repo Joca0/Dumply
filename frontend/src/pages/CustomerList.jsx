@@ -14,10 +14,12 @@ import {
   Building2,
   Fingerprint
 } from 'lucide-react';
+import { useAlert } from "@/components/ui/MainAlert.jsx";
 import { Link } from 'react-router-dom';
 import { toast } from "sonner";
 
 const CustomerList = () => {
+  const { showConfirm } = useAlert();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -43,13 +45,17 @@ const CustomerList = () => {
   useEffect(() => { fetchCustomers(page); }, [page]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Deseja realmente excluir este cliente?')) {
-      try {
-        await deleteCustomer(id);
-        toast.success('Cliente excluído com sucesso!');
-        fetchCustomers(page);
-      } catch (err) { toast.error('Erro ao excluir cliente.'); }
-    }
+    showConfirm(
+        'Tem certeza?',
+        'Você deseja excluir este cliente?',
+        async () => {
+          try {
+            await deleteCustomer(id);
+            toast.success('Cliente excluído com sucesso!');
+            fetchCustomers(page);
+          } catch (err) { toast.error('Erro ao excluir cliente.'); }
+        }
+    )
   };
 
   if (loading && customers.length === 0) {
@@ -61,7 +67,7 @@ const CustomerList = () => {
   }
 
   return (
-      <div className="p-4 md:p-8 max-w-[1600px] mx-auto min-h-screen">
+      <div className="p-4 md:p-8 max-w-400 mx-auto min-h-screen">
         {/* CABEÇALHO (Otimizado para mobile) */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
@@ -72,9 +78,6 @@ const CustomerList = () => {
             <p className="text-gray-400 text-sm">Gerenciamento de base cadastral.</p>
           </div>
           <div className="grid grid-cols-2 md:flex w-full md:w-auto gap-3 no-print">
-            <button onClick={() => window.print()} className="bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-gray-700 transition-all">
-              <Download size={16} /> PDF
-            </button>
             <Link to="/customers/new" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center shadow-lg shadow-blue-900/20">
               Novo Cliente
             </Link>
@@ -197,6 +200,14 @@ const CustomerList = () => {
             </button>
           </div>
         </div>
+
+        {/* LOADING OVERLAY (Ao trocar de página) */}
+        {loading && customers.length > 0 && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-800/90 backdrop-blur-md border border-gray-700 text-gray-200 px-5 py-2.5 rounded-full shadow-2xl">
+              <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              <span className="text-xs font-bold tracking-wide">ATUALIZANDO...</span>
+            </div>
+        )}
       </div>
   );
 };

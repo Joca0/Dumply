@@ -1,6 +1,7 @@
 package com.dumply.config.security;
 
 import com.dumply.config.tenant.TenantHibernateFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,11 +44,16 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/companies/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/companies/create").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"message\": \"Você precisa estar autenticado para acessar este recurso.\"}");
+                        }))
                 .addFilterBefore(tenantHibernateFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(securityFilter, TenantHibernateFilter.class);

@@ -1,97 +1,59 @@
-import React, { useState, useEffect, useRef} from 'react';
-import {  getUninvoicedRentals, createInvoice, autocompleteCustomers, getCustomer } from '../api';
-import { User, Search, Plus, Check, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { getUninvoicedRentals, createInvoice, autocompleteCustomers, getCustomer } from '../api';
+import { User, Search, Plus, Check, Loader2, Receipt, Calendar, Package, ChevronRight, Calculator, Wallet, Hash, MapPin, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import {toast} from "sonner";
+import { toast } from "sonner";
+import { useAlert} from "@/components/ui/MainAlert.jsx";
 
-
-// -- PESQUISA POR CLIENTE ---
+// --- CUSTOMER SEARCH COM ESTILO DE CAMPO DE BUSCA MODERNO ---
 const CustomerSearch = ({ onSelect, selectedCustomerId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef(null);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) setIsOpen(false);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Lógica de Autocomplete (Chamada API)
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchTerm.length >= 2) {
-        try {
-          const res = await autocompleteCustomers(searchTerm);
-          
-          if (res.data.length === 1 && res.data[0].fullName === searchTerm) {
-            setSuggestions([]);
-          } else {
-            setSuggestions(res.data);
-            setIsOpen(true);
-          }
-        } catch (err) {
-          console.error("Erro ao buscar clientes", err);
-        }
-      } else {
-        setSuggestions([]);
+        const res = await autocompleteCustomers(searchTerm);
+        setSuggestions(res.data);
+        setIsOpen(true);
       }
     }, 300);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
-  // Efeito para buscar o nome do cliente quando selectedCustomerId mudar
-  useEffect(() => {
-    if (selectedCustomerId && !searchTerm) {
-      const fetchCustomerName = async () => {
-        try {
-          const res = await getCustomer(selectedCustomerId);
-          if (res.data) {
-            setSearchTerm(res.data.fullName);
-          }
-        } catch (err) {
-          console.error("Erro ao carregar nome do cliente", err);
-        }
-      };
-      fetchCustomerName();
-    }
-  }, [selectedCustomerId]);
-
   return (
-      <div className="relative" ref={wrapperRef}>
-        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
-          <User size={12}/> Cliente
-        </label>
-        <div className="relative">
+      <div className="relative w-full">
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Search size={20} className="text-gray-500 group-focus-within:text-blue-500 transition-colors" />
+          </div>
           <input
               type="text"
-              placeholder="Buscar cliente por nome ou CPF/CNPJ..."
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 pl-9 text-sm text-white focus:border-blue-500 outline-none"
+              className="w-full bg-gray-900/50 border border-gray-800 text-white text-lg rounded-2xl py-4 pl-12 pr-4 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-600"
+              placeholder="Pesquisar cliente por nome ou documento..."
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
-              onFocus={() => { setIsOpen(true); }}
+              onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search size={16} className="absolute left-3 top-3 text-gray-500" />
         </div>
 
         {isOpen && suggestions.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl max-h-60 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-3 bg-gray-900 border border-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl">
               {suggestions.map(c => (
                   <div
                       key={c.id}
-                      className="p-3 hover:bg-blue-600 cursor-pointer border-b border-gray-700 last:border-0 transition-colors"
+                      className="p-4 hover:bg-blue-600/20 cursor-pointer border-b border-gray-800/50 last:border-0 transition-all flex items-center justify-between group"
                       onClick={() => {
                         onSelect(c.id.toString());
                         setSearchTerm(c.fullName);
                         setIsOpen(false);
                       }}
                   >
-                    <div className="text-sm font-bold text-white">{c.fullName}</div>
-                    <div className="text-[10px] text-gray-400 uppercase">{c.document || 'Sem documento'}</div>
+                    <div>
+                      <div className="font-bold text-white group-hover:text-blue-400">{c.fullName}</div>
+                      <div className="text-xs text-gray-500 font-mono">{c.document}</div>
+                    </div>
+                    <ChevronRight size={16} className="text-gray-700 group-hover:text-blue-400" />
                   </div>
               ))}
             </div>
@@ -100,8 +62,8 @@ const CustomerSearch = ({ onSelect, selectedCustomerId }) => {
   );
 };
 
-
 const InvoiceCreate = () => {
+  const { showConfirm } = useAlert();
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [rentals, setRentals] = useState([]);
   const [selectedRentalIds, setSelectedRentalIds] = useState([]);
@@ -109,158 +71,205 @@ const InvoiceCreate = () => {
   const [fetchingRentals, setFetchingRentals] = useState(false);
   const navigate = useNavigate();
 
+  const handleInvoiceClose = () => {
+    showConfirm(
+        'Tem certeza?',
+        'Você deseja fechar a fatura? Está ação não poderá ser desfeita.',
+        async () => {
+          if (selectedRentalIds.length === 0) return toast.error("Selecione ao menos um item");
+          setLoading(true);
+          try {
+            const res = await createInvoice({ customerId: parseInt(selectedCustomerId), rentalIds: selectedRentalIds });
+            toast.success("Fatura gerada!");
+            navigate(`/invoices/${res.data.id}`);
+          } catch (e) { toast.error("Erro ao gerar fatura"); }
+          finally { setLoading(false); }
+        }
+    )
+  }
+
+  const totalSelected = rentals
+      .filter(r => selectedRentalIds.includes(r.id))
+      .reduce((acc, curr) => acc + curr.charge, 0);
+
   useEffect(() => {
     if (selectedCustomerId) {
-      const fetchRentals = async () => {
-        setFetchingRentals(true);
-        try {
-          const res = await getUninvoicedRentals(selectedCustomerId);
-          setRentals(res.data);
-          setSelectedRentalIds([]);
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setFetchingRentals(false);
-        }
-      };
-      fetchRentals();
-    } else {
-      setRentals([]);
-      setSelectedRentalIds([]);
+      setFetchingRentals(true);
+      getUninvoicedRentals(selectedCustomerId)
+          .then(res => setRentals(res.data))
+          .finally(() => setFetchingRentals(false));
     }
   }, [selectedCustomerId]);
 
-  const toggleRentalSelection = (id) => {
+  const toggleRental = (id) => {
     setSelectedRentalIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
-  const handleCreateInvoice = async () => {
-    if (selectedRentalIds.length === 0) return;
-    setLoading(true);
-    try {
-      const res = await createInvoice({
-        customerId: parseInt(selectedCustomerId),
-        rentalIds: selectedRentalIds
-      });
-      toast.success('Fatura gerada com sucesso!');
-      navigate(`/invoices/${res.data.id}`);
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao criar fatura');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-6 mt-8 md:mt-0">
-        <h2 className="text-xl md:text-2xl font-bold">Gerar Nova Fatura</h2>
-        <p className="text-sm md:text-base text-gray-400">Selecione o cliente e os aluguéis que deseja cobrar.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/*Seleção de cliente*/}
-        <div className="lg:col-span-1">
-          <div className="bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700">
-            <CustomerSearch
-                selectedCustomerId={selectedCustomerId}
-                onSelect={setSelectedCustomerId}
-            />
-          </div>
-        </div>
-
-        <div className="lg:col-span-2">
-          <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-            <div className="p-4 bg-gray-700/50 border-b border-gray-700 flex justify-between items-center">
-              <h3 className="font-semibold text-base md:text-lg">Aluguéis Pendentes</h3>
-              {selectedRentalIds.length > 0 && (
-                <span className="bg-blue-600 text-white text-[10px] md:text-xs px-2 py-1 rounded-full whitespace-nowrap ml-2">
-                  {selectedRentalIds.length} selecionado(s)
-                </span>
-              )}
-            </div>
-
-            <div className="max-h-[500px] overflow-x-auto">
-              {fetchingRentals ? (
-                <div className="p-12 text-center">
-                  <Loader2 className="animate-spin mx-auto mb-2 text-blue-500" size={32} />
-                  <p className="text-gray-400">Buscando aluguéis...</p>
-                </div>
-              ) : rentals.length > 0 ? (
-                <table className="w-full text-left min-w-[500px]">
-                  <thead className="text-gray-400 text-[10px] md:text-xs uppercase border-b border-gray-700">
-                    <tr>
-                      <th className="p-4 w-10"></th>
-                      <th className="p-4">Equipamento</th>
-                      <th className="p-4">Período</th>
-                      <th className="p-4 text-right">Valor</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {rentals.map((rental) => (
-                      <tr
-                        key={rental.id}
-                        className={`hover:bg-gray-700/30 cursor-pointer transition-colors ${selectedRentalIds.includes(rental.id) ? 'bg-blue-600/10' : ''}`}
-                        onClick={() => toggleRentalSelection(rental.id)}
-                      >
-                        <td className="p-4">
-                          <div className={`w-5 h-5 rounded border ${selectedRentalIds.includes(rental.id) ? 'bg-blue-500 border-blue-500' : 'border-gray-600'} flex items-center justify-center`}>
-                            {selectedRentalIds.includes(rental.id) && <Check size={14} className="text-white" />}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="font-medium text-sm">{rental.equipment?.name}</div>
-                          <div className={`text-[10px] text-gray-500 truncate max-w-37.5`}>Número de série: {rental.equipment?.serialNumber}</div>
-                          <div className="text-[10px] text-gray-500 truncate max-w-37.5">{rental.fullAddress}</div>
-                        </td>
-                        <td className="p-4 text-[10px] md:text-sm">
-                          {new Date(rental.startDate).toLocaleDateString()} - {new Date(rental.endDate).toLocaleDateString()}
-                        </td>
-                        <td className="p-4 text-right font-bold text-sm">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(rental.charge)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : selectedCustomerId ? (
-                <div className="p-12 text-center text-gray-500 text-sm">
-                  Nenhum aluguel pendente para este cliente.
-                </div>
-              ) : (
-                <div className="p-12 text-center text-gray-500 text-sm">
-                  Selecione um cliente para ver os aluguéis disponíveis.
-                </div>
-              )}
-            </div>
-
-            {selectedRentalIds.length > 0 && (
-              <div className="p-4 bg-gray-900 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="text-center md:text-left">
-                  <p className="text-[10px] text-gray-400 uppercase font-semibold">Total Selecionado</p>
-                  <p className="text-xl font-bold text-blue-400">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                      rentals.filter(r => selectedRentalIds.includes(r.id)).reduce((acc, curr) => acc + curr.charge, 0)
-                    )}
-                  </p>
-                </div>
-                <button
-                  onClick={handleCreateInvoice}
-                  disabled={loading}
-                  className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-white px-6 py-3 md:py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
-                >
-                  {loading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
-                  Gerar Fatura
-                </button>
+      <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
+        {/* HEADER FIXO */}
+        <header className="border-b border-gray-800 bg-gray-950/50 backdrop-blur-md sticky top-0 z-30">
+          <div className="max-w-400 mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/40">
+                <Receipt size={24} className="text-white" />
               </div>
+              <div>
+                <h1 className="text-2xl font-black tracking-tight">Novo Faturamento</h1>
+                <p className="text-xs text-gray-500 uppercase font-bold tracking-widest">Preview de Cobrança</p>
+              </div>
+            </div>
+
+            <div className="flex-1 max-w-2xl w-full">
+              <CustomerSearch onSelect={setSelectedCustomerId} selectedCustomerId={selectedCustomerId} />
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 max-w-400 mx-auto w-full p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* LADO ESQUERDO: LISTA DE ITENS */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                <Package size={16} className="text-blue-500" />
+                Aluguéis para Faturar {rentals.length > 0 && `(${rentals.length})`}
+              </h2>
+              {rentals.length > 0 && (
+                  <button
+                      onClick={() => setSelectedRentalIds(rentals.map(r => r.id))}
+                      className="text-xs font-bold text-blue-500 hover:text-blue-400 transition-colors uppercase"
+                  >
+                    Selecionar Tudo
+                  </button>
+              )}
+            </div>
+
+            {fetchingRentals ? (
+                <div className="h-96 flex flex-col items-center justify-center bg-gray-900/20 border border-gray-800 rounded-[2.5rem] border-dashed">
+                  <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
+                  <p className="text-gray-500 font-medium">Buscando medições pendentes...</p>
+                </div>
+            ) : rentals.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {rentals.map((rental) => (
+                      <div
+                          key={rental.id}
+                          onClick={() => toggleRental(rental.id)}
+                          className={`relative group p-6 rounded-4xl border transition-all duration-300 cursor-pointer overflow-hidden ${
+                              selectedRentalIds.includes(rental.id)
+                                  ? 'bg-blue-600/10 border-blue-500 shadow-[0_0_30px_rgba(37,99,235,0.1)]'
+                                  : 'bg-gray-900/40 border-gray-800 hover:border-gray-600 hover:bg-gray-900/60'
+                          }`}
+                      >
+                        {/* SELECIONADOR VISUAL */}
+                        <div className={`absolute top-6 right-6 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                            selectedRentalIds.includes(rental.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-700'
+                        }`}>
+                          {selectedRentalIds.includes(rental.id) && <Check size={14} className="text-white" />}
+                        </div>
+
+                        <div className="mb-6">
+                          <p className="text-[10px] font-bold text-blue-500 uppercase mb-1 flex items-center gap-1">
+                            <Hash size={10} /> ID {rental.id}
+                          </p>
+                          <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{rental.equipment?.name}</h3>
+                          <p className="text-xs text-gray-500 font-mono mt-1">Número de série: {rental.equipment?.serialNumber}</p>
+                        </div>
+
+                        <div className="space-y-3 mb-8">
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <Calendar size={14} className="text-gray-600" />
+                            <span>{new Date(rental.startDate).toLocaleString("pt-br")} — {new Date(rental.endDate).toLocaleString("pt-br")}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <MapPin size={14} className="text-gray-600" />
+                            <span className="truncate">{rental.fullAddress}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-800/50 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-600 uppercase">Subtotal do Período</span>
+                          <span className="text-2xl font-black text-white">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(rental.charge)}
+                    </span>
+                        </div>
+                      </div>
+                  ))}
+                </div>
+            ) : (
+                <div className="h-96 flex flex-col items-center justify-center bg-gray-900/20 border border-gray-800 rounded-[2.5rem] border-dashed text-center px-10">
+                  <div className="p-6 bg-gray-900 rounded-full mb-6">
+                    <Search size={40} className="text-gray-700" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Aguardando Seleção de Cliente</h3>
+                  <p className="text-gray-500 max-w-xs">Use a barra de busca acima para carregar as medições pendentes de um cliente específico.</p>
+                </div>
             )}
           </div>
-        </div>
+
+          {/* LADO DIREITO: RESUMO DO FATURAMENTO (STICKY) */}
+          <div className="lg:col-span-4">
+            <div className="sticky top-32 space-y-6">
+              <div className="bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                {/* Efeito de Brilho */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
+
+                <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
+                  <Calculator size={14} className="text-blue-500" /> Checkout de Fatura
+                </h2>
+
+                <div className="space-y-6 mb-10">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Medições Selecionadas</span>
+                    <span className="font-bold text-white">{selectedRentalIds.length}</span>
+                  </div>
+                  <div className="pt-6 border-t border-gray-800">
+                    <p className="text-[10px] font-bold text-blue-500 uppercase mb-2">Total a Faturar</p>
+                    <div className="text-5xl font-black text-white tracking-tighter">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSelected)}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                    onClick={handleInvoiceClose}
+                    disabled={loading || selectedRentalIds.length === 0}
+                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 disabled:text-gray-600 text-white py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3 group"
+                >
+                  {loading ? <Loader2 className="animate-spin" /> : (
+                      <>
+                        <Wallet size={20} className="group-hover:scale-110 transition-transform" />
+                        Finalizar Cobrança
+                      </>
+                  )}
+                </button>
+
+                {selectedRentalIds.length > 0 && (
+                    <button
+                        onClick={() => setSelectedRentalIds([])}
+                        className="w-full mt-4 text-xs font-bold text-gray-500 hover:text-white transition-colors py-2"
+                    >
+                      Limpar Seleção
+                    </button>
+                )}
+              </div>
+
+              {/* CARD DE DICA / AJUDA */}
+              <div className="bg-blue-600/5 border border-blue-500/20 p-6 rounded-3xl flex gap-4">
+                <div className="p-2 bg-blue-500/20 rounded-xl h-fit">
+                  <Receipt size={16} className="text-blue-400" />
+                </div>
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  <span className="text-blue-400 font-bold">Dica:</span> Você pode selecionar múltiplos aluguéis para gerar uma fatura única consolidada para o cliente.
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
-    </div>
   );
 };
 

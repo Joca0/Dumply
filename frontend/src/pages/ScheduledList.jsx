@@ -14,6 +14,8 @@ import {
     X,
     Clock
 } from 'lucide-react';
+import { usePDFDownload } from "@/hooks/usePDFDownload.jsx";
+import { useAlert } from "@/components/ui/MainAlert.jsx";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -71,6 +73,7 @@ const InternalEquipmentSearch = ({ onSelect }) => {
 };
 
 const ScheduledRentals = () => {
+    const { handleDownloadPDF: downloadPDF } = usePDFDownload();
     const [rentals, setRentals] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRental, setSelectedRental] = useState(null);
@@ -140,6 +143,10 @@ const ScheduledRentals = () => {
         }
     };
 
+    const handleDownloadPDF = () => {
+        downloadPDF('printable', 'agendamentos')
+    };
+
     const getStatusBadge = () => {
         return (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
@@ -179,7 +186,7 @@ const ScheduledRentals = () => {
                 </div>
                 <div className="flex w-full md:w-auto gap-3 no-print">
                     <button
-                        onClick={() => window.print()}
+                        onClick={() => handleDownloadPDF()}
                         className="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-gray-300 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border border-gray-700 transition-all"
                     >
                         <Download size={18} />
@@ -281,7 +288,7 @@ const ScheduledRentals = () => {
             </div>
 
             {/* --- DESKTOP --- */}
-            <div className="hidden md:block bg-gray-900/40 rounded-2xl border border-gray-800 backdrop-blur-sm overflow-hidden shadow-xl mb-6">
+            <div id="printable" className="hidden md:block bg-gray-900/40 rounded-2xl border border-gray-800 backdrop-blur-sm overflow-hidden shadow-xl mb-6">
                 <table className="w-full text-left border-separate border-spacing-0">
                     <thead>
                     <tr className="bg-gray-800/50">

@@ -2,7 +2,7 @@ import axios from 'axios';
 import {toast} from "sonner";
 
 const api = axios.create({
-  baseURL: 'http://164.152.252.146:8080',
+  baseURL: 'http://localhost:8080',
 });
 
 api.interceptors.request.use((config) => {

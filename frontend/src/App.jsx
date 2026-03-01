@@ -16,6 +16,8 @@ import InvoiceCreate from './pages/InvoiceCreate';
 import LoginForm from "@/pages/LoginForm.jsx";
 import {AuthProvider} from "@/context/AuthContext.jsx";
 import ScheduledList from "@/pages/ScheduledList.jsx";
+import {AlertProvider} from "@/components/ui/MainAlert.jsx";
+import NotFound from "@/pages/NotFound.jsx";
 
 
 
@@ -32,6 +34,7 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
+      <AlertProvider>
       <Toaster position="bottom-right" toastOptions={{ duration: 5000 }}/>
       <AuthProvider>
         <Routes>
@@ -63,6 +66,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace/>}/>
         </Routes>
       </AuthProvider>
+      </AlertProvider>
     </BrowserRouter>
   );
 }

@@ -4,9 +4,12 @@ import com.dumply.common.dto.LoginRequestDTO;
 import com.dumply.common.dto.ProfileDTO;
 import com.dumply.common.dto.RegisterRequestDTO;
 import com.dumply.common.dto.ResponseDTO;
+import com.dumply.common.exception.BusinessException;
 import com.dumply.config.security.TokenService;
 import com.dumply.model.User;
 import com.dumply.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,10 +32,10 @@ public class AuthService {
 
     public ResponseDTO login(LoginRequestDTO body) {
         User user = userRepository.findByEmail(body.email())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new BadCredentialsException("Credenciais Inválidas"));
 
         if (!passwordEncoder.matches(body.password(), user.getPassword())) {
-            throw new RuntimeException("Email ou Senha incorretos");
+            throw new BadCredentialsException("Credenciais Inválidas");
         }
 
         return new ResponseDTO(tokenService.generateToken(user));
@@ -46,7 +49,7 @@ public class AuthService {
         String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         return new ProfileDTO(
                 user.getFullName(),
@@ -56,7 +59,7 @@ public class AuthService {
 
     public ResponseDTO register(RegisterRequestDTO body) {
         if (userRepository.findByEmail(body.email()).isPresent()) {
-            throw new RuntimeException("Usuário já existe");
+            throw new BusinessException("Usuário já existe");
         }
 
         User user = new User();
