@@ -60,7 +60,7 @@ const RentalList = () => {
   const handleReturn = async (id) => {
     showConfirm(
         'Tem certeza?',
-        'Você deseja finalizar o aluguél?',
+        'Você deseja finalizar o aluguel?',
         async () => {
           setProcessingId(id);
           try {

@@ -12,7 +12,7 @@ import {
   Mail,
   Phone,
   Building2,
-  Fingerprint
+  Fingerprint, Box
 } from 'lucide-react';
 import { useAlert } from "@/components/ui/MainAlert.jsx";
 import { Link } from 'react-router-dom';
@@ -184,6 +184,14 @@ const CustomerList = () => {
             ))}
             </tbody>
           </table>
+          {customers.length === 0 && (
+              <div className="py-20 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800 text-gray-600 mb-4">
+                  <Users size={32} />
+                </div>
+                <p className="text-gray-400 font-medium text-lg">Nenhum cliente cadastrado</p>
+              </div>
+          )}
         </div>
 
         {/* PAGINAÇÃO */}

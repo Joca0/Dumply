@@ -1,6 +1,7 @@
 package com.dumply.config.security;
 
 import com.dumply.common.exception.BusinessException;
+import com.dumply.common.exception.EmailAlreadyExistsException;
 import com.dumply.common.exception.InvalidRentalDateException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -62,6 +63,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED) // 401
                 .body("Credenciais inválidas");
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<String> handleEmailConflict(EmailAlreadyExistsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT) // 409
+                .body("Não foi possível concluir, E-mail já cadastrado.");
     }
 
     @ExceptionHandler(AccessDeniedException.class)

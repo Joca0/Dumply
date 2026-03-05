@@ -9,6 +9,8 @@ import com.dumply.config.security.TokenService;
 import com.dumply.model.User;
 import com.dumply.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -53,12 +55,30 @@ public class AuthService {
 
         return new ProfileDTO(
                 user.getFullName(),
-                user.getRole()
+                user.getRole(),
+                user.isFirstLogin()
+        );
+    }
+
+    @Transactional
+    public ProfileDTO completeWelcome() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        user.setFirstLogin(false);
+        return new ProfileDTO(
+                user.getFullName(),
+                user.getRole(),
+                user.isFirstLogin()
         );
     }
 
     public ResponseDTO register(RegisterRequestDTO body) {
-        if (userRepository.findByEmail(body.email()).isPresent()) {
+        if (userRepository.existsByEmailGlobal(body.email())) {
             throw new BusinessException("Usuário já existe");
         }
 

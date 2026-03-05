@@ -18,6 +18,7 @@ import {AuthProvider} from "@/context/AuthContext.jsx";
 import ScheduledList from "@/pages/ScheduledList.jsx";
 import {AlertProvider} from "@/components/ui/MainAlert.jsx";
 import NotFound from "@/pages/NotFound.jsx";
+import RegisterForm from "@/pages/RegisterForm.jsx";
 
 
 
@@ -39,6 +40,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/auth/login" element={<LoginForm/>}/>
+          <Route path="/auth/register" element={<RegisterForm/>}/>
           <Route
               path="/"
               element={

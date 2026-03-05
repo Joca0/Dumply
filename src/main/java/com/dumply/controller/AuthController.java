@@ -24,6 +24,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(body));
     }
 
+    @PatchMapping("/complete-welcome")
+    public ResponseEntity<ProfileDTO> completeWelcome() {
+        return ResponseEntity.ok(authService.completeWelcome());
+    }
+
+
     @GetMapping("/me")
     public ResponseEntity<ProfileDTO> me() {
         return ResponseEntity.ok(authService.getLoggedUser());

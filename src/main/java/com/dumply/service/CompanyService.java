@@ -3,6 +3,8 @@ package com.dumply.service;
 import com.dumply.common.dto.CompanySignupRequest;
 import com.dumply.common.dto.CompanyStatus;
 import com.dumply.common.dto.Role;
+import com.dumply.common.exception.BusinessException;
+import com.dumply.common.exception.EmailAlreadyExistsException;
 import com.dumply.model.Company;
 import com.dumply.model.User;
 import com.dumply.repository.CompanyRepository;
@@ -18,6 +20,8 @@ import java.time.LocalDateTime;
 @Service
 public class CompanyService extends TenantAwareService {
 
+    private static final int max_test_companies = 3;
+
     @Autowired
     private CompanyRepository companyRepository;
 
@@ -29,6 +33,13 @@ public class CompanyService extends TenantAwareService {
 
     @Transactional
     public void createCompanyWithOwner(CompanySignupRequest request) {
+        long companyCount = companyRepository.count();
+        if ( companyCount >= max_test_companies) {
+            throw new BusinessException("As chaves para o teste fechado acabaram. Logo abriremos uma nova leva de chaves!");
+        }
+        if(userRepository.existsByEmailGlobal(request.ownerEmail())) {
+            throw new EmailAlreadyExistsException("Este e-mail já está em uso.");
+        }
 
         Company company = new Company();
         company.setName(request.companyName());
@@ -40,8 +51,10 @@ public class CompanyService extends TenantAwareService {
         User owner = new User();
         owner.setFullName(request.ownerName());
         owner.setEmail(request.ownerEmail());
+        owner.setDocument(request.ownerDocuments());
         owner.setPassword(passwordEncoder.encode(request.ownerPassword()));
         owner.setRole(Role.OWNER);
+        owner.setFirstLogin(true);
         owner.setCompany(company);
 
         userRepository.save(owner);

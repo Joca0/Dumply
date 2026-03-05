@@ -49,6 +49,9 @@ api.interceptors.response.use(
 export const login = (credentials) => api.post('/auth/login', credentials);
 export const profile = (data) => api.get('/auth/me', data);
 
+export const register = (data) => api.post('/companies/signup', data);
+export const completeWelcome = () => api.patch('/auth/complete-welcome');
+
 export const getDashboardStats = () => api.get('/dashboard/stats');
 
 export const autocompleteEquipments = (search) => api.get(`/equipments/autocomplete?q=${search}`);
@@ -80,7 +83,7 @@ export const getActiveRentals = () => api.get('/rentals/active');
 export const createRental = (data) => api.post('/rentals', data);
 export const updateRental = (id, data) => api.put(`/rentals/${id}`, data)
 export const returnRental = (id) => api.post(`/rentals/${id}/return`);
-export const deleteRental = (id) => api.delete(`/rentals/${id}`);
+//export const deleteRental = (id) => api.delete(`/rentals/${id}`);
 
 export const getInvoices = (page = 0, size = 10, filters = {}) => {
   const params = new URLSearchParams({ page, size, ...filters });

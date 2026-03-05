@@ -22,7 +22,8 @@ public class DashboardService extends TenantAwareService{
 
         Long active = rentalRepository.countActiveRentals(companyId);
         Long pending = invoiceRepository.countPendingInvoices(companyId);
+        Long scheduled = rentalRepository.countScheduledRentals(companyId);
 
-        return new DashboardStatsDTO(active, pending);
+        return new DashboardStatsDTO(active, pending, scheduled);
     }
 }

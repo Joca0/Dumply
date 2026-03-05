@@ -42,6 +42,7 @@ public class DevDataLoader implements CommandLineRunner {
         User admin = new User();
         admin.setFullName("Dumply Admin");
         admin.setEmail("admin@dumply.dev");
+        admin.setFirstLogin(true);
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setRole(Role.ADMIN);
         admin.setCompany(company);

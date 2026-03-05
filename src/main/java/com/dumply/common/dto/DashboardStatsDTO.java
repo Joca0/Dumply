@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record DashboardStatsDTO(
         Long totalActiveRentals,
-        Long openInvoicesCount
+        Long openInvoicesCount,
+        Long totalScheduledRentals
 ) {
 }

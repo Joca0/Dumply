@@ -26,6 +26,8 @@ public class User {
 
     private String fullName;
 
+    private boolean firstLogin = true;
+
     private String document;
 
     private String password;

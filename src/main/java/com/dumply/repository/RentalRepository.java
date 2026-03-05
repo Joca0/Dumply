@@ -30,6 +30,14 @@ public interface RentalRepository extends JpaRepository<Rental, Long>, JpaSpecif
     Long countActiveRentals(@Param("companyId") UUID companyId);
 
     @Query("""
+    select count(r)
+    from Rental r
+    where r.status = com.dumply.common.dto.RentalStatus.SCHEDULED
+      and r.company.id = :companyId
+""")
+    Long countScheduledRentals(@Param("companyId") UUID companyId);
+
+    @Query("""
     select r
     from Rental r
     where r.status = com.dumply.common.dto.RentalStatus.SCHEDULED
