@@ -1,19 +1,37 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {User, Mail, Lock, ShieldCheck, ArrowRight, Loader2, CheckCircle2, Building2, Key} from 'lucide-react';
+import {
+    User,
+    Mail,
+    Lock,
+    ShieldCheck,
+    ArrowRight,
+    Loader2,
+    CheckCircle2,
+    Building2,
+    Key,
+    Fingerprint
+} from 'lucide-react';
 import { toast } from 'sonner';
+import { useDocumentMask } from "@/hooks/useDocumentMask.jsx";
 import { register } from "@/api/index.js";
 
 const RegisterForm = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        ownerName: '',
+        fullName: '',
+        ownerDocuments: '',
         email: '',
         password: '',
         confirmPassword: '',
         companyName: ''
     });
+
+    const documentMask = useDocumentMask(
+        formData.ownerDocuments,
+        (value) => setFormData({...formData, ownerDocuments: value})
+    );
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -115,13 +133,15 @@ const RegisterForm = () => {
                         <div className="group relative">
                             <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">CPF/CNPJ</label>
                             <div className="relative">
-                                <Key size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                                <Fingerprint size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
                                     type="text"
+                                    required
                                     className={inputStyle}
-                                    placeholder="123.456.789-00"
+                                    placeholder={documentMask.placeholder}
                                     value={formData.ownerDocuments}
-                                    onChange={(e) => setFormData({...formData, ownerDocuments: e.target.value})}
+                                    onChange={documentMask.handleChange}
+                                    maxLength={documentMask.maxLength}
                                 />
                             </div>
                         </div>
