@@ -46,7 +46,6 @@ function App() {
         <Routes>
           <Route path="/auth/login" element={<LoginForm/>}/>
           <Route path="/auth/register" element={<RegisterForm/>}/>
-            <Route index element={<LandingPage/>}/>
           <Route
               path="/"
               element={
@@ -55,7 +54,7 @@ function App() {
                 </PrivateRoute>
               }
           >
-            <Route path="dashboard" element={<Dashboard/>}/>
+            <Route index element={<Dashboard/>}/>
             <Route path="map" element={<MapPage/>}/>
             <Route path="assigned" element={<AssignedList />}/>
             <Route path="customers/new" element={<CustomerForm/>}/>

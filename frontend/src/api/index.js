@@ -35,6 +35,10 @@ api.interceptors.response.use(
       if (status === 409) {
         toast.warning(typeof data === 'string' ? data : 'Conflito de dados');
       }
+
+      if (status === 500) {
+        toast.error(typeof data === 'string' ? data : 'Erro interno do servidor');
+      }
     } else {
       toast.error('Erro de conexão com o servidor');
     }
