@@ -76,16 +76,16 @@ const Layout = () => {
       ]
     },
     {
+      label: 'Financeiro',
+      items: [
+        { to: '/invoices', icon: Receipt, label: 'Faturas' },
+      ]
+    },
+    {
       label: 'Equipe',
       items: [
         { to: '/drivers', icon: Truck, label: 'Motoristas' },
         { to: '/managers', icon: Users, label: 'Gerentes' },
-      ]
-    },
-    {
-      label: 'Financeiro',
-      items: [
-        { to: '/invoices', icon: Receipt, label: 'Faturas' },
       ]
     },
     {

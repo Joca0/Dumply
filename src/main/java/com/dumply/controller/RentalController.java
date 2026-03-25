@@ -14,7 +14,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.UUID;
 import java.util.List;
 
 @RestController
@@ -75,6 +75,12 @@ public class RentalController {
     @PostMapping("/{rentalId}/activate")
     public Rental activateRental(@PathVariable Long rentalId) {
         return rentalService.activateRental(rentalId);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER', 'MANAGER')")
+    @PutMapping("/{id}/driver")
+    public Rental assignDriver(@PathVariable Long id, @RequestBody(required = false) UUID driverId) {
+        return rentalService.assignDriver(id, driverId);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','OWNER', 'MANAGER')")

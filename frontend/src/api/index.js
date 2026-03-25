@@ -92,6 +92,11 @@ export const getScheduledRentals = (page = 0, size = 10, filters = {}) => {
   return api.get(`/rentals/scheduled?${params.toString()}`);
 }
 export const activateRental = (id) => api.post(`/rentals/${id}/activate`);
+export const assignDriver = (id, driverId) => api.put(`/rentals/${id}/driver`, driverId, {
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
 export const getRental = (id) => api.get(`/rentals/${id}`);
 export const getActiveRentals = () => api.get('/rentals/active');
 export const createRental = (data) => api.post('/rentals', data);

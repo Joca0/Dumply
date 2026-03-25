@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getScheduledRentals, updateRental, activateRental, autocompleteEquipments, autocompleteDrivers } from '../api';
+import { getScheduledRentals, updateRental, activateRental, assignDriver, autocompleteEquipments, autocompleteDrivers } from '../api';
 import {
     Search,
     Calendar,
@@ -11,6 +11,8 @@ import {
     CalendarClock,
     MapPin,
     User,
+    UserPlus,
+    Plus,
     X,
     Clock
 } from 'lucide-react';
@@ -134,6 +136,7 @@ const ScheduledRentals = () => {
     const [selectedEquipment, setSelectedEquipment] = useState(null);
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDriverModalOpen, setIsDriverModalOpen] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState('');
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -196,6 +199,35 @@ const ScheduledRentals = () => {
             fetchRentals(); // Recarrega a lista
         } catch (err) {
             toast.error("Erro ao processar ativação");
+        }
+    };
+
+    const handleConfirmDriverAssignment = async () => {
+        if (!selectedRental || !selectedDriver) {
+            toast.error("Selecione um motorista primeiro");
+            return;
+        }
+
+        try {
+            await assignDriver(selectedRental.id, selectedDriver.id);
+            toast.success("Motorista atribuído!");
+            setIsDriverModalOpen(false);
+            fetchRentals();
+        } catch (err) {
+            toast.error("Erro ao atribuir motorista");
+        }
+    };
+
+    const handleRemoveDriver = async () => {
+        if (!selectedRental) return;
+
+        try {
+            await assignDriver(selectedRental.id, null);
+            toast.success("Motorista removido!");
+            setIsDriverModalOpen(false);
+            fetchRentals();
+        } catch (err) {
+            toast.error("Erro ao remover motorista");
         }
     };
 
@@ -319,6 +351,25 @@ const ScheduledRentals = () => {
                   Saída prevista: <span className="text-white font-bold">{formatDate(rental.startDate)}</span>
                 </span>
                             </div>
+
+                            <div className="flex items-center gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-800">
+                                <User size={14} className="text-blue-500" />
+                                <div className="flex-1 flex justify-between items-center">
+                                    <span className="text-gray-300 text-xs font-medium">
+                                        Motorista: <span className="text-white font-bold">{rental.driver?.fullName || 'Não atribuído'}</span>
+                                    </span>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedRental(rental);
+                                            setSelectedDriver(rental.driver);
+                                            setIsDriverModalOpen(true);
+                                        }}
+                                        className="text-emerald-500 hover:text-emerald-400"
+                                    >
+                                        <UserPlus size={16} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Ações Mobile */}
@@ -374,6 +425,17 @@ const ScheduledRentals = () => {
                                             <span className="text-sm text-gray-400 font-medium">
                                                 {rental.driver?.fullName || 'Motorista não atribuído'}
                                             </span>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedRental(rental);
+                                                    setSelectedDriver(rental.driver);
+                                                    setIsDriverModalOpen(true);
+                                                }}
+                                                className="p-1 hover:bg-emerald-500/10 text-emerald-500 rounded transition-colors"
+                                                title="Designar Motorista"
+                                            >
+                                                {rental.driver ? <Edit2 size={12} /> : <Plus size={14} />}
+                                            </button>
                                             {rental.driver && (
                                                 <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 rounded uppercase font-bold tracking-wide">Beta</span>
                                             )}
@@ -511,6 +573,52 @@ const ScheduledRentals = () => {
                                 className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
                             >
                                 Confirmar e Ativar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isDriverModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-gray-900 border border-gray-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-gray-800 flex justify-between items-center">
+                            <div>
+                                <h3 className="text-xl font-bold text-white">Designar Motorista</h3>
+                                <p className="text-gray-500 text-xs mt-1">Selecione o motorista para {selectedRental?.customer?.fullName}</p>
+                            </div>
+                            <button onClick={() => setIsDriverModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block ml-1">Motorista</label>
+                                <InternalDriverSearch onSelect={setSelectedDriver} initialValue={selectedDriver} />
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-gray-800/30 flex flex-col md:flex-row gap-3">
+                            {selectedRental?.driver && (
+                                <button
+                                    onClick={handleRemoveDriver}
+                                    className="flex-1 py-3 px-4 rounded-xl bg-red-500/10 text-red-500 font-bold text-sm hover:bg-red-500/20 transition-colors border border-red-500/20 order-3 md:order-1"
+                                >
+                                    Remover
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setIsDriverModalOpen(false)}
+                                className="flex-1 py-3 px-4 rounded-xl bg-gray-800 text-gray-400 font-bold text-sm hover:bg-gray-700 transition-colors order-2"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleConfirmDriverAssignment}
+                                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95 order-1 md:order-3"
+                            >
+                                Confirmar
                             </button>
                         </div>
                     </div>

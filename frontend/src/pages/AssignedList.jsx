@@ -58,9 +58,9 @@ const AssignedList = () => {
             <div className="mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight flex items-center gap-2">
                     <Truck className="text-blue-500" />
-                    Minhas Atribuições
+                    Minhas Atribuições (EM DESENVOLVIMENTO)
                 </h2>
-                <p className="text-gray-400 text-sm mt-1">Lista de locações atribuídas a você.</p>
+                <p className="text-gray-400 text-sm mt-1">Lista de locações atribuídas a você. (Essa seção se encontra em desenvolvimento)</p>
             </div>
 
             {/* LISTA DE CARDS */}

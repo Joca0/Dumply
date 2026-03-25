@@ -290,6 +290,26 @@ public class RentalService extends TenantAwareService{
         return rentalRepository.save(rental);
     }
 
+    @Transactional
+    public Rental assignDriver(Long rentalId, UUID driverId) {
+        Rental rental = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado"));
+
+        if (rental.getStatus() == RentalStatus.FINISHED) {
+            throw new BusinessException("Não é possível atribuir motorista a um aluguel finalizado");
+        }
+
+        if (driverId == null) {
+            rental.setDriver(null);
+        } else {
+            User driver = userRepository.findByIdAndCompanyId(driverId, getCurrentCompany().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Motorista não encontrado"));
+            rental.setDriver(driver);
+        }
+
+        return rentalRepository.save(rental);
+    }
+
     public void deleteRental(Long rentalId) {
         Rental r = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado"));
