@@ -42,52 +42,56 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         String token = recoverToken(request);
 
-        if (token != null) {
-            try {
-                var decodedJWT = tokenService.validateToken(token);
+        try {
+            if (token != null) {
+                try {
+                    var decodedJWT = tokenService.validateToken(token);
 
-                String email = decodedJWT.getSubject();
-                UUID companyId = decodedJWT.getClaim("companyId").as(UUID.class);
-                String role = decodedJWT.getClaim("role").asString();
+                    if (decodedJWT == null) {
+                        writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou expirado.");
+                        return;
+                    }
 
-                TenantContext.setCompanyId(companyId);
+                    String email = decodedJWT.getSubject();
+                    String companyIdStr = decodedJWT.getClaim("companyId").asString();
+                    UUID companyId = companyIdStr != null ? UUID.fromString(companyIdStr) : null;
+                    String role = decodedJWT.getClaim("role").asString();
 
-                // Buscar por email + companyId para evitar vazamento entre tenants (mesmo email em empresas diferentes)
-                User user = userRepository.findByEmailAndCompanyId(email, companyId)
-                        .orElseThrow(() -> new BadCredentialsException("Credenciais inválidas"));
+                    TenantContext.setCompanyId(companyId);
 
-                // Garantir que o usuário pertence à empresa do token (defesa em profundidade)
-                if (!user.getCompany().getId().equals(companyId)) {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Acesso proibido: Usuário não pertence a esta empresa.");
+                    // Buscar por email + companyId para evitar vazamento entre tenants (mesmo email em empresas diferentes)
+                    User user = userRepository.findByEmailAndCompanyId(email, companyId)
+                            .orElseThrow(() -> new BadCredentialsException("Credenciais inválidas"));
+
+                    // Garantir que o usuário pertence à empresa do token (defesa em profundidade)
+                    if (!user.getCompany().getId().equals(companyId)) {
+                        writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Acesso proibido: Usuário não pertence a esta empresa.");
+                        return;
+                    }
+
+
+                    var authorities = Collections.singletonList(
+                            new SimpleGrantedAuthority("ROLE_" + role)
+                    );
+
+                    var userDetails =
+                            new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+
+                    var authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                } catch (Exception ex) {
+                    // Token inválido, expirado ou erro na busca do usuário
+                    writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou expirado.");
                     return;
                 }
-
-
-
-                var authorities = Collections.singletonList(
-                        new SimpleGrantedAuthority("ROLE_" + role)
-                );
-
-                var userDetails =
-                        new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
-
-                var authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            } catch (Exception ex) {
-                // Token inválido, expirado ou erro na busca do usuário
-                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou expirado.");
-                return;
             }
-        }
 
-        try {
             filterChain.doFilter(request, response);
         } finally {
-            // MUITO IMPORTANTE
+            // MUITO IMPORTANTE: Limpar o contexto independente do resultado
             TenantContext.clear();
         }
     }

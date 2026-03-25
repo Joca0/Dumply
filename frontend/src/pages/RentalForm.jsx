@@ -155,7 +155,7 @@ const InternalEquipmentSearch = ({ index, item, onSelect, selectedIds }) => {
                       }}
                   >
                     <div className="text-xs font-bold text-white">{e.name}</div>
-                    <div className="text-[10px] text-gray-500 font-mono mt-1">Número de Série: {e.serialNumber}</div>
+                    <div className="text-[10px] text-gray-500 font-bold mt-1">Número de Série: {e.serialNumber}</div>
                   </div>
               ))}
             </div>,
@@ -250,14 +250,18 @@ const RentalForm = () => {
       const rental = res.data;
       const formatDT = (d) => d ? new Date(d).toISOString().slice(0, 16) : '';
       setFormData({
-        customerId: rental.customerId || '',
-        items: rental.items?.map((i, idx) => ({ tempId: i.id || Date.now() + idx, equipmentId: i.equipmentId, charge: i.charge?.toString() })) || [],
+        customerId: rental.customer?.id || '',
+        items: rental.equipment ? [{
+          tempId: rental.id,
+          equipmentId: rental.equipment.id,
+          charge: rental.charge?.toString() || ''
+        }] : (rental.status === 'SCHEDULED' ? [{ tempId: Date.now(), equipmentId: '', charge: rental.charge?.toString() || '' }] : []),
         fullAddress: rental.fullAddress || '',
         latitude: rental.latitude || -23.5505,
         longitude: rental.longitude || -46.6333,
         startDate: formatDT(rental.startDate),
         endDate: formatDT(rental.endDate),
-        isScheduled: rental.items?.some(i => !i.equipmentId)
+        isScheduled: rental.status === 'SCHEDULED'
       });
     }).finally(() => setFetching(false));
   }, [id]);
@@ -275,10 +279,24 @@ const RentalForm = () => {
     }
     setLoading(true);
     try {
-      const payload = { ...formData, items: formData.items.map(i => ({ equipmentId: formData.isScheduled ? null : i.equipmentId, charge: parseFloat(i.charge) || 0 })) };
-      id ? await updateRental(id, payload) : await createRental(payload);
+      const payload = { 
+        ...formData, 
+        items: formData.items.map(i => ({ 
+          equipmentId: (formData.isScheduled || !i.equipmentId) ? null : i.equipmentId, 
+          charge: parseFloat(i.charge) || 0 
+        })) 
+      };
+      const response = id ? await updateRental(id, payload) : await createRental(payload);
       toast.success(id ? "Atualizado!" : "Criado!");
+      
+      // Se era um agendamento e agora TEM equipamento (e não foi explicitamente marcado como isScheduled),
+      // e o status do backend retornou como SCHEDULED, poderíamos perguntar se quer ativar.
+      // Mas para simplificar, se o usuário editou e colocou equipamento, e o status ainda é SCHEDULED,
+      // vamos redirecionar baseado na intenção inicial.
+      
       if (!id && formData.isScheduled) {
+        navigate('/scheduled');
+      } else if (id && formData.isScheduled) {
         navigate('/scheduled');
       } else {
         navigate('/rentals');
@@ -362,6 +380,7 @@ const RentalForm = () => {
                                   className="w-full bg-gray-950 border border-gray-800 rounded-xl p-2.5 pl-9 text-sm text-white focus:border-blue-500 outline-none transition-all"
                                   value={item.charge}
                                   onChange={(e) => handleItemChange(index, 'charge', e.target.value)}
+                                  onWheel={(e) => e.target.blur()}
                                   required
                               />
                             </div>
@@ -386,11 +405,23 @@ const RentalForm = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Início do Contrato</label>
-                      <input type="datetime-local" className="w-full bg-gray-950 border border-gray-800 p-3 rounded-xl text-sm text-white focus:border-blue-500 outline-none transition-all" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
+                      <input
+                          type="datetime-local"
+                          className="w-full bg-gray-950 border border-gray-800 p-3 rounded-xl text-sm text-white focus:border-blue-500 outline-none transition-all"
+                          value={formData.startDate}
+                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                          onWheel={(e) => e.target.blur()}
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Previsão de Coleta</label>
-                      <input type="datetime-local" className="w-full bg-gray-950 border border-gray-800 p-3 rounded-xl text-sm text-white focus:border-blue-500 outline-none transition-all" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
+                      <input
+                          type="datetime-local"
+                          className="w-full bg-gray-950 border border-gray-800 p-3 rounded-xl text-sm text-white focus:border-blue-500 outline-none transition-all"
+                          value={formData.endDate}
+                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                          onWheel={(e) => e.target.blur()}
+                      />
                     </div>
                   </div>
                   <div className="space-y-1.5">

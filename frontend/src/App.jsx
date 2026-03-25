@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard';
 import MapPage from './pages/MapPage';
 import CustomerForm from './pages/CustomerForm';
 import CustomerList from './pages/CustomerList';
+import UserForm from './pages/UserForm.jsx';
+import DriverList from './pages/DriverList';
+import ManagerList from './pages/ManagerList';
 import EquipmentForm from './pages/EquipmentForm';
 import EquipmentList from './pages/EquipmentList';
 import RentalForm from './pages/RentalForm';
@@ -16,9 +19,11 @@ import InvoiceCreate from './pages/InvoiceCreate';
 import LoginForm from "@/pages/LoginForm.jsx";
 import {AuthProvider} from "@/context/AuthContext.jsx";
 import ScheduledList from "@/pages/ScheduledList.jsx";
+import AssignedList from "@/pages/AssignedList.jsx";
 import {AlertProvider} from "@/components/ui/MainAlert.jsx";
 import NotFound from "@/pages/NotFound.jsx";
 import RegisterForm from "@/pages/RegisterForm.jsx";
+import LandingPage from "@/pages/LandingPage.jsx";
 
 
 
@@ -41,6 +46,7 @@ function App() {
         <Routes>
           <Route path="/auth/login" element={<LoginForm/>}/>
           <Route path="/auth/register" element={<RegisterForm/>}/>
+            <Route index element={<LandingPage/>}/>
           <Route
               path="/"
               element={
@@ -49,11 +55,18 @@ function App() {
                 </PrivateRoute>
               }
           >
-            <Route index element={<Dashboard/>}/>
+            <Route path="dashboard" element={<Dashboard/>}/>
             <Route path="map" element={<MapPage/>}/>
+            <Route path="assigned" element={<AssignedList />}/>
             <Route path="customers/new" element={<CustomerForm/>}/>
             <Route path="customers/edit/:id" element={<CustomerForm/>}/>
             <Route path="customers" element={<CustomerList/>}/>
+            <Route path="drivers/new" element={<UserForm role="DRIVER"/>}/>
+            <Route path="drivers/edit/:id" element={<UserForm role="DRIVER"/>}/>
+            <Route path="drivers" element={<DriverList/>}/>
+            <Route path="managers/new" element={<UserForm role="MANAGER"/>}/>
+            <Route path="managers/edit/:id" element={<UserForm role="MANAGER"/>}/>
+            <Route path="managers" element={<ManagerList/>}/>
             <Route path="equipments/new" element={<EquipmentForm/>}/>
             <Route path="equipments/edit/:id" element={<EquipmentForm/>}/>
             <Route path="equipments" element={<EquipmentList/>}/>

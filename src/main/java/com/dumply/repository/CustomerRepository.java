@@ -25,8 +25,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
     FROM Customer c
     WHERE c.company.id = :companyId
       AND (
-           LOWER(c.fullName) LIKE %:q%
-        OR c.document LIKE %:q%
+           LOWER(c.fullName) LIKE LOWER(CONCAT('%', :q, '%'))
+        OR c.document LIKE CONCAT('%', :q, '%')
       )
     ORDER BY c.fullName
 """)

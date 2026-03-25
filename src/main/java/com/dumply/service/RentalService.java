@@ -7,9 +7,11 @@ import com.dumply.common.exception.BusinessException;
 import com.dumply.model.Customer;
 import com.dumply.model.Equipment;
 import com.dumply.model.Rental;
+import com.dumply.model.User;
 import com.dumply.repository.CustomerRepository;
 import com.dumply.repository.EquipmentRepository;
 import com.dumply.repository.RentalRepository;
+import com.dumply.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -37,6 +40,8 @@ public class RentalService extends TenantAwareService{
 
     @Autowired
     private EquipmentRepository equipmentRepository;
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Transactional
@@ -117,13 +122,19 @@ public class RentalService extends TenantAwareService{
             throw new BusinessException("Aluguel já finalizado");
         }
 
+        if (rental.getStatus() == RentalStatus.SCHEDULED) {
+            throw new BusinessException("Apenas aluguéis ativos podem ser finalizados");
+        }
+
         rental.setStatus(RentalStatus.FINISHED);
         //Vou deixar assim, caso seja preferível deixar aberto só trocar.
         rental.setEndDate(java.time.LocalDateTime.now());
 
         Equipment equipment = rental.getEquipment();
-        equipment.setStatus(EquipmentStatus.AVAILABLE);
-        equipmentRepository.save(equipment);
+        if (equipment != null) {
+            equipment.setStatus(EquipmentStatus.AVAILABLE);
+            equipmentRepository.save(equipment);
+        }
 
         return rentalRepository.save(rental);
     }
@@ -133,11 +144,27 @@ public class RentalService extends TenantAwareService{
         Rental rental = rentalRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado com id: " + id));
 
+        if (rental.getStatus() == RentalStatus.FINISHED) {
+            throw new BusinessException("Não é possível editar um aluguel finalizado");
+        }
+
         rental.setStartDate(dto.startDate());
         rental.setEndDate(dto.endDate());
         rental.setFullAddress(dto.fullAddress());
         rental.setLatitude(dto.latitude());
         rental.setLongitude(dto.longitude());
+
+        if (dto.customerId() != null) {
+            Customer customer = customerRepository.findByIdAndCompanyId(dto.customerId(), getCurrentCompany().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+            rental.setCustomer(customer);
+        }
+
+        if (dto.driverId() != null) {
+            User driver = userRepository.findByIdAndCompanyId(dto.driverId(), getCurrentCompany().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Motorista não encontrado"));
+            rental.setDriver(driver);
+        }
 
         // Como o form envia uma lista, pegamos o primeiro item para este Rental específico
         if (dto.items() != null && !dto.items().isEmpty()) {
@@ -154,20 +181,37 @@ public class RentalService extends TenantAwareService{
                 }
 
                 // Busca e reserva o novo
-                Equipment newEquip = equipmentRepository.findByIdAndCompanyId(itemDto.equipmentId(), getCurrentCompany().getId())
-                        .orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
+                if (itemDto.equipmentId() != null) {
+                    Equipment newEquip = equipmentRepository.findByIdAndCompanyId(itemDto.equipmentId(), getCurrentCompany().getId())
+                            .orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
 
-                if (newEquip.getStatus() != EquipmentStatus.AVAILABLE) {
-                    throw new BusinessException("Equipamento indisponível");
+                    if (newEquip.getStatus() != EquipmentStatus.AVAILABLE) {
+                        throw new BusinessException("Equipamento indisponível");
+                    }
+
+                    newEquip.setStatus(EquipmentStatus.RENTED);
+                    rental.setEquipment(newEquip);
+                    equipmentRepository.save(newEquip);
+
+                    // Se antes era SCHEDULED e agora tem equipamento, e o usuário NÃO marcou como agendamento
+                    // (O front-end envia equipmentId como null se for agendamento)
+                    // Se chegamos aqui, equipmentId NÃO é null.
+                    // Se o status era SCHEDULED, podemos mudar para ACTIVE? 
+                    // Melhor manter SCHEDULED se for uma edição de agendamento, 
+                    // a menos que queiramos que a adição de equipamento ATIVE o aluguel.
+                    // O método activateRental existe para ativação formal.
+                } else {
+                    rental.setEquipment(null);
+                    rental.setStatus(RentalStatus.SCHEDULED);
                 }
-
-                newEquip.setStatus(EquipmentStatus.RENTED);
-                rental.setEquipment(newEquip);
-                equipmentRepository.save(newEquip);
             }
             rental.setCharge(itemDto.charge());
         }
 
+        // Se o aluguel tem equipamento mas o status ainda é SCHEDULED (ex: acabou de ser criado via update ou era um agendamento antigo)
+        // e ele NÃO foi marcado explicitamente como agendamento no request? 
+        // Na verdade o RentalRequest não tem o campo isScheduled, o front usa isso para mandar equipmentId null.
+        
         return rentalRepository.save(rental);
     }
 
@@ -200,6 +244,12 @@ public class RentalService extends TenantAwareService{
         return rentalRepository.findAll(spec, pageable);
     }
 
+    public Page<Rental> getRentalsByDriver(UUID driverId, Pageable pageable) {
+        enableTenantFilterOnCurrentSession();
+        UUID companyId = getCurrentCompany().getId();
+        return rentalRepository.findByDriverIdAndCompanyId(driverId, companyId, pageable);
+    }
+
     public Page<Rental> getAllScheduledRentals(String search, String month, Pageable pageable) {
         enableTenantFilterOnCurrentSession();
         Specification<Rental> spec = ((root, query, cb) -> {
@@ -223,6 +273,10 @@ public class RentalService extends TenantAwareService{
     public Rental activateRental(Long rentalId) {
         Rental rental = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado"));
+
+        if (rental.getStatus() == RentalStatus.ACTIVE) {
+            return rental; // Já está ativo
+        }
 
         if (rental.getStatus() != RentalStatus.SCHEDULED) {
             throw new BusinessException("Apenas aluguéis agendados podem ser ativados");

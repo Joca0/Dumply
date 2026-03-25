@@ -3,6 +3,7 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/CompanyStatus.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/CustomerAutocomplete.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/DashboardStatsDTO.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/DriverAutocomplete.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/EquipmentAutocomplete.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/EquipmentDTO.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/EquipmentStatus.java
@@ -19,6 +20,8 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/RentalStatus.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/ResponseDTO.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/Role.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/UserRegister.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/UserResponse.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/exception/BusinessException.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/exception/EmailAlreadyExistsException.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/exception/InvalidRentalDateException.java
@@ -37,6 +40,7 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/controller/EquipmentController.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/controller/InvoiceController.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/controller/RentalController.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/controller/UserController.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/model/Company.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/model/CompanySuperEntity.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/model/Customer.java
@@ -59,3 +63,4 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/InvoiceService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/RentalService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/TenantAwareService.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/UserService.java

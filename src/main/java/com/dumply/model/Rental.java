@@ -45,6 +45,10 @@ public class Rental extends CompanySuperEntity{
     private double longitude;
 
     @ManyToOne
+    @JoinColumn(name = "driver_id")
+    private User driver;
+
+    @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Company company;

@@ -1,9 +1,6 @@
 package com.dumply.service;
 
-import com.dumply.common.dto.LoginRequestDTO;
-import com.dumply.common.dto.ProfileDTO;
-import com.dumply.common.dto.RegisterRequestDTO;
-import com.dumply.common.dto.ResponseDTO;
+import com.dumply.common.dto.*;
 import com.dumply.common.exception.BusinessException;
 import com.dumply.config.security.TokenService;
 import com.dumply.model.User;
@@ -16,6 +13,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.dumply.config.tenant.TenantContext;
+
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -44,14 +45,19 @@ public class AuthService {
     }
 
 
-    public ProfileDTO getLoggedUser() {
+    public User getAuthenticatedUser() {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
         String email = authentication.getName();
+        UUID companyId = TenantContext.getCompanyId();
 
-        User user = userRepository.findByEmail(email)
+        return userRepository.findByEmailAndCompanyId(email, companyId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    }
+
+    public ProfileDTO getLoggedUser() {
+        User user = getAuthenticatedUser();
 
         return new ProfileDTO(
                 user.getFullName(),

@@ -31,6 +31,7 @@ public class CustomerService extends TenantAwareService {
             throw new BusinessException("Cliente já cadastrado");
         }
     }
+
     public Customer findById(Long id) {
         return customerRepository.findByIdAndCompanyId(id, getCurrentCompany().getId())
                 .orElseThrow(() -> new EntityNotFoundException("ID não encontrado"));

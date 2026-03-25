@@ -23,15 +23,12 @@ api.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
 
-      if (status === 403) {
+      if (status === 401) {
         window.dispatchEvent(
           new CustomEvent('auth:logout', {
             detail: { reason: 'expired' }
           })
         );
-      }
-
-      if (status === 401) {
         toast.error(typeof data === 'string' ? data : 'Não autorizado ou sessão expirada');
       }
 
@@ -56,6 +53,7 @@ export const getDashboardStats = () => api.get('/dashboard/stats');
 
 export const autocompleteEquipments = (search) => api.get(`/equipments/autocomplete?q=${search}`);
 export const autocompleteCustomers = (search) => api.get(`/customers/autocomplete?q=${search}`);
+export const autocompleteDrivers = (search) => api.get(`/users/drivers/autocomplete?q=${search}`);
 
 export const getEquipments = (page = 0, size = 10, search = '') => api.get(`/equipments?page=${page}&size=${size}&search=${search}`);
 export const getEquipment = (id) => api.get(`/equipments/${id}`);
@@ -68,6 +66,18 @@ export const getCustomer = (id) => api.get(`/customers/${id}`);
 export const createCustomer = (data) => api.post('/customers', data);
 export const updateCustomer = (id, data) => api.put(`/customers/${id}`, data);
 export const deleteCustomer = (id) => api.delete(`/customers/${id}`);
+
+export const createDriver = (data) => api.post('/users/driver', data);
+export const createManager = (data) => api.post('/users/manager', data);
+export const getDrivers = () => api.get('/users/drivers');
+export const getManagers = () => api.get('/users/managers');
+export const getUser = (id) => api.get(`/users/${id}`);
+export const updateUser = (id, data) => api.put(`/users/${id}`, data);
+export const deleteUser = (id) => api.delete(`/users/${id}`);
+
+export const getAssignedRentals = (page = 0, size = 10) => {
+  return api.get(`/rentals/assigned?page=${page}&size=${size}`);
+}
 
 export const getRentals = (page = 0, size = 10, filters = {}) => {
   const params = new URLSearchParams({ page, size, ...filters });

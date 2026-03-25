@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getScheduledRentals, updateRental, activateRental, autocompleteEquipments } from '../api';
+import { getScheduledRentals, updateRental, activateRental, autocompleteEquipments, autocompleteDrivers } from '../api';
 import {
     Search,
     Calendar,
@@ -19,8 +19,62 @@ import { useAlert } from "@/components/ui/MainAlert.jsx";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
-const InternalEquipmentSearch = ({ onSelect }) => {
-    const [searchTerm, setSearchTerm] = useState('');
+
+const InternalDriverSearch = ({ onSelect, initialValue }) => {
+    const [searchTerm, setSearchTerm] = useState(initialValue ? `${initialValue.fullName} (${initialValue.document})` : '');
+    const [suggestions, setSuggestions] = useState([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = React.useRef(null);
+
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchTerm.length >= 1) {
+                try {
+                    const res = await autocompleteDrivers(searchTerm);
+                    setSuggestions(res.data);
+                    setIsOpen(true);
+                } catch (err) { console.error(err); }
+            } else setSuggestions([]);
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
+
+    return (
+        <div className="relative" ref={wrapperRef}>
+            <div className="relative group">
+                <input
+                    type="text"
+                    placeholder="Buscar motorista..."
+                    className="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 pl-10 text-sm text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Search size={18} className="absolute left-3 top-3 text-gray-600" />
+            </div>
+            {isOpen && suggestions.length > 0 && (
+                <div className="absolute z-110 w-full mt-2 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                    {suggestions.map(d => (
+                        <div
+                            key={d.id}
+                            className="p-3 hover:bg-emerald-500/10 cursor-pointer border-b border-gray-800/50 last:border-0 text-sm"
+                            onClick={() => {
+                                onSelect(d);
+                                setSearchTerm(`${d.fullName} (${d.document})`);
+                                setIsOpen(false);
+                            }}
+                        >
+                            <div className="text-white font-bold">{d.fullName}</div>
+                            <div className="text-[10px] text-gray-500">Documento: {d.document}</div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const InternalEquipmentSearch = ({ onSelect, initialValue }) => {
+    const [searchTerm, setSearchTerm] = useState(initialValue ? `${initialValue.name} (${initialValue.serialNumber})` : '');
     const [suggestions, setSuggestions] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = React.useRef(null);
@@ -78,6 +132,7 @@ const ScheduledRentals = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRental, setSelectedRental] = useState(null);
     const [selectedEquipment, setSelectedEquipment] = useState(null);
+    const [selectedDriver, setSelectedDriver] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState('');
     const [loading, setLoading] = useState(true);
@@ -127,7 +182,8 @@ const ScheduledRentals = () => {
                 endDate: selectedRental.endDate,
                 fullAddress: selectedRental.fullAddress,
                 latitude: selectedRental.latitude,
-                longitude: selectedRental.longitude
+                longitude: selectedRental.longitude,
+                driverId: selectedDriver?.id || selectedRental.driver?.id,
             };
 
             await updateRental(selectedRental.id, updatePayload);
@@ -270,6 +326,8 @@ const ScheduledRentals = () => {
                             <button
                                 onClick={() => {
                                     setSelectedRental(rental);
+                                    setSelectedDriver(rental.driver);
+                                    setSelectedEquipment(null);
                                     setIsModalOpen(true);
                                 }}
                                 className="col-span-3 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-lg py-2.5 text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
@@ -313,10 +371,16 @@ const ScheduledRentals = () => {
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm text-gray-400 font-medium">Motorista Teste</span>
-                                            <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 rounded uppercase font-bold tracking-wide">Beta</span>
+                                            <span className="text-sm text-gray-400 font-medium">
+                                                {rental.driver?.fullName || 'Motorista não atribuído'}
+                                            </span>
+                                            {rental.driver && (
+                                                <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 rounded uppercase font-bold tracking-wide">Beta</span>
+                                            )}
                                         </div>
-                                        <div className="text-[10px] text-gray-600 font-mono">CNH: 123.456.789-00</div>
+                                        <div className="text-[10px] text-gray-600 font-mono">
+                                            {rental.driver?.document ? `CNH: ${rental.driver.document}` : '---'}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -337,6 +401,8 @@ const ScheduledRentals = () => {
                                     <button
                                         onClick={() => {
                                             setSelectedRental(rental);
+                                            setSelectedDriver(rental.driver);
+                                            setSelectedEquipment(null);
                                             setIsModalOpen(true);
                                         }}
                                         className="p-2 hover:bg-emerald-500/10 text-emerald-500 rounded-lg transition-colors border border-transparent hover:border-emerald-500/20"
@@ -410,7 +476,12 @@ const ScheduledRentals = () => {
                         <div className="p-6 space-y-4">
                             <div>
                                 <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block ml-1">Equipamento</label>
-                                <InternalEquipmentSearch onSelect={setSelectedEquipment} />
+                                <InternalEquipmentSearch onSelect={setSelectedEquipment} initialValue={selectedEquipment} />
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block ml-1">Motorista</label>
+                                <InternalDriverSearch onSelect={setSelectedDriver} initialValue={selectedDriver} />
                             </div>
 
                             <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4">

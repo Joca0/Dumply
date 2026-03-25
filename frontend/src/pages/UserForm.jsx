@@ -1,0 +1,200 @@
+import React, { useState, useEffect } from 'react';
+import { createDriver, createManager, getUser, updateUser } from '../api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from "sonner";
+import { User, Fingerprint, Mail, Save, ChevronLeft, Info, Lock } from 'lucide-react';
+import { useDocumentMask } from "@/hooks/useDocumentMask.jsx";
+
+const UserForm = ({ role = 'DRIVER' }) => {
+    const isManager = role === 'MANAGER';
+    const roleLabel = isManager ? 'Gerente' : 'Motorista';
+    const [formData, setFormData] = useState({ fullName: '', document: '', email: '', password: '' });
+    const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(false);
+    const navigate = useNavigate();
+    const { id } = useParams();
+
+    const documentMask = useDocumentMask(
+        formData.document,
+        (val) => setFormData((prev) => ({ ...prev, document: val }))
+    );
+
+    useEffect(() => {
+        if (id) {
+            const fetchUserData = async () => {
+                setFetching(true);
+                try {
+                    const res = await getUser(id);
+                    const { fullName, document, email } = res.data;
+                    setFormData({
+                        fullName: fullName || '',
+                        document: document || '',
+                        email: email || '',
+                        password: '' // Não enviamos a senha no carregamento
+                    });
+                } catch (err) {
+                    navigate(isManager ? '/managers' : '/drivers');
+                } finally {
+                    setFetching(false);
+                }
+            };
+            fetchUserData();
+        }
+    }, [id, navigate, roleLabel, isManager]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            if (id) {
+                await updateUser(id, formData);
+                toast.success(`${roleLabel} atualizado com sucesso!`);
+                navigate(isManager ? '/managers' : '/drivers');
+            } else {
+                if (isManager) {
+                    await createManager(formData);
+                } else {
+                    await createDriver(formData);
+                }
+                toast.success(`${roleLabel} cadastrado com sucesso!`);
+                navigate(isManager ? '/managers' : '/drivers');
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (fetching) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-950 gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <p className="text-gray-500 font-medium animate-pulse">Buscando dados do motorista...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-4xl mx-auto p-4 md:p-10 min-h-screen">
+            {/* CABEÇALHO */}
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-900/40">
+                        <User className="text-white" size={24} />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                            {id ? `Editar ${roleLabel}` : `Novo ${roleLabel}`}
+                        </h2>
+                        <p className="text-gray-500 text-sm">Gerencie informações de acesso do {roleLabel.toLowerCase()}.</p>
+                    </div>
+                </div>
+
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm font-medium"
+                >
+                    <ChevronLeft size={18} /> Voltar
+                </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+                {/* CARD PRINCIPAL */}
+                <div className="bg-gray-900/40 border border-gray-800 p-6 md:p-8 rounded-[2.5rem] backdrop-blur-sm space-y-8 shadow-2xl">
+
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Info size={14} className="text-blue-500" /> Dados Pessoais e Acesso
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* NOME COMPLETO */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                                <User size={12} className="text-blue-500" /> Nome Completo
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                disabled={loading}
+                                placeholder="Ex: João Silva"
+                                className="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                value={formData.fullName}
+                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                            />
+                        </div>
+
+                        {/* DOCUMENTO */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                                <Fingerprint size={12} className="text-blue-500" /> {documentMask.label}
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                disabled={loading}
+                                placeholder={documentMask.placeholder}
+                                className="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-mono"
+                                value={formData.document}
+                                onChange={documentMask.handleChange}
+                                maxLength={documentMask.maxLength}
+                            />
+                        </div>
+
+                        {/* EMAIL */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                                <Mail size={12} className="text-blue-500" /> E-mail
+                            </label>
+                            <input
+                                type="email"
+                                required
+                                disabled={loading}
+                                placeholder="motorista@exemplo.com"
+                                className="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none transition-all"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            />
+                        </div>
+
+                        {/* SENHA */}
+                        {!id && (
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                                    <Lock size={12} className="text-blue-500" /> Senha Temporária
+                                </label>
+                                <input
+                                    type="password"
+                                    required={!id}
+                                    disabled={loading}
+                                    placeholder="••••••••"
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none transition-all"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* BOTÃO SUBMIT */}
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-bold transition-all active:scale-[0.98] disabled:opacity-50 shadow-xl shadow-blue-900/20 text-lg flex items-center justify-center gap-3 group"
+                >
+                    {loading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    ) : (
+                        <>
+                            <Save size={20} className="group-hover:scale-110 transition-transform" />
+                            {id ? 'Salvar Alterações' : `Cadastrar ${roleLabel}`}
+                        </>
+                    )}
+                </button>
+            </form>
+        </div>
+    );
+};
+
+export default UserForm;

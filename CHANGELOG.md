@@ -1,3 +1,26 @@
+## [2.0] - 24-03-2026
+
+### Gestão de Usuários & Controle de Acesso
+- **CRUD de Usuários**: Implementação completa de gerenciamento para Motoristas (`DRIVER`) e Gerentes (`MANAGER`).
+- **Níveis de Permissão (RBAC)**: Introdução de segurança baseada em funções (`@PreAuthorize`) em todos os endpoints críticos, restringindo ações conforme o papel do usuário (ADMIN, OWNER, MANAGER, DRIVER).
+- **Atribuição de Motorista**: Agora é possível atribuir um motorista específico a cada aluguel durante a criação ou edição.
+- **Listagem por Papel**: Novos endpoints e interfaces para visualizar listas filtradas de motoristas e gerentes da empresa.
+
+### Gestão de Aluguéis (Melhorias)
+- **Meus Aluguéis (Motorista)**: Nova funcionalidade e endpoint `/rentals/assigned` para que motoristas visualizem apenas as locações sob sua responsabilidade.
+- **Refinamento de Status**: Melhorias na lógica de transição entre estados (Agendado, Ativo, Finalizado) com validações robustas de regras de negócio.
+- **Edição Flexível**: Suporte a alteração de cliente, motorista e equipamento em aluguéis existentes, com liberação automática de equipamentos substituídos.
+
+### Segurança & Multi-tenancy
+- **Filtro por Tenant (Inquilino)**: Refinamento na busca de usuários autenticados para garantir que dados sejam restritos estritamente ao contexto da empresa (`company_id`).
+- **Constraints de Unicidade**: Adicionada restrição de unicidade composta (Empresa, Documento, E-mail) para evitar conflitos de dados entre diferentes empresas.
+- **Tratamento de Erros 401**: Melhoria na interceptação de respostas não autorizadas no front-end para redirecionamento e feedback imediato ao usuário.
+
+### Front-end (UI/UX)
+- **Novas Páginas**: Implementadas as telas `UserForm`, `DriverList`, `ManagerList` e `AssignedList`.
+- **Autocomplete de Motoristas**: Campo de busca inteligente integrado ao formulário de aluguel para seleção rápida de motoristas.
+- **Landing Page**: Adicionada página inicial institucional (`LandingPage`) como porta de entrada do sistema.
+
 ## [1.9] - 05-03-2026
 
 ### Cadastro & Onboarding

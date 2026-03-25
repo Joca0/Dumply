@@ -60,6 +60,32 @@ const MapPage = () => {
         }, {});
     }, [rentals]);
 
+    const getMarkerColor = (rental) => {
+        if (!rental.endDate) return '#2563eb'; // Azul (Sem data fim)
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const endDate = new Date(rental.endDate);
+        endDate.setHours(0, 0, 0, 0);
+
+        if (endDate < today) return '#ef4444'; // Vermelho (Passou da data fim)
+
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(today.getDate() + 3);
+
+        if (endDate <= threeDaysFromNow) return '#f59e0b'; // Amarelo (Próximo da data fim)
+
+        return '#10b981'; // Verde (OK)
+    };
+
+    const getGroupColor = (rentals) => {
+        const colors = rentals.map(getMarkerColor);
+        if (colors.includes('#ef4444')) return '#ef4444';
+        if (colors.includes('#f59e0b')) return '#f59e0b';
+        if (colors.includes('#2563eb')) return '#2563eb';
+        return '#10b981';
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900">
@@ -89,7 +115,7 @@ const MapPage = () => {
                                 onClick={() => setSelectedRental(isGroup ? items : first)}
                             >
                                 <Pin
-                                    background={isGroup ? '#2b43fb' : (first.endDate ? '#10b981' : '#2563eb')}
+                                    background={isGroup ? getGroupColor(items) : getMarkerColor(first)}
                                     borderColor={'#fff'}
                                     glyphColor={'#fff'}
                                 >
@@ -179,6 +205,29 @@ const MapPage = () => {
                         </InfoWindow>
                     )}
                 </Map>
+
+                {/* Legenda */}
+                <div className="absolute bottom-10 left-10 bg-white p-4 rounded-lg shadow-lg z-1000 border border-gray-200">
+                    <h4 className="text-sm font-bold text-gray-800 mb-2">Legenda</h4>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-[#ef4444]"></div>
+                            <span className="text-xs text-gray-700">Passou da data fim</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-[#f59e0b]"></div>
+                            <span className="text-xs text-gray-700">Próximo da data fim (3 dias)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-[#2563eb]"></div>
+                            <span className="text-xs text-gray-700">Sem data fim</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-[#10b981]"></div>
+                            <span className="text-xs text-gray-700">No prazo</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </APIProvider>
     );

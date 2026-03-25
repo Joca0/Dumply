@@ -1,14 +1,13 @@
 package com.dumply.service;
 
-import com.dumply.common.dto.CompanySignupRequest;
-import com.dumply.common.dto.CompanyStatus;
-import com.dumply.common.dto.Role;
+import com.dumply.common.dto.*;
 import com.dumply.common.exception.BusinessException;
 import com.dumply.common.exception.EmailAlreadyExistsException;
 import com.dumply.model.Company;
 import com.dumply.model.User;
 import com.dumply.repository.CompanyRepository;
 import com.dumply.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class CompanyService extends TenantAwareService {
@@ -66,5 +66,10 @@ public class CompanyService extends TenantAwareService {
         company.setStatus(CompanyStatus.TRIAL);
         company.setTrialEndsAt(LocalDateTime.now().plusMonths(2));
         return companyRepository.save(company);
+    }
+
+    public Company findById(UUID id) {
+        return companyRepository.findById(getCurrentCompany().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Empresa não encontrado"));
     }
 }

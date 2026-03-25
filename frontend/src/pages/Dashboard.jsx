@@ -135,32 +135,39 @@ const Dashboard = () => {
             {/* COLUNA LATERAL */}
             <div className="lg:col-span-5 flex flex-col gap-6">
               {/* Agendamentos - Estilo Clean */}
-              <div className="flex-1 bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 hover:border-gray-700 transition-all group">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Próximas Saídas</span>
-                    <h4 className="text-4xl font-black text-white mt-2 group-hover:text-blue-400 transition-colors">{stats.totalScheduled}</h4>
-                    <p className="text-gray-500 text-sm mt-1 font-medium italic">Entregas agendadas</p>
-                  </div>
-                  <div className="p-4 bg-gray-800 rounded-2xl text-gray-400">
-                    <CalendarClock size={28} />
+              <Link to="/scheduled">
+                <div className="flex-1 bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 hover:border-gray-700 transition-all group">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Próximas Saídas</span>
+                      <h4 className="text-4xl font-black text-white mt-2 group-hover:text-blue-400 transition-colors">{stats.totalScheduled}</h4>
+                      <p className="text-gray-500 text-sm mt-1 font-medium italic">Entregas agendadas</p>
+                    </div>
+                    <div className="p-4 bg-gray-800 rounded-2xl text-gray-400">
+                      <CalendarClock size={28} />
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
+
+
 
               {/* Financeiro */}
+              <Link to="/invoices">
               <div className="flex-1 bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 hover:border-amber-500/30 transition-all group">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Pendências Financeiras</span>
-                    <h4 className="text-4xl font-black text-amber-500 mt-2">{stats.openInvoices}</h4>
-                    <p className="text-gray-500 text-sm mt-1 font-medium italic">Faturas em aberto</p>
+
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Pendências Financeiras</span>
+                      <h4 className="text-4xl font-black text-amber-500 mt-2">{stats.openInvoices}</h4>
+                      <p className="text-gray-500 text-sm mt-1 font-medium italic">Faturas em aberto</p>
+                    </div>
+                    <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-500">
+                      <Receipt size={28} />
+                    </div>
                   </div>
-                  <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-500">
-                    <Receipt size={28} />
-                  </div>
-                </div>
               </div>
+              </Link>
             </div>
           </div>
 

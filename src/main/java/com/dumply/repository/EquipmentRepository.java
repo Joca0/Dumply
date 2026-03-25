@@ -26,8 +26,8 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long>, Jpa
     WHERE e.company.id = :companyId
       AND e.status = com.dumply.common.dto.EquipmentStatus.AVAILABLE
       AND (
-           LOWER(e.name) LIKE %:q%
-        OR e.serialNumber LIKE %:q%
+           LOWER(e.name) LIKE LOWER(CONCAT('%', :q, '%'))
+        OR e.serialNumber LIKE CONCAT('%', :q, '%')
       )
     ORDER BY e.name
 """)

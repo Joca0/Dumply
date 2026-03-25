@@ -24,6 +24,20 @@ const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
+  const rolePermissions = {
+    DRIVER: ['/map', '/assigned'],
+    ADMIN: ['/map', '/dashboard', '/rentals', '/customers', '/equipments', '/invoices', '/scheduled'],
+    OWNER: ['/map', '/dashboard', '/rentals', '/customers', '/equipments', '/invoices', '/scheduled'],
+  };
+
+  const isAllowed = (to) => {
+    if (!user) return false;
+    if (['ADMIN', 'OWNER', 'MANAGER'].includes(user.role)) return true;
+    return rolePermissions[user.role]?.includes(to);
+  };
+
+
+
   // Fecha o menu mobile ao trocar de rota
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -47,8 +61,9 @@ const Layout = () => {
     {
       label: 'Visão Geral',
       items: [
-        { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/map', icon: MapIcon, label: 'Mapa em Tempo Real' },
+        { to: '/assigned', icon: Truck, label: 'Atribuições' },
       ]
     },
     {
@@ -61,6 +76,13 @@ const Layout = () => {
       ]
     },
     {
+      label: 'Equipe',
+      items: [
+        { to: '/drivers', icon: Truck, label: 'Motoristas' },
+        { to: '/managers', icon: Users, label: 'Gerentes' },
+      ]
+    },
+    {
       label: 'Financeiro',
       items: [
         { to: '/invoices', icon: Receipt, label: 'Faturas' },
@@ -70,6 +92,7 @@ const Layout = () => {
       label: 'Criação',
       items: [
         { to: '/customers/new', icon: Users, label: 'Novo Cliente' },
+        { to: '/drivers/new', icon: Truck, label: 'Novo Motorista' },
         { to: '/equipments/new', icon: Box, label: 'Novo Equipamento' },
       ]
     }
@@ -78,6 +101,7 @@ const Layout = () => {
   const quickActions = [
     { to: '/rentals/new', label: 'Novo Aluguel' },
     { to: '/customers/new', label: 'Novo Cliente' },
+    { to: '/drivers/new', label: 'Novo Motorista' },
   ];
 
   if (loading) {
@@ -131,7 +155,7 @@ const Layout = () => {
           <div className="flex-1 overflow-y-auto py-6 px-3 space-y-6 custom-scrollbar">
 
             {/* BOTÕES DE NAVEGAÇÃO */}
-            {isSidebarOpen && (
+            {isSidebarOpen && user?.role !== 'DRIVER' && (
                 <div className="px-3 mb-6">
                   <NavLink to="/rentals/new" className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">
                     <Plus size={20} />
@@ -150,7 +174,11 @@ const Layout = () => {
             )}
 
             {/* GRUPOS PARA NAVEGAÇÃO */}
-            {menuGroups.map((group, idx) => (
+            {menuGroups.map((group, idx) => {
+              const filteredItems = group.items.filter(item => isAllowed(item.to));
+              if (filteredItems.length === 0) return null;
+
+              return (
                 <div key={idx}>
                   {isSidebarOpen && (
                       <h3 className="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
@@ -158,7 +186,7 @@ const Layout = () => {
                       </h3>
                   )}
                   <div className="space-y-1">
-                    {group.items.map((item) => (
+                    {filteredItems.map((item) => (
                         <NavLink
                             key={item.to}
                             to={item.to}
@@ -190,7 +218,8 @@ const Layout = () => {
                   </div>
                   {idx < menuGroups.length - 1 && <div className="my-4 border-t border-gray-800/50 mx-3" />}
                 </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* USUÁRIO LOGADO */}
@@ -245,40 +274,47 @@ const Layout = () => {
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-6">
                   {/* AÇÕES MOBILE */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {quickActions.map(action => (
-                        <NavLink
-                            key={action.to}
-                            to={action.to}
-                            className="flex flex-col items-center justify-center bg-gray-800 p-3 rounded-xl border border-gray-700 hover:border-blue-500 text-center gap-2"
-                        >
-                          <Plus size={20} className="text-blue-500"/>
-                          <span className="text-xs font-bold text-gray-300">{action.label}</span>
-                        </NavLink>
-                    ))}
-                  </div>
-
-                  {menuGroups.map((group, idx) => (
-                      <div key={idx}>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{group.label}</h3>
-                        <div className="space-y-1">
-                          {group.items.map(item => (
-                              <NavLink
-                                  key={item.to}
-                                  to={item.to}
-                                  className={({ isActive }) =>
-                                      `flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                                          isActive ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-                                      }`
-                                  }
-                              >
-                                <item.icon size={20} />
-                                <span className="font-medium">{item.label}</span>
-                              </NavLink>
-                          ))}
-                        </div>
+                  {user?.role !== 'DRIVER' && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {quickActions.map(action => (
+                            <NavLink
+                                key={action.to}
+                                to={action.to}
+                                className="flex flex-col items-center justify-center bg-gray-800 p-3 rounded-xl border border-gray-700 hover:border-blue-500 text-center gap-2"
+                            >
+                              <Plus size={20} className="text-blue-500"/>
+                              <span className="text-xs font-bold text-gray-300">{action.label}</span>
+                            </NavLink>
+                        ))}
                       </div>
-                  ))}
+                  )}
+
+                  {menuGroups.map((group, idx) => {
+                    const filteredItems = group.items.filter(item => isAllowed(item.to));
+                    if (filteredItems.length === 0) return null;
+
+                    return (
+                        <div key={idx}>
+                          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{group.label}</h3>
+                          <div className="space-y-1">
+                            {filteredItems.map(item => (
+                                <NavLink
+                                    key={item.to}
+                                    to={item.to}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                                            isActive ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800'
+                                        }`
+                                    }
+                                >
+                                  <item.icon size={20} />
+                                  <span className="font-medium">{item.label}</span>
+                                </NavLink>
+                            ))}
+                          </div>
+                        </div>
+                    );
+                  })}
                 </div>
 
                 <div className="p-4 border-t border-gray-800 bg-gray-900/50">
