@@ -193,13 +193,9 @@ public class RentalService extends TenantAwareService{
                     rental.setEquipment(newEquip);
                     equipmentRepository.save(newEquip);
 
-                    // Se antes era SCHEDULED e agora tem equipamento, e o usuário NÃO marcou como agendamento
-                    // (O front-end envia equipmentId como null se for agendamento)
-                    // Se chegamos aqui, equipmentId NÃO é null.
-                    // Se o status era SCHEDULED, podemos mudar para ACTIVE? 
-                    // Melhor manter SCHEDULED se for uma edição de agendamento, 
-                    // a menos que queiramos que a adição de equipamento ATIVE o aluguel.
-                    // O método activateRental existe para ativação formal.
+                    if (rental.getStatus() == RentalStatus.SCHEDULED) {
+                        rental.setStatus(RentalStatus.ACTIVE);
+                    }
                 } else {
                     rental.setEquipment(null);
                     rental.setStatus(RentalStatus.SCHEDULED);
@@ -287,6 +283,8 @@ public class RentalService extends TenantAwareService{
         }
 
         rental.setStatus(RentalStatus.ACTIVE);
+        rental.getEquipment().setStatus(EquipmentStatus.RENTED);
+        equipmentRepository.save(rental.getEquipment());
         return rentalRepository.save(rental);
     }
 
@@ -313,6 +311,13 @@ public class RentalService extends TenantAwareService{
     public void deleteRental(Long rentalId) {
         Rental r = rentalRepository.findByIdAndCompanyId(rentalId, getCurrentCompany().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Aluguel não encontrado"));
+
+        if (r.getEquipment() != null) {
+            Equipment equipment = r.getEquipment();
+            equipment.setStatus(EquipmentStatus.AVAILABLE);
+            equipmentRepository.save(equipment);
+        }
+
         rentalRepository.delete(r);
     }
 }
