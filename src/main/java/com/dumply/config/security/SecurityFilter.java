@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -61,7 +62,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                     // Buscar por email + companyId para evitar vazamento entre tenants (mesmo email em empresas diferentes)
                     User user = userRepository.findByEmailAndCompanyId(email, companyId)
-                            .orElseThrow(() -> new BadCredentialsException("Credenciais inválidas"));
+                            .orElseThrow(() -> new AccessDeniedException("Credenciais inválidas"));
 
                     // Garantir que o usuário pertence à empresa do token (defesa em profundidade)
                     if (!user.getCompany().getId().equals(companyId)) {
