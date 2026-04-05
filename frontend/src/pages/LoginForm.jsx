@@ -19,11 +19,19 @@ const Login = () => {
         try {
             const response = await login({ email, password });
             const token = response.data.token;
+            const role = response.data.role;
+
             localStorage.setItem('@dumply:token', token);
+            localStorage.setItem('@dumply:role', role);
 
             await refreshUser();
             toast.success("Bem-vindo de volta ao Dumply!");
-            navigate('/dashboard');
+
+            if (role === 'DRIVER') {
+                navigate('/assigned');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
         } finally {
             setLoading(false);
