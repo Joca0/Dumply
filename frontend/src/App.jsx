@@ -37,6 +37,8 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
+
+
 function App() {
   return (
     <BrowserRouter>

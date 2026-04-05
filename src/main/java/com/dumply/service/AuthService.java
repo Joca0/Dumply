@@ -41,7 +41,10 @@ public class AuthService {
             throw new BadCredentialsException("Credenciais Inválidas");
         }
 
-        return new ResponseDTO(tokenService.generateToken(user));
+        return new ResponseDTO(
+                tokenService.generateToken(user),
+                user.getRole()
+        );
     }
 
 
@@ -83,20 +86,4 @@ public class AuthService {
         );
     }
 
-    public ResponseDTO register(RegisterRequestDTO body) {
-        if (userRepository.existsByEmailGlobal(body.email())) {
-            throw new BusinessException("Usuário já existe");
-        }
-
-        User user = new User();
-        user.setEmail(body.email());
-        user.setPassword(passwordEncoder.encode(body.password()));
-        user.setDocument(body.document());
-        user.setFullName(body.fullName());
-        user.setRole(body.role());
-
-        userRepository.save(user);
-
-        return new ResponseDTO(tokenService.generateToken(user));
-    }
 }
