@@ -46,6 +46,8 @@ function App() {
         <Routes>
           <Route path="/auth/login" element={<LoginForm/>}/>
           <Route path="/auth/register" element={<RegisterForm/>}/>
+          <Route path="landing" element={<LandingPage/>}/>
+          <Route path="404" element={<NotFound/>}/>
           <Route
               path="/"
               element={

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useLocation, Navigate } from 'react-router-dom';
+import { Dialog } from '@headlessui/react';
+import { QRCodeSVG } from 'qrcode.react';
+import { setup2FA, confirm2FA, requestDisable2FA, confirmDisable2FA } from '../api';
+import { toast } from 'sonner';
 import {
   Home,
   Map as MapIcon,
@@ -14,15 +18,80 @@ import {
   LogOut,
   ChevronRight,
   LayoutDashboard,
-  Settings
+  Settings,
+  CheckCircle,
+  Shield,
+  User,
+  ShieldOff,
+  Mail,
+  Loader2
 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 
 const Layout = () => {
-  const { user, logout, loading } = useAuth();
+  const { user, logout, loading, refreshUser } = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [twoFactorStep, setTwoFactorStep] = useState('idle');
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const location = useLocation();
+
+  const userInitial = (user?.fullName?.charAt(0) || user?.name?.charAt(0) || '?').toUpperCase();
+
+  const handleStart2FA = async () => {
+    try {
+      const res = await setup2FA();
+      setQrCodeUrl(res.data.qrCodeUrl);
+      setTwoFactorStep('setup');
+    } catch (error) {
+      toast.error("Erro ao configurar o 2FA. Tente novamente.");
+    }
+  }
+
+  const handleConfirm2FA = async () => {
+    try {
+      await confirm2FA(otpCode);
+      toast.success("2FA ativado com sucesso!");
+      await refreshUser();
+      setTwoFactorStep('idle');
+      setIsProfileOpen(false);
+    } catch (error) {
+      toast.error("Código inválido. Tente novamente.");
+    }
+  }
+
+  const handleRequestDisable2FA = async () => {
+    setIsSubmitting(true);
+    try {
+      await requestDisable2FA();
+      toast.success("Código de desativação enviado para seu e-mail.");
+      setTwoFactorStep('disable-confirm');
+      setOtpCode('');
+    } catch (error) {
+      toast.error("Erro ao solicitar desativação. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const handleConfirmDisable2FA = async () => {
+    setIsSubmitting(true);
+    try {
+      await confirmDisable2FA(otpCode);
+      toast.success("2FA desativado com sucesso.");
+      await refreshUser();
+      setTwoFactorStep('idle');
+      setIsProfileOpen(false);
+    } catch (error) {
+      toast.error("Código de verificação inválido.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   const rolePermissions = {
     DRIVER: ['/map', '/assigned'],
@@ -36,22 +105,13 @@ const Layout = () => {
     return rolePermissions[user.role]?.includes(to);
   };
 
-
-
-  // Fecha o menu mobile ao trocar de rota
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  // Monitora resize para comportamento responsivo
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        // Desktop: Respeita a escolha do usuário, mas garante visibilidade inicial se grande
-        // (Lógica opcional, aqui mantemos o estado atual)
-      } else {
-        setSidebarOpen(false); // Fecha sidebar em telas menores que lg
-      }
+      if (window.innerWidth < 1024) setSidebarOpen(false);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -87,21 +147,7 @@ const Layout = () => {
         { to: '/drivers', icon: Truck, label: 'Motoristas' },
         { to: '/managers', icon: Users, label: 'Gerentes' },
       ]
-    },
-    {
-      label: 'Criação',
-      items: [
-        { to: '/customers/new', icon: Users, label: 'Novo Cliente' },
-        { to: '/drivers/new', icon: Truck, label: 'Novo Motorista' },
-        { to: '/equipments/new', icon: Box, label: 'Novo Equipamento' },
-      ]
     }
-  ];
-
-  const quickActions = [
-    { to: '/rentals/new', label: 'Novo Aluguel' },
-    { to: '/customers/new', label: 'Novo Cliente' },
-    { to: '/drivers/new', label: 'Novo Motorista' },
   ];
 
   if (loading) {
@@ -112,223 +158,187 @@ const Layout = () => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth/login" replace />;
-  }
+  if (!user) return <Navigate to="/auth/login" replace />;
 
   return (
       <div className="flex h-screen bg-gray-950 overflow-hidden text-gray-100 font-sans">
 
         {/* --- SIDEBAR (DESKTOP) --- */}
-        <aside
-            className={`
-          hidden lg:flex flex-col border-r border-gray-800 bg-gray-900 transition-all duration-300 ease-in-out relative z-20
-          ${isSidebarOpen ? 'w-72' : 'w-20'}
-        `}
-        >
-          {/* TOPO AREA DA LOGO */}
+        <aside className={`hidden lg:flex flex-col border-r border-gray-800 bg-gray-900 transition-all duration-300 relative z-20 ${isSidebarOpen ? 'w-72' : 'w-20'}`}>
           <div className="h-20 flex items-center justify-between px-6 border-b border-gray-800">
             {isSidebarOpen ? (
                 <>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-xl tracking-tight text-white">Dumply<span className="text-blue-500">.</span></span>
-                  </div>
-                  <button
-                      onClick={() => setSidebarOpen(false)}
-                      className="text-gray-500 hover:text-white transition-colors"
-                  >
-                    <Menu size={20} />
-                  </button>
+                  <span className="font-bold text-xl tracking-tight text-white">Dumply<span className="text-blue-500">.</span></span>
+                  <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-white transition-colors"><Menu size={20} /></button>
                 </>
             ) : (
-                <button
-                    onClick={() => setSidebarOpen(true)}
-                    className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mx-auto hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
-                    title="Expandir Menu"
-                >
-                  <Menu size={20} />
-                </button>
+                <button onClick={() => setSidebarOpen(true)} className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mx-auto hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"><Menu size={20} /></button>
             )}
           </div>
 
-          {/* SCROLL NAV */}
-          <div className="flex-1 overflow-y-auto py-6 px-3 space-y-6 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto py-6 px-3 space-y-6">
+            <div className="px-3">
+              <NavLink to="/rentals/new" className={`flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95 ${isSidebarOpen ? 'p-3 w-full' : 'w-10 h-10 mx-auto'}`}>
+                <Plus size={20} />
+                {isSidebarOpen && <span>Criar Locação</span>}
+              </NavLink>
+            </div>
 
-            {/* BOTÕES DE NAVEGAÇÃO */}
-            {isSidebarOpen && user?.role !== 'DRIVER' && (
-                <div className="px-3 mb-6">
-                  <NavLink to="/rentals/new" className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">
-                    <Plus size={20} />
-                    <span>Criar Locação</span>
-                  </NavLink>
-                </div>
-            )}
-
-            {/* BOTÕES DE AÇÃO COLAPSADO */}
-            {!isSidebarOpen && (
-                <div className="flex justify-center mb-6">
-                  <NavLink to="/rentals/new" className="w-10 h-10 bg-blue-600 hover:bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-900/20 transition-all" title="Nova Locação">
-                    <Plus size={20} />
-                  </NavLink>
-                </div>
-            )}
-
-            {/* GRUPOS PARA NAVEGAÇÃO */}
-            {menuGroups.map((group, idx) => {
-              const filteredItems = group.items.filter(item => isAllowed(item.to));
-              if (filteredItems.length === 0) return null;
-
-              return (
+            {menuGroups.map((group, idx) => (
                 <div key={idx}>
-                  {isSidebarOpen && (
-                      <h3 className="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
-                        {group.label}
-                      </h3>
-                  )}
+                  {isSidebarOpen && <h3 className="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">{group.label}</h3>}
                   <div className="space-y-1">
-                    {filteredItems.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            title={!isSidebarOpen ? item.label : ''}
-                            className={({ isActive }) =>
-                                `relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                                    isActive
-                                        ? 'bg-gray-800 text-white'
-                                        : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
-                                }`
-                            }
-                        >
-                          {({ isActive }) => (
-                              <>
-                                {isActive && <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500 rounded-full" />}
-                                <item.icon size={20} className={`min-w-[20px] ${isActive ? 'text-blue-400' : 'text-gray-500 group-hover:text-gray-300'}`} />
-                                {isSidebarOpen && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
-
-
-                                {!isSidebarOpen && (
-                                    <div className="absolute left-14 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-gray-700">
-                                      {item.label}
-                                    </div>
-                                )}
-                              </>
-                          )}
+                    {group.items.filter(item => isAllowed(item.to)).map((item) => (
+                        <NavLink key={item.to} to={item.to} className={({ isActive }) => `relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'}`}>
+                          <item.icon size={20} className="min-w-[20px]" />
+                          {isSidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
                         </NavLink>
                     ))}
                   </div>
-                  {idx < menuGroups.length - 1 && <div className="my-4 border-t border-gray-800/50 mx-3" />}
                 </div>
-              );
-            })}
+            ))}
           </div>
 
           {/* USUÁRIO LOGADO */}
           <div className="p-4 border-t border-gray-800 bg-gray-900">
-            <div className={`flex items-center ${isSidebarOpen ? 'gap-3' : 'justify-center'}`}>
-              <div className="w-9 h-9 rounded-full bg-linear-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white font-bold text-sm shadow-inner shrink-0">
-                {user?.fullName?.charAt(0) || 'U'}
+            <button onClick={() => setIsProfileOpen(true)} className="w-full flex items-center gap-3 p-2 hover:bg-gray-800 rounded-xl transition-all group border border-transparent hover:border-gray-700">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shrink-0 shadow-lg shadow-blue-900/20">
+                {userInitial}
               </div>
-
               {isSidebarOpen && (
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-left">
                     <p className="text-sm font-bold text-white truncate">{user?.fullName}</p>
                     <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                   </div>
               )}
-
-              {isSidebarOpen && (
-                  <button onClick={logout} className="p-2 hover:bg-red-500/10 text-gray-500 hover:text-red-400 rounded-lg transition-colors" title="Sair">
-                    <LogOut size={18} />
-                  </button>
-              )}
-            </div>
+            </button>
           </div>
         </aside>
 
-
-        {/* --- MOBILE HEADER & DRAWER --- */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 z-40 no-print">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="font-bold text-white text-lg">D</span>
-            </div>
-            <span className="font-bold text-lg text-white">Dumply.</span>
-          </div>
-          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-300 bg-gray-800 rounded-lg">
-            <Menu size={24} />
-          </button>
-        </div>
-
-        {/* MOBILE OVERLAY */}
-        {isMobileMenuOpen && (
-            <div className="lg:hidden fixed inset-0 z-50">
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-
-              <div className="absolute right-0 top-0 bottom-0 w-72 bg-gray-900 border-l border-gray-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
-                <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
-                  <span className="font-bold text-lg text-white">Menu</span>
-                  <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-800 rounded-lg text-gray-400">
-                    <X size={24} />
-                  </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                  {/* AÇÕES MOBILE */}
-                  {user?.role !== 'DRIVER' && (
-                      <div className="grid grid-cols-2 gap-3">
-                        {quickActions.map(action => (
-                            <NavLink
-                                key={action.to}
-                                to={action.to}
-                                className="flex flex-col items-center justify-center bg-gray-800 p-3 rounded-xl border border-gray-700 hover:border-blue-500 text-center gap-2"
-                            >
-                              <Plus size={20} className="text-blue-500"/>
-                              <span className="text-xs font-bold text-gray-300">{action.label}</span>
-                            </NavLink>
-                        ))}
-                      </div>
-                  )}
-
-                  {menuGroups.map((group, idx) => {
-                    const filteredItems = group.items.filter(item => isAllowed(item.to));
-                    if (filteredItems.length === 0) return null;
-
-                    return (
-                        <div key={idx}>
-                          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{group.label}</h3>
-                          <div className="space-y-1">
-                            {filteredItems.map(item => (
-                                <NavLink
-                                    key={item.to}
-                                    to={item.to}
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                                            isActive ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-                                        }`
-                                    }
-                                >
-                                  <item.icon size={20} />
-                                  <span className="font-medium">{item.label}</span>
-                                </NavLink>
-                            ))}
-                          </div>
-                        </div>
-                    );
-                  })}
-                </div>
-
-                <div className="p-4 border-t border-gray-800 bg-gray-900/50">
-                  <button onClick={logout} className="flex items-center gap-3 w-full p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
-                    <LogOut size={20} />
-                    <span className="font-bold">Sair da Conta</span>
-                  </button>
-                </div>
+        {/* PROFILE MODAL */}
+        <Dialog open={isProfileOpen} onClose={() => { setIsProfileOpen(false); setTwoFactorStep('idle'); }} className="relative z-50">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Dialog.Panel className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl text-white">
+              <div className="flex justify-between items-center mb-6">
+                <Dialog.Title className="text-xl font-bold">Minha Conta</Dialog.Title>
+                <button onClick={() => setIsProfileOpen(false)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"><X size={20} /></button>
               </div>
-            </div>
-        )}
 
-        {/* --- MAIN CONTENT AREA --- */}
-        <main className="flex-1 overflow-auto relative lg:pt-0 pt-16 custom-scrollbar">
+              {twoFactorStep === 'idle' ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-800/40 rounded-xl border border-gray-700/50 flex items-center gap-4">
+                      <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg">
+                        {userInitial}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-lg truncate">{user?.fullName}</p>
+                        <p className="text-sm text-gray-400 truncate">{user?.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
+                        <User size={18} className="text-blue-400" />
+                        <span className="flex-1 text-left text-sm font-medium">Editar Perfil</span>
+                        <ChevronRight size={16} className="text-gray-600" />
+                      </button>
+
+                      <button onClick={user?.is2faEnabled ? () => setTwoFactorStep('disable-request') : handleStart2FA} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
+                        <Shield size={18} className={user?.is2faEnabled ? "text-green-400" : "text-gray-400"} />
+                        <div className="flex-1 text-left">
+                          <p className="text-sm font-medium">Segurança (2FA)</p>
+                          <p className="text-xs text-gray-500">{user?.is2faEnabled ? "Ativado" : "Proteja sua conta"}</p>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-600" />
+                      </button>
+                    </div>
+
+                    <button onClick={logout} className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all font-bold text-sm mt-4">
+                      <LogOut size={18} /> Sair da Conta
+                    </button>
+                  </div>
+              ) : twoFactorStep === 'setup' ? (
+                  <div className="flex flex-col items-center gap-6 text-center">
+                    <div className="space-y-2">
+                      <Shield size={32} className="text-blue-500 mx-auto mb-2" />
+                      <h3 className="font-bold text-lg text-white">Configuração Multi-fator 2FA</h3>
+                      <p className="text-gray-400 text-sm px-4">
+                        Escaneie o QR Code no seu aplicativo de autenticação (Google Authenticator ou Authy).
+                      </p>
+                    </div>
+                    <div className="p-3 bg-white rounded-2xl"><QRCodeSVG value={qrCodeUrl} size={160} /></div>
+                    <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="000000"
+                        className="w-full bg-gray-950 border border-gray-800 p-4 rounded-xl text-center text-2xl tracking-[0.5em] focus:ring-2 focus:ring-blue-500 outline-none"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    />
+                    <div className="grid grid-cols-2 gap-3 w-full">
+                      <button onClick={() => setTwoFactorStep('idle')} className="p-3 rounded-xl bg-gray-800 font-bold">Voltar</button>
+                      <button onClick={handleConfirm2FA} className="p-3 rounded-xl bg-blue-600 font-bold flex items-center justify-center gap-2"><CheckCircle size={18} /> Ativar</button>
+                    </div>
+                  </div>
+              ) : twoFactorStep === 'disable-request' ? (
+                  <div className="flex flex-col items-center gap-6 text-center">
+                    <div className="space-y-2">
+                      <ShieldOff size={32} className="text-red-500 mx-auto mb-2" />
+                      <h3 className="font-bold text-lg text-white">Desativar 2FA</h3>
+                      <p className="text-gray-400 text-sm px-4">
+                        Para desativar a autenticação de dois fatores, enviaremos um código de segurança para seu e-mail.
+                      </p>
+                    </div>
+                    <div className="p-6 bg-gray-800/40 rounded-2xl border border-gray-700/50 w-full">
+                        <Mail className="mx-auto text-blue-400 mb-2" size={24} />
+                        <p className="text-sm font-medium">{user?.email}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 w-full">
+                      <button onClick={() => setTwoFactorStep('idle')} className="p-3 rounded-xl bg-gray-800 font-bold">Cancelar</button>
+                      <button 
+                        onClick={handleRequestDisable2FA} 
+                        disabled={isSubmitting}
+                        className="p-3 rounded-xl bg-red-600 font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : "Enviar Código"}
+                      </button>
+                    </div>
+                  </div>
+              ) : (
+                  <div className="flex flex-col items-center gap-6 text-center">
+                    <div className="space-y-2">
+                      <Mail size={32} className="text-blue-500 mx-auto mb-2" />
+                      <h3 className="font-bold text-lg text-white">Verifique seu e-mail</h3>
+                      <p className="text-gray-400 text-sm px-4">
+                        Insira o código de 6 dígitos que enviamos para seu e-mail para confirmar a desativação do 2FA.
+                      </p>
+                    </div>
+                    <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="000000"
+                        className="w-full bg-gray-950 border border-gray-800 p-4 rounded-xl text-center text-2xl tracking-[0.5em] focus:ring-2 focus:ring-blue-500 outline-none"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    />
+                    <div className="grid grid-cols-2 gap-3 w-full">
+                      <button onClick={() => setTwoFactorStep('disable-request')} className="p-3 rounded-xl bg-gray-800 font-bold">Voltar</button>
+                      <button 
+                        onClick={handleConfirmDisable2FA} 
+                        disabled={isSubmitting || otpCode.length !== 6}
+                        className="p-3 rounded-xl bg-red-600 font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                         {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : "Confirmar"}
+                      </button>
+                    </div>
+                  </div>
+              )}
+            </Dialog.Panel>
+          </div>
+        </Dialog>
+
+        <main className="flex-1 overflow-auto relative lg:pt-0 pt-16">
           <Outlet />
         </main>
       </div>

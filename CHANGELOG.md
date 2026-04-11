@@ -1,3 +1,28 @@
+## [2.1] - 11-04-2026
+
+### Segurança & Autenticação (2FA)
+- **Autenticação de Dois Fatores (TOTP)**: Implementação completa de 2FA utilizando o padrão TOTP (Time-based One-time Password), compatível com Google Authenticator, Authy e outros.
+- **Configuração via QR Code**: Novo fluxo intuitivo para ativação do 2FA com geração dinâmica de QR Code para facilitar o escaneamento no aplicativo móvel.
+- **Login em Duas Etapas**: Processo de autenticação reforçado que exige a verificação do código temporário caso o 2FA esteja habilitado, mitigando riscos de acesso não autorizado por roubo de senha.
+- **Desativação via E-mail**: Implementado fluxo de desativação segura do 2FA, validado por código de verificação enviado ao e-mail cadastrado do usuário.
+
+### Comunicação & Infraestrutura
+- **Serviço de E-mail Integrado**: Introdução do `EmailService` e integração com `spring-boot-starter-mail` para disparo de e-mails transacionais de segurança e alertas do sistema.
+- **Gerenciamento do Ciclo de Vida do 2FA**: Adição de novos endpoints na API (`/auth/2fa/**`) para configuração, confirmação e desativação da proteção.
+- **Atualização de Dependências**: Inclusão das bibliotecas `googleauth` e `spring-boot-starter-mail` no `pom.xml` para suporte às novas funcionalidades.
+
+### Front-end (UI/UX)
+- **Interface de Verificação 2FA**: Nova tela de desafio de código integrada ao fluxo de login, garantindo uma experiência fluida mesmo com a segurança adicional.
+- **Configurações de Segurança no Perfil**: Atualização da interface de usuário para permitir a ativação, monitoramento e desativação do 2FA diretamente no perfil.
+- **Integração Robusta de API**: Ajustes no serviço de chamadas da API (`frontend/src/api/index.js`) para suportar o fluxo de autenticação em múltiplas etapas.
+
+## [2.0.x] - 25-03-2026
+
+### Patches & Hotfixes
+- **Correção em Aluguéis**: Ajustes na lógica de `RentalService` para garantir a integridade dos dados durante a transição de status de locação.
+- **Melhorias em ScheduledList**: Refinamento na listagem de aluguéis agendados no frontend, incluindo melhor visualização e filtros.
+- **Ajustes de API**: Correção em rotas de listagem e tratamento de usuários no `UserRepository`.
+
 ## [2.0] - 24-03-2026
 
 ### Gestão de Usuários & Controle de Acesso

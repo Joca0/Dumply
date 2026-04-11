@@ -2,3 +2,4 @@ frontend/.env
 frontend/src/api/index.js
 target/classes/application-dev.properties
 src/main/resources/application-dev.properties
+Checkilist.md

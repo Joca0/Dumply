@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Driver;
+import java.util.Map;
 
 
 @RestController
@@ -39,4 +40,34 @@ public class AuthController {
     public ResponseEntity<ResponseDTO> register(@RequestBody RegisterRequestDTO body) {
         return ResponseEntity.ok(authService.register(body));
     }
+
+    @PostMapping("/2fa/verify")
+    public ResponseEntity<ResponseDTO> verify2FA(@RequestParam String email, @RequestParam String code) {
+        return ResponseEntity.ok(authService.verify2FA(email, Integer.parseInt(code)));
+    }
+
+    @PostMapping("/2fa/setup")
+    public ResponseEntity<Map<String, String>> setup2FA() {
+        return ResponseEntity.ok(authService.setup2FA());
+    }
+
+    @PostMapping("/2fa/confirm")
+    public ResponseEntity<Void> confirm2FA(@RequestParam int code) {
+        authService.confirmEnable2FA(code);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/2fa/disable/request")
+    public ResponseEntity<Void> requestDisable2FA() {
+        authService.requestDisable2FACode();
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/2fa/disable/confirm")
+    public ResponseEntity<Void> confirmDisable2FA(@RequestParam String code) {
+        authService.confirmDisable2FA(code);
+        return ResponseEntity.ok().build();
+    }
+
+
 }

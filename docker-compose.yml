@@ -7,10 +7,11 @@ services:
     volumes:
       - /home/opc/app/wallet:/app/wallet
     environment:
-      JAVA_OPTS: -Xms256m -Xmx512m
+      JAVA_OPTS: -Xms256m -Xmx700m
       SPRING_PROFILES_ACTIVE: prod
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      APP_PASSWORD: ${APP_PASSWORD}
       TNS_ADMIN: /app/wallet
       JWT_API_SECRET: ${JWT_API_SECRET}
     restart: unless-stopped
