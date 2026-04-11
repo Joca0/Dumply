@@ -29,11 +29,11 @@ const LandingPage = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Link to="auth/login" className="text-xs font-medium text-gray-400 hover:text-white transition-colors">
+                        <Link to="/auth/login" className="text-xs font-medium text-gray-400 hover:text-white transition-colors">
                             Entrar
                         </Link>
-                        <Link to="auth/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors flex items-center gap-2 shadow-lg shadow-blue-600/20">
-                            Solicitar Acesso
+                        <Link to="/auth/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                            Solicitar Cotação
                         </Link>
                     </div>
                 </div>
@@ -58,8 +58,8 @@ const LandingPage = () => {
                     </p>
 
                     <div className="flex items-center gap-4">
-                        <Link to="auth/register" className="bg-blue-600 text-white px-8 py-4 rounded-2xl text-sm font-black hover:bg-blue-500 transition-all flex items-center gap-2 shadow-xl shadow-blue-600/20 active:scale-95">
-                            Solicitar Acesso Antecipado
+                        <Link to="/auth/register" className="bg-blue-600 text-white px-8 py-4 rounded-2xl text-sm font-black hover:bg-blue-500 transition-all flex items-center gap-2 shadow-xl shadow-blue-600/20 active:scale-95">
+                            Solicitar Cotação
                             <ArrowRight size={18} />
                         </Link>
                     </div>

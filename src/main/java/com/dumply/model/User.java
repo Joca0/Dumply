@@ -37,6 +37,12 @@ public class User {
 
     private String password;
 
+    private String secret2fa;
+
+    private boolean is2faEnabled = false;
+
+    private String disable2faCode;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 

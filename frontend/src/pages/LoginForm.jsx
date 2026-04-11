@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {Lock, Mail, Loader2, ArrowRight, UserLock} from 'lucide-react';
-import { login } from '../api';
+import {Lock, Mail, Loader2, ArrowRight, UserLock, ShieldCheck, QrCode} from 'lucide-react';
+import { login, verify2FA } from '../api';
 import { useAuth } from '../context/AuthContext.jsx';
 import { toast } from 'sonner';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [twoFactorCode, setTwoFactorCode] = useState('');
+    const [show2FA, setShow2FA] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { refreshUser } = useAuth();
@@ -18,6 +20,14 @@ const Login = () => {
 
         try {
             const response = await login({ email, password });
+            
+            if (response.data.requires2FA) {
+                setShow2FA(true);
+                toast.info("Autenticação de dois fatores necessária.");
+                setLoading(false);
+                return;
+            }
+
             const token = response.data.token;
             localStorage.setItem('@dumply:token', token);
 
@@ -25,12 +35,33 @@ const Login = () => {
             toast.success("Bem-vindo de volta ao Dumply!");
             navigate('/dashboard');
         } catch (err) {
+            // Erro já tratado pelo interceptor ou aqui se necessário
         } finally {
             setLoading(false);
         }
     };
 
-    const inputStyle = "w-full bg-gray-900 border border-gray-800 rounded-2xl p-4 pl-12 text-white placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all group-hover:border-gray-700";
+    const handleVerify2FA = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const response = await verify2FA(email, twoFactorCode);
+            const token = response.data.token;
+            localStorage.setItem('@dumply:token', token);
+
+            await refreshUser();
+            toast.success("Autenticado com sucesso!");
+            navigate('/dashboard');
+        } catch (err) {
+            toast.error("Código 2FA inválido ou expirado.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const inputStyle = "w-full bg-gray-900 border border-gray-800 rounded-2xl p-4 pl-12 text-white placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all group-hover:border-gray-700 text-center tracking-[0.5em] font-bold text-xl";
+    const normalInputStyle = "w-full bg-gray-900 border border-gray-800 rounded-2xl p-4 pl-12 text-white placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all group-hover:border-gray-700";
 
     return (
         <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -51,68 +82,120 @@ const Login = () => {
 
                 <div className="mb-8 flex items-center gap-4">
                     <div className="p-3 bg-gray-800 rounded-xl border border-gray-700">
-                        <UserLock className="text-blue-500" size={24} />
+                        {show2FA ? (
+                            <ShieldCheck className="text-blue-500" size={24} />
+                        ) : (
+                            <UserLock className="text-blue-500" size={24} />
+                        )}
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-white tracking-tight">Acessar Conta</h2>
-                        <p className="text-gray-500 text-sm">Insira suas credenciais abaixo.</p>
+                        <h2 className="text-2xl font-bold text-white tracking-tight">
+                            {show2FA ? "Segurança 2FA" : "Acessar Conta"}
+                        </h2>
+                        <p className="text-gray-500 text-sm">
+                            {show2FA ? "Digite o código do Google Authenticator." : "Insira suas credenciais abaixo."}
+                        </p>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                {!show2FA ? (
+                    <form onSubmit={handleSubmit} className="space-y-6">
 
-                    {/* E-mail */}
-                    <div className="group relative">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">E-mail</label>
-                        <div className="relative">
-                            <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
-                            <input
-                                type="email"
-                                required
-                                className={inputStyle}
-                                placeholder="seu.email@empresa.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
+                        {/* E-mail */}
+                        <div className="group relative">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">E-mail</label>
+                            <div className="relative">
+                                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    type="email"
+                                    required
+                                    className={normalInputStyle}
+                                    placeholder="seu.email@empresa.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Senha */}
-                    <div className="group relative">
-                        <div className="flex justify-between items-center mb-2 ml-1">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest group-focus-within:text-blue-500 transition-colors">Senha</label>
-                            <Link to="/forgot-password" className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-blue-500 transition-colors">
-                                Esqueceu?
-                            </Link>
+                        {/* Senha */}
+                        <div className="group relative">
+                            <div className="flex justify-between items-center mb-2 ml-1">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest group-focus-within:text-blue-500 transition-colors">Senha</label>
+                                <Link to="/forgot-password" className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-blue-500 transition-colors">
+                                    Esqueceu?
+                                </Link>
+                            </div>
+                            <div className="relative">
+                                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    type="password"
+                                    required
+                                    className={normalInputStyle}
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div className="relative">
-                            <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
-                            <input
-                                type="password"
-                                required
-                                className={inputStyle}
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                    </div>
 
-                    <div className="pt-2">
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-2xl font-black text-lg transition-all shadow-lg shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-3 group"
-                        >
-                            {loading ? <Loader2 className="animate-spin" size={24} /> : (
-                                <>
-                                    Entrar no Painel
-                                    <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </form>
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-2xl font-black text-lg transition-all shadow-lg shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-3 group"
+                            >
+                                {loading ? <Loader2 className="animate-spin" size={24} /> : (
+                                    <>
+                                        Entrar no Painel
+                                        <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    <form onSubmit={handleVerify2FA} className="space-y-6">
+                        {/* Código 2FA */}
+                        <div className="group relative">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors text-center">Código de Verificação</label>
+                            <div className="relative">
+                                <ShieldCheck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    required
+                                    maxLength={6}
+                                    pattern="\d{6}"
+                                    className={inputStyle}
+                                    placeholder="000000"
+                                    value={twoFactorCode}
+                                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={loading || twoFactorCode.length !== 6}
+                                className="w-full bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-2xl font-black text-lg transition-all shadow-lg shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-3 group"
+                            >
+                                {loading ? <Loader2 className="animate-spin" size={24} /> : (
+                                    <>
+                                        Verificar Código
+                                        <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShow2FA(false)}
+                                className="w-full mt-4 text-gray-500 hover:text-white text-sm font-bold transition-colors"
+                            >
+                                Voltar para o Login
+                            </button>
+                        </div>
+                    </form>
+                )}
 
                 {/* Registro */}
                 <div className="mt-10 pt-8 border-t border-gray-800/50 text-center">
@@ -122,7 +205,7 @@ const Login = () => {
                             to="/auth/register"
                             className="text-white hover:text-blue-400 font-bold transition-colors underline-offset-4 hover:underline"
                         >
-                            Solicitar acesso Beta
+                            Solicitar Cotação
                         </Link>
                     </p>
                 </div>

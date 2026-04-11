@@ -67,6 +67,7 @@ jobs:
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_URL=jdbc:oracle:thin:@dumplydb_high?TNS_ADMIN=/opt/oracle/wallet
             TNS_ADMIN=/opt/oracle/wallet
+            APP_PASSWORD=${{ secrets.APP_PASSWORD }}
             VITE_API_KEY=${{ secrets.VITE_API_KEY }}
             JWT_API_SECRET=${{ secrets.JWT_API_SECRET }}
             EOF
