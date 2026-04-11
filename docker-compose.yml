@@ -7,7 +7,7 @@ services:
     volumes:
       - /home/opc/app/wallet:/app/wallet
     environment:
-      JAVA_OPTS: -Xms256m -Xmx700m
+      JAVA_OPTS: -Xms128m -Xmx256m
       SPRING_PROFILES_ACTIVE: prod
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
