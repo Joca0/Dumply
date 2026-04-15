@@ -2,6 +2,9 @@ package com.dumply.controller;
 
 import com.dumply.common.dto.*;
 import com.dumply.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +42,12 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ResponseDTO> register(@RequestBody RegisterRequestDTO body) {
         return ResponseEntity.ok(authService.register(body));
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> logout() {
+        authService.logout();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/2fa/verify")

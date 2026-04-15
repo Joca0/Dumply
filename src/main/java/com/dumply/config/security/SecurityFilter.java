@@ -1,5 +1,7 @@
 package com.dumply.config.security;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.dumply.service.TokenBlacklistService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dumply.config.tenant.TenantContext;
 import com.dumply.model.User;
@@ -35,6 +37,9 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private TokenBlacklistService blacklistService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -42,6 +47,12 @@ public class SecurityFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = recoverToken(request);
+        if (token != null) {
+            if (blacklistService.isTokenBlacklisted(token)) {
+                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token blacklisted.");
+                return;
+            }
+        }
 
         try {
             if (token != null) {
@@ -60,13 +71,14 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                     TenantContext.setCompanyId(companyId);
 
+                    // Futuramente estudar outra lógica que não precise revalidar no banco toda hora, como o JWT é assinado e confiável..
                     // Buscar por email + companyId para evitar vazamento entre tenants (mesmo email em empresas diferentes)
                     User user = userRepository.findByEmailAndCompanyId(email, companyId)
                             .orElseThrow(() -> new AccessDeniedException("Credenciais inválidas"));
 
                     // Garantir que o usuário pertence à empresa do token (defesa em profundidade)
                     if (!user.getCompany().getId().equals(companyId)) {
-                        writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Acesso proibido: Usuário não pertence a esta empresa.");
+                        writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Acesso proibido");
                         return;
                     }
 
@@ -79,11 +91,11 @@ public class SecurityFilter extends OncePerRequestFilter {
                             new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
 
                     var authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                            new UsernamePasswordAuthenticationToken(userDetails, token, authorities);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                } catch (Exception ex) {
+                } catch (JWTVerificationException ex) {
                     // Token inválido, expirado ou erro na busca do usuário
                     writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou expirado.");
                     return;

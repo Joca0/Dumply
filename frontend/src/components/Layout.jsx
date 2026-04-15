@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { QRCodeSVG } from 'qrcode.react';
-import { setup2FA, confirm2FA, requestDisable2FA, confirmDisable2FA } from '../api';
+import { setup2FA, confirm2FA, requestDisable2FA, confirmDisable2FA, logout } from '../api';
 import { toast } from 'sonner';
 import {
   Home,
@@ -30,7 +30,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 const Layout = () => {
-  const { user, logout, loading, refreshUser } = useAuth();
+  const { user, clearToken, loading, refreshUser } = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -90,6 +90,18 @@ const Layout = () => {
       toast.error("Código de verificação inválido.");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Logout realizado com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao realizar logout. Tente novamente.");
+      console.error("Logout error:", error);
+    } finally {
+      clearToken();
     }
   }
 
@@ -240,7 +252,7 @@ const Layout = () => {
                     <div className="space-y-2">
                       <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
                         <User size={18} className="text-blue-400" />
-                        <span className="flex-1 text-left text-sm font-medium">Editar Perfil</span>
+                        <span className="flex-1 text-left text-sm font-medium">Editar Perfil (Seção em desenvolvimento)</span>
                         <ChevronRight size={16} className="text-gray-600" />
                       </button>
 
@@ -254,7 +266,7 @@ const Layout = () => {
                       </button>
                     </div>
 
-                    <button onClick={logout} className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all font-bold text-sm mt-4">
+                    <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all font-bold text-sm mt-4">
                       <LogOut size={18} /> Sair da Conta
                     </button>
                   </div>

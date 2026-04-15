@@ -54,6 +54,7 @@ export const confirm2FA = (code) => api.post(`/auth/2fa/confirm?code=${code}`);
 export const requestDisable2FA = () => api.post('/auth/2fa/disable/request');
 export const confirmDisable2FA = (code) => api.post(`/auth/2fa/disable/confirm?code=${code}`);
 export const profile = () => api.get('/auth/me');
+export const logout = () => api.post('/auth/logout');
 
 export const register = (data) => api.post('/companies/signup', data);
 export const completeWelcome = () => api.patch('/auth/complete-welcome');

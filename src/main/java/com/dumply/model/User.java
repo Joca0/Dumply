@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -40,6 +41,12 @@ public class User {
     private String secret2fa;
 
     private boolean is2faEnabled = false;
+
+    private int failedLoginAttempts = 0;
+
+    private LocalDateTime locktime;
+
+    private boolean accountNonLocked = true;
 
     private String disable2faCode;
 

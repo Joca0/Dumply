@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
-import { profile } from '../api';
+import { profile, logout } from '../api';
 
 const AuthContext = createContext();
 
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
         refreshUser();
     }, []);
 
-    const logout = (reason) => {
+    const clearToken = (reason) => {
         localStorage.removeItem('@dumply:token');
         setUser(null);
         if (reason === 'expired') {

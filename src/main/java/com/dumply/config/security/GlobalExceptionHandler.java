@@ -1,5 +1,6 @@
 package com.dumply.config.security;
 
+import com.dumply.common.exception.AccountBlockedException;
 import com.dumply.common.exception.BusinessException;
 import com.dumply.common.exception.EmailAlreadyExistsException;
 import com.dumply.common.exception.InvalidRentalDateException;
@@ -94,5 +95,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
                 .body("Ocorreu um erro interno no servidor. Tente novamente mais tarde.");
+    }
+
+    @ExceptionHandler(AccountBlockedException.class)
+    public ResponseEntity<String> handleAccountBlocked(AccountBlockedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body("Conta bloqueada. Tente novamente mais tarde.");
     }
 }

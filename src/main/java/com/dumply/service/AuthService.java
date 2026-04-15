@@ -1,6 +1,8 @@
 package com.dumply.service;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.dumply.common.dto.*;
+import com.dumply.common.exception.AccountBlockedException;
 import com.dumply.common.exception.BusinessException;
 import com.dumply.config.security.TokenService;
 import com.dumply.model.User;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import com.dumply.config.tenant.TenantContext;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,23 +32,34 @@ public class AuthService {
     private final TokenService tokenService;
     private final GoogleAuthenticator gAuth = new GoogleAuthenticator();
     private final EmailService emailService;
+    private final TokenBlacklistService blacklistService;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       TokenService tokenService, EmailService emailService) {
+                       TokenService tokenService,
+                       EmailService emailService,
+                       TokenBlacklistService blacklistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.emailService = emailService;
+        this.blacklistService = blacklistService;
     }
 
     public ResponseDTO login(LoginRequestDTO body) {
         User user = userRepository.findByEmail(body.email())
                 .orElseThrow(() -> new BadCredentialsException("Credenciais Inválidas"));
 
+        if (user.getLocktime() != null && user.getLocktime().isAfter(LocalDateTime.now())) {
+            throw new AccountBlockedException("Conta bloqueada por tentativas de login inválidas");
+        }
+
         if (!passwordEncoder.matches(body.password(), user.getPassword())) {
+            processFailedLogin(user);
             throw new BadCredentialsException("Credenciais Inválidas");
         }
+
+        resetFailedLogin(user);
 
         //Se o 2fa estiver habilitado, não retornamos o token ainda
         if (user.is2faEnabled()) {
@@ -53,6 +67,29 @@ public class AuthService {
         }
 
         return new ResponseDTO(tokenService.generateToken(user));
+    }
+
+    private void processFailedLogin(User user) {
+        int MAX_FAILED_ATTEMPTS = 5;
+        int LOCK_TIME_MINUTES = 30;
+
+        user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
+
+        if (user.getFailedLoginAttempts() >= MAX_FAILED_ATTEMPTS) {
+            user.setLocktime(LocalDateTime.now().plusMinutes(LOCK_TIME_MINUTES));
+            user.setAccountNonLocked(false);
+        }
+
+        userRepository.save(user);
+    }
+
+    private void resetFailedLogin(User user) {
+        if (user.getFailedLoginAttempts() > 0 || user.getLocktime() != null) {
+            user.setFailedLoginAttempts(0);
+            user.setLocktime(null);
+            user.setAccountNonLocked(true);
+            userRepository.save(user);
+        }
     }
 
     //Método para gerar o QR Code do 2FA
@@ -92,6 +129,15 @@ public class AuthService {
             throw new BadCredentialsException("Código 2FA inválido");
         }
 
+    }
+
+    public void logout() {
+        String token = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
+        if (token != null) {
+            DecodedJWT decodedJWT = tokenService.validateToken(token);
+            long expiration = decodedJWT.getExpiresAt().getTime() - System.currentTimeMillis();
+            blacklistService.blacklistToken(token, expiration);
+        }
     }
 
     @Transactional
