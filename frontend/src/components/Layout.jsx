@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { QRCodeSVG } from 'qrcode.react';
-import { setup2FA, confirm2FA, requestDisable2FA, confirmDisable2FA, logout } from '../api';
+import { setup2FA, confirm2FA, requestDisable2FA, confirmDisable2FA, logout, changePassword } from '../api';
 import { toast } from 'sonner';
 import {
   Home,
@@ -24,7 +24,11 @@ import {
   User,
   ShieldOff,
   Mail,
-  Loader2
+  Loader2,
+  Lock,
+  Key,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -38,6 +42,8 @@ const Layout = () => {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const location = useLocation();
 
   const userInitial = (user?.fullName?.charAt(0) || user?.name?.charAt(0) || '?').toUpperCase();
@@ -88,6 +94,33 @@ const Layout = () => {
       setIsProfileOpen(false);
     } catch (error) {
       toast.error("Código de verificação inválido.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("As novas senhas não coincidem.");
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toast.error("A nova senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await changePassword({
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword
+      });
+      toast.success("Senha alterada com sucesso!");
+      setTwoFactorStep('idle');
+      setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      // Erro tratado pelo interceptor (ex: senha antiga incorreta)
     } finally {
       setIsSubmitting(false);
     }
@@ -256,6 +289,12 @@ const Layout = () => {
                         <ChevronRight size={16} className="text-gray-600" />
                       </button>
 
+                      <button onClick={() => setTwoFactorStep('change-password')} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
+                        <Lock size={18} className="text-orange-400" />
+                        <span className="flex-1 text-left text-sm font-medium">Alterar Senha</span>
+                        <ChevronRight size={16} className="text-gray-600" />
+                      </button>
+
                       <button onClick={user?.is2faEnabled ? () => setTwoFactorStep('disable-request') : handleStart2FA} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
                         <Shield size={18} className={user?.is2faEnabled ? "text-green-400" : "text-gray-400"} />
                         <div className="flex-1 text-left">
@@ -270,6 +309,86 @@ const Layout = () => {
                       <LogOut size={18} /> Sair da Conta
                     </button>
                   </div>
+              ) : twoFactorStep === 'change-password' ? (
+                  <form onSubmit={handleChangePassword} className="space-y-4">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-orange-500/10 rounded-lg">
+                        <Lock className="text-orange-500" size={20} />
+                      </div>
+                      <h3 className="font-bold text-lg">Alterar Minha Senha</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="group relative">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Senha Atual</label>
+                        <div className="relative">
+                          <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                          <input
+                              type={showPassword ? "text" : "password"}
+                              required
+                              className="w-full bg-gray-950 border border-gray-800 p-3 pl-10 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              value={passwordForm.oldPassword}
+                              onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="group relative">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Nova Senha</label>
+                        <div className="relative">
+                          <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                          <input
+                              type={showPassword ? "text" : "password"}
+                              required
+                              className="w-full bg-gray-950 border border-gray-800 p-3 pl-10 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              value={passwordForm.newPassword}
+                              onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-400"
+                          >
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="group relative">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Confirmar Nova Senha</label>
+                        <div className="relative">
+                          <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                          <input
+                              type={showPassword ? "text" : "password"}
+                              required
+                              className="w-full bg-gray-950 border border-gray-800 p-3 pl-10 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              value={passwordForm.confirmPassword}
+                              onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-4">
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setTwoFactorStep('idle');
+                          setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+                        }} 
+                        className="p-3 rounded-xl bg-gray-800 font-bold text-sm"
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={isSubmitting}
+                        className="p-3 rounded-xl bg-blue-600 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : "Salvar Senha"}
+                      </button>
+                    </div>
+                  </form>
               ) : twoFactorStep === 'setup' ? (
                   <div className="flex flex-col items-center gap-6 text-center">
                     <div className="space-y-2">

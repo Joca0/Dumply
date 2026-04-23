@@ -2,7 +2,7 @@ import axios from 'axios';
 import {toast} from "sonner";
 
 const api = axios.create({
-  baseURL: 'http://164.152.252.146:8080',
+  baseURL: 'http://localhost:8080',
 });
 
 api.interceptors.request.use((config) => {
@@ -55,6 +55,9 @@ export const requestDisable2FA = () => api.post('/auth/2fa/disable/request');
 export const confirmDisable2FA = (code) => api.post(`/auth/2fa/disable/confirm?code=${code}`);
 export const profile = () => api.get('/auth/me');
 export const logout = () => api.post('/auth/logout');
+export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
+export const resetPassword = (token, newPassword) => api.post('/auth/reset-password', { token, newPassword });
+export const changePassword = (data) => api.post('/auth/change-password', data);
 
 export const register = (data) => api.post('/companies/signup', data);
 export const completeWelcome = () => api.patch('/auth/complete-welcome');

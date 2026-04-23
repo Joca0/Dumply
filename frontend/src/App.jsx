@@ -24,6 +24,8 @@ import {AlertProvider} from "@/components/ui/MainAlert.jsx";
 import NotFound from "@/pages/NotFound.jsx";
 import RegisterForm from "@/pages/RegisterForm.jsx";
 import LandingPage from "@/pages/LandingPage.jsx";
+import ForgotPassword from "@/pages/ForgotPassword.jsx";
+import ResetPassword from "@/pages/ResetPassword.jsx";
 
 
 
@@ -46,6 +48,8 @@ function App() {
         <Routes>
           <Route path="/auth/login" element={<LoginForm/>}/>
           <Route path="/auth/register" element={<RegisterForm/>}/>
+          <Route path="/auth/forgot-password" element={<ForgotPassword/>}/>
+          <Route path="/auth/reset-password" element={<ResetPassword/>}/>
           <Route path="landing" element={<LandingPage/>}/>
           <Route path="404" element={<NotFound/>}/>
           <Route

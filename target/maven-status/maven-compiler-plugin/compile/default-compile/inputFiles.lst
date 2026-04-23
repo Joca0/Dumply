@@ -1,4 +1,5 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/DumplyApplication.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/ChangePasswordRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/CompanySignupRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/CompanyStatus.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/CustomerAutocomplete.java
@@ -8,6 +9,7 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/EquipmentDTO.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/EquipmentStatus.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/ErrorResponse.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/ForgotPasswordRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/InvoiceRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/InvoiceStatsDTO.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/InvoiceStatus.java
@@ -18,10 +20,12 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/RentalMapDTO.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/RentalRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/RentalStatus.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/ResetPasswordRequest.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/ResponseDTO.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/Role.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/UserRegister.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/dto/UserResponse.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/exception/AccountBlockedException.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/exception/BusinessException.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/exception/EmailAlreadyExistsException.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/common/exception/InvalidRentalDateException.java
@@ -59,8 +63,10 @@
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/CompanyService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/CustomerService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/DashboardService.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/EmailService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/EquipmentService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/InvoiceService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/RentalService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/TenantAwareService.java
+/Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/TokenBlacklistService.java
 /Users/joaosalu22/Documents/GitHub/Dumply/src/main/java/com/dumply/service/UserService.java

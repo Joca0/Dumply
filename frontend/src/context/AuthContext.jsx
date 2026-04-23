@@ -20,12 +20,11 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const res = await profile(); // GET /me
+            const res = await profile();
             setUser(res.data);
         } catch (err) {
             if (err.response?.status === 401) {
-                localStorage.removeItem('@dumply:token');
-                setUser(null);
+                clearToken('expired');
             } else {
                 console.error(err);
             }
@@ -42,14 +41,14 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('@dumply:token');
         setUser(null);
         if (reason === 'expired') {
-            toast.warning("Sua sessão expirou faça login novamente para continuar.");
+            toast.warning("Sua sessão expirou. Faça login novamente para continuar.");
         }
 
         navigate('/auth/login');
     };
 
     useEffect(() => {
-        const handler = (e) => logout(e.detail.reason);
+        const handler = (e) => clearToken(e.detail.reason);
 
         window.addEventListener('auth:logout', handler);
 
@@ -57,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading, refreshUser, logout }}>
+        <AuthContext.Provider value={{ user, loading, refreshUser, clearToken, logout }}>
             {children}
         </AuthContext.Provider>
     );

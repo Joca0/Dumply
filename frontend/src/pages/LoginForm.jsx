@@ -121,7 +121,7 @@ const Login = () => {
                         <div className="group relative">
                             <div className="flex justify-between items-center mb-2 ml-1">
                                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest group-focus-within:text-blue-500 transition-colors">Senha</label>
-                                <Link to="/forgot-password" className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-blue-500 transition-colors">
+                                <Link to="/auth/forgot-password" className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-blue-500 transition-colors">
                                     Esqueceu?
                                 </Link>
                             </div>

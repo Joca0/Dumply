@@ -20,6 +20,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     /** Busca por email e company para garantir isolamento multi-tenant no login/token. */
     Optional<User> findByEmailAndCompanyId(String email, UUID companyId);
 
+    Optional<User> findByPasswordResetToken(String token);
+
     List<User> findByCompanyIdAndRoleIn(UUID companyId, List<Role> roles);
 
     Optional<User> findByIdAndCompanyId(UUID id, UUID companyId);

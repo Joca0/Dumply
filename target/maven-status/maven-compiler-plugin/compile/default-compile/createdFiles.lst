@@ -1,3 +1,4 @@
+com/dumply/common/dto/ChangePasswordRequest.class
 com/dumply/service/InvoiceService.class
 com/dumply/service/EquipmentService.class
 com/dumply/service/CustomerService.class
