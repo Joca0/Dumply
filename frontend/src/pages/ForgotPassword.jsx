@@ -43,14 +43,14 @@ const ForgotPassword = () => {
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-white tracking-tight">Recuperar Senha</h2>
-                        <p className="text-gray-500 text-sm">Insira seu e-mail para receber as instruções.</p>
+                        <p className="text-gray-400 text-sm">Insira seu e-mail para receber as instruções.</p>
                     </div>
                 </div>
 
                 {!submitted ? (
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">E-mail</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">E-mail</label>
                             <div className="relative">
                                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -97,7 +97,7 @@ const ForgotPassword = () => {
                 )}
 
                 <div className="mt-8 pt-6 border-t border-gray-800/50 text-center">
-                    <Link to="/auth/login" className="text-gray-500 hover:text-white flex items-center justify-center gap-2 font-bold transition-colors">
+                    <Link to="/auth/login" className="text-gray-400 hover:text-white flex items-center justify-center gap-2 font-bold transition-colors">
                         <ArrowLeft size={16} /> Voltar para o Login
                     </Link>
                 </div>

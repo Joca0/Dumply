@@ -58,19 +58,19 @@ const InvoiceDetail = () => {
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-950 gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p className="text-gray-500 font-medium animate-pulse">Carregando fatura...</p>
+          <p className="text-gray-400 font-medium animate-pulse">Carregando fatura...</p>
         </div>
     );
   }
 
-  if (!invoice) return <div className="p-8 text-center text-gray-500">Fatura não encontrada.</div>;
+  if (!invoice) return <div className="p-8 text-center text-gray-400">Fatura não encontrada.</div>;
 
   const getStatusStyle = (status) => {
     switch (status) {
       case 'PAID': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
       case 'PENDING': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
       case 'CANCELLED': return 'bg-rose-500/10 text-rose-500 border-rose-500/20';
-      default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+      default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
     }
   };
 
@@ -80,7 +80,7 @@ const InvoiceDetail = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 no-print">
           <button
               onClick={() => navigate('/invoices')}
-              className="flex items-center gap-2 text-gray-500 hover:text-white transition-all group"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-all group"
           >
             <div className="p-2 group-hover:bg-gray-800 rounded-lg transition-all">
               <ArrowLeft size={20} />
@@ -127,7 +127,7 @@ const InvoiceDetail = () => {
         </div>
 
         {/* INVOICE CARD */}
-        <div className="bg-gray-900/40 border border-gray-800 rounded-[2.5rem] overflow-hidden shadow-2xl print:shadow-none print:border-none print:bg-white print:text-black print:rounded-none" id="printable-invoice">
+        <div className="bg-gray-900/40 border border-gray-800 rounded-3xl overflow-hidden shadow-2xl print:shadow-none print:border-none print:bg-white print:text-black print:rounded-none" id="printable-invoice">
 
           {/* TOP BANNER */}
           <div className="p-8 md:p-12 border-b border-gray-800 flex flex-col md:flex-row justify-between items-start gap-8 bg-gray-900/20 print:bg-white print:border-b-2 print:border-gray-100">
@@ -137,7 +137,7 @@ const InvoiceDetail = () => {
                 <h1 className="text-3xl font-black tracking-tighter text-white print:text-black">DUMPLY</h1>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Número da Fatura</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Número da Fatura</p>
                 <p className="text-xl font-mono text-blue-400 print:text-blue-600">#{invoice.id.toString().padStart(6, '0')}</p>
               </div>
             </div>
@@ -147,7 +147,7 @@ const InvoiceDetail = () => {
                 {invoice.status === 'PAID' ? 'PAGAMENTO CONFIRMADO' : invoice.status === 'CANCELLED' ? 'FATURA CANCELADA' : 'AGUARDANDO PAGAMENTO'}
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold text-gray-500 uppercase">Data de Emissão</p>
+                <p className="text-xs font-bold text-gray-400 uppercase">Data de Emissão</p>
                 <p className="text-sm font-medium text-gray-300 print:text-black">{new Date(invoice.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
               </div>
             </div>
@@ -157,7 +157,7 @@ const InvoiceDetail = () => {
           <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-12 print:gap-4">
             <div className="space-y-6">
               <div>
-                <h3 className="text-[10px] font-bold text-blue-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <h3 className="text-xs font-bold text-blue-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
                   <User size={14} /> Dados do Cliente
                 </h3>
                 <div className="space-y-1">
@@ -167,38 +167,38 @@ const InvoiceDetail = () => {
                         <Building2 size={14} /> {invoice.customer.companyName}
                       </p>
                   )}
-                  <p className="text-sm font-mono text-gray-500 mt-2">{invoice.customer.document}</p>
+                  <p className="text-sm font-mono text-gray-400 mt-2">{invoice.customer.document}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-600 uppercase">Telefone</p>
+                  <p className="text-xs font-bold text-gray-600 uppercase">Telefone</p>
                   <p className="text-sm text-gray-300 print:text-black">{invoice.customer.phone}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-600 uppercase">E-mail</p>
+                  <p className="text-xs font-bold text-gray-600 uppercase">E-mail</p>
                   <p className="text-sm text-gray-300 print:text-black">{invoice.customer.email || '---'}</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-gray-950/50 p-8 rounded-3xl border border-gray-800 print:bg-gray-50 print:border-gray-200">
-              <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                 <DollarSign size={14} className="text-emerald-500" /> Resumo Financeiro
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-500">Quantidade de Itens</span>
+                  <span className="text-gray-400">Quantidade de Itens</span>
                   <span className="font-bold text-white print:text-black">{invoice.items.length} itens</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-500">Subtotal</span>
+                  <span className="text-gray-400">Subtotal</span>
                   <span className="font-bold text-white print:text-black">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(invoice.totalAmount)}</span>
                 </div>
                 <div className="pt-4 mt-4 border-t border-gray-800 print:border-gray-300 flex justify-between items-end">
                   <div>
-                    <p className="text-[10px] font-bold text-emerald-500 uppercase">Total a Pagar</p>
+                    <p className="text-xs font-bold text-emerald-500 uppercase">Total a Pagar</p>
                     <p className="text-3xl font-black text-white print:text-black">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(invoice.totalAmount)}
                     </p>
@@ -210,13 +210,13 @@ const InvoiceDetail = () => {
 
           {/* ITEMS TABLE */}
           <div className="px-8 md:px-12 pb-12 print:px-0">
-            <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
               <Package size={14} className="text-blue-500" /> Especificação dos Serviços
             </h3>
             <div className="overflow-hidden print:overflow-visible">
               <table className="w-full text-left border-separate border-spacing-y-2 print:border-collapse print:border-spacing-0">
                 <thead>
-                <tr className="text-gray-500 text-[10px] uppercase tracking-widest">
+                <tr className="text-gray-400 text-xs uppercase tracking-widest">
                   <th className="pb-4 px-4 font-bold">Item / Equipamento</th>
                   <th className="pb-4 px-4 font-bold">Local de Operação</th>
                   <th className="pb-4 px-4 font-bold text-center">Período</th>
@@ -228,7 +228,7 @@ const InvoiceDetail = () => {
                     <tr key={item.id} className="bg-gray-800/20 print:bg-transparent">
                       <td className="p-4 rounded-l-xl print:rounded-none">
                         <p className="font-bold text-white print:text-black text-sm">{item.equipment.name}</p>
-                        <p className="text-[10px] font-mono text-gray-500">Número de série: {item.equipment.serialNumber}</p>
+                        <p className="text-xs font-mono text-gray-400">Número de série: {item.equipment.serialNumber}</p>
                       </td>
                       <td className="p-4">
                         <div className="flex items-start gap-1.5 text-xs text-gray-400 print:text-gray-700">
@@ -237,7 +237,7 @@ const InvoiceDetail = () => {
                         </div>
                       </td>
                       <td className="p-4 text-center">
-                        <div className="inline-flex items-center gap-2 bg-gray-950 px-3 py-1 rounded-full border border-gray-800 text-[10px] text-gray-400 print:border-none print:text-black">
+                        <div className="inline-flex items-center gap-2 bg-gray-950 px-3 py-1 rounded-full border border-gray-800 text-xs text-gray-400 print:border-none print:text-black">
                           {new Date(item.startDate).toLocaleDateString('pt-BR')}
                           <ChevronRight size={10} />
                           {item.endDate ? new Date(item.endDate).toLocaleDateString('pt-BR') : 'Em curso'}
@@ -255,7 +255,7 @@ const InvoiceDetail = () => {
 
           {/* Footer */}
           <div className="p-12 bg-gray-950/50 border-t border-gray-800 text-center print:bg-white print:border-gray-100">
-            <p className="text-xs text-gray-500 italic max-w-md mx-auto leading-relaxed print:text-black">
+            <p className="text-xs text-gray-400 italic max-w-md mx-auto leading-relaxed print:text-black">
               Obrigado pela preferência! Em caso de dúvidas, entre em contato com nosso suporte.
             </p>
           </div>

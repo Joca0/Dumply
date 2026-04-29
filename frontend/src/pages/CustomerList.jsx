@@ -6,17 +6,19 @@ import {
   Users,
   Edit2,
   Trash2,
-  Download,
   ChevronLeft,
   ChevronRight,
   Mail,
   Phone,
   Building2,
-  Fingerprint, Box
+  Fingerprint, 
+  Box,
+  MoreHorizontal
 } from 'lucide-react';
 import { useAlert } from "@/components/ui/MainAlert.jsx";
 import { Link } from 'react-router-dom';
 import { toast } from "sonner";
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CustomerList = () => {
   const { showConfirm } = useAlert();
@@ -26,7 +28,6 @@ const CustomerList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Lógica de busca e efeitos mantida igual ao anterior...
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => { fetchCustomers(0); }, 500);
     return () => clearTimeout(delayDebounceFn);
@@ -36,7 +37,9 @@ const CustomerList = () => {
     setLoading(true);
     try {
       const res = await getCustomers(currentPage, 10, searchTerm);
-      setCustomers(res.data.content);
+      const data = res.data.content;
+
+      setCustomers(data);
       setTotalPages(res.data.totalPages);
       setPage(currentPage);
     } catch (err) { console.error(err); } finally { setLoading(false); }
@@ -85,9 +88,9 @@ const CustomerList = () => {
         </div>
 
         {/* BUSCA */}
-        <div className="mb-6 no-print">
-          <div className="relative w-full md:max-w-md">
-            <Search className="absolute left-3 top-3 text-gray-500" size={18} />
+        <div className="flex flex-col md:flex-row gap-4 mb-6 no-print">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
             <input
                 type="text"
                 placeholder="Nome ou documento..."
@@ -109,7 +112,7 @@ const CustomerList = () => {
                     </div>
                     <div>
                       <h3 className="text-white font-bold">{customer.fullName}</h3>
-                      <div className="flex items-center gap-1 text-gray-500 text-xs mt-0.5">
+                      <div className="flex items-center gap-1 text-gray-400 text-xs mt-0.5">
                         <Building2 size={12} />
                         {customer.companyName || 'Pessoa Física'}
                       </div>
@@ -127,16 +130,16 @@ const CustomerList = () => {
 
                 <div className="space-y-3 pt-3 border-t border-gray-800/50">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 flex items-center gap-2"><Fingerprint size={14}/> Doc</span>
+                    <span className="text-gray-400 flex items-center gap-2"><Fingerprint size={14}/> Doc</span>
                     <span className="text-gray-300 font-mono">{customer.document}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 flex items-center gap-2"><Phone size={14}/> Celular</span>
+                    <span className="text-gray-400 flex items-center gap-2"><Phone size={14}/> Celular</span>
                     <span className="text-gray-300">{customer.phone || customer.contact}</span>
                   </div>
                   {customer.email && (
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500 flex items-center gap-2"><Mail size={14}/> E-mail</span>
+                        <span className="text-gray-400 flex items-center gap-2"><Mail size={14}/> E-mail</span>
                         <span className="text-gray-300 truncate max-w-[180px]">{customer.email}</span>
                       </div>
                   )}
@@ -150,16 +153,16 @@ const CustomerList = () => {
           <table className="w-full text-left border-separate border-spacing-0">
             <thead>
             <tr className="bg-gray-800/50">
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Cliente</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Empresa</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Contato</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Documento</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 text-right no-print">Ações</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Cliente</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Empresa</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Contato</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Documento</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 text-right no-print">Ações</th>
             </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
             {customers.map((customer) => (
-                <tr key={customer.id} className="group hover:bg-white/2 transition-colors">
+                <tr key={customer.id} className="group transition-colors hover:bg-white/2">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="bg-blue-500/10 text-blue-400 p-2 rounded-lg"><User size={18} /></div>
@@ -169,15 +172,15 @@ const CustomerList = () => {
                   <td className="p-4 text-sm text-gray-300">{customer.companyName || '---'}</td>
                   <td className="p-4">
                     <div className="text-sm text-gray-300">{customer.phone || customer.contact}</div>
-                    <div className="text-[11px] text-gray-500 italic">{customer.email}</div>
+                    <div className="text-xs text-gray-400 italic">{customer.email}</div>
                   </td>
                   <td className="p-4">
                     <span className="font-mono text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded border border-gray-700">{customer.document}</span>
                   </td>
                   <td className="p-4 text-right no-print">
                     <div className="flex justify-end gap-1">
-                      <Link to={`/customers/edit/${customer.id}`} className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-lg"><Edit2 size={18} /></Link>
-                      <button onClick={() => handleDelete(customer.id)} className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg"><Trash2 size={18} /></button>
+                      <Link to={`/customers/edit/${customer.id}`} title="Editar" className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-lg"><Edit2 size={18} /></Link>
+                      <button onClick={() => handleDelete(customer.id)} title="Excluir" className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg"><Trash2 size={18} /></button>
                     </div>
                   </td>
                 </tr>
@@ -196,7 +199,7 @@ const CustomerList = () => {
 
         {/* PAGINAÇÃO */}
         <div className="mt-6 flex flex-col sm:flex-row justify-between items-center px-2 py-4 gap-4 no-print">
-        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
           Página <span className="text-gray-200">{page + 1}</span> de <span className="text-gray-200">{totalPages || 1}</span>
         </span>
           <div className="flex w-full sm:w-auto gap-2">

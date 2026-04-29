@@ -70,7 +70,7 @@ const InvoiceList = () => {
     };
     const config = configs[status] || configs.PENDING;
     return (
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border ${config.color}`}>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${config.color}`}>
         <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${config.dot}`} />
           {config.label}
       </span>
@@ -114,7 +114,7 @@ const InvoiceList = () => {
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
               <TrendingUp size={48} className="text-white" />
             </div>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Total Faturado</p>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total Faturado</p>
             <h3 className="text-2xl font-black mt-1 text-white font-mono italic">
               {formatCurrency(stats.totalFaturado)}
             </h3>
@@ -124,11 +124,11 @@ const InvoiceList = () => {
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <Clock size={48} className="text-amber-500" />
             </div>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Aguardando Pagamento</p>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Aguardando Pagamento</p>
             <h3 className="text-2xl font-black mt-1 text-amber-500 font-mono italic">
               {formatCurrency(stats.totalPendente)}
             </h3>
-            <p className="text-[10px] text-gray-600 mt-2 font-medium">
+            <p className="text-xs text-gray-600 mt-2 font-medium">
               {(stats.quantidadePendentes)} faturas pendentes de conciliação
             </p>
           </div>
@@ -137,7 +137,7 @@ const InvoiceList = () => {
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <CreditCard size={48} className="text-emerald-500" />
             </div>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Total Recebido</p>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total Recebido</p>
             <h3 className="text-2xl font-black mt-1 text-emerald-400 font-mono italic">
               {formatCurrency(stats.totalPago)}
             </h3>
@@ -148,7 +148,7 @@ const InvoiceList = () => {
         <div className="bg-gray-900/40 border border-gray-800 p-4 rounded-2xl mb-6 backdrop-blur-sm no-print">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
             <div className="md:col-span-3">
-              <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+              <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                 <Calendar size={10} /> Mês da Emissão
               </label>
               <input
@@ -159,7 +159,7 @@ const InvoiceList = () => {
               />
             </div>
             <div className="md:col-span-3">
-              <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+              <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                 <Filter size={10} /> Situação
               </label>
               <select
@@ -174,7 +174,7 @@ const InvoiceList = () => {
               </select>
             </div>
             <div className="md:col-span-6">
-              <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+              <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                 <Search size={10} /> Pesquisar Fatura
               </label>
               <div className="relative">
@@ -203,7 +203,7 @@ const InvoiceList = () => {
                 </div>
                 <h3 className="text-white font-bold text-lg mb-1">{invoice.customer?.fullName}</h3>
                 <div className="flex justify-between items-end">
-                  <div className="text-gray-500 text-xs flex items-center gap-1">
+                  <div className="text-gray-400 text-xs flex items-center gap-1">
                     <Calendar size={12} />
                     {new Date(invoice.createdAt).toLocaleDateString()}
                   </div>
@@ -220,12 +220,12 @@ const InvoiceList = () => {
           <table className="w-full text-left border-separate border-spacing-0">
             <thead>
             <tr className="bg-gray-800/50">
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Cód.</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Cliente</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Data de Emissão</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 text-center">Status</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 text-right">Valor Total</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 text-right no-print">Ações</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Cód.</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Cliente</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Data de Emissão</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 text-center">Status</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 text-right">Valor Total</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 text-right no-print">Ações</th>
             </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
@@ -249,7 +249,7 @@ const InvoiceList = () => {
                   <td className="p-4 text-right no-print">
                     <button
                         onClick={() => navigate(`/invoices/${invoice.id}`)}
-                        className="p-2 hover:bg-blue-500/10 text-gray-500 hover:text-blue-400 rounded-lg transition-all border border-transparent hover:border-blue-500/20"
+                        className="p-2 hover:bg-blue-500/10 text-gray-400 hover:text-blue-400 rounded-lg transition-all border border-transparent hover:border-blue-500/20"
                         title="Detalhes da Fatura"
                     >
                       <Eye size={18} />
@@ -268,14 +268,14 @@ const InvoiceList = () => {
                 <Receipt size={32} />
               </div>
               <p className="text-gray-300 font-bold text-lg">Nenhuma fatura encontrada</p>
-              <p className="text-gray-500 text-sm mt-1">Ajuste os filtros ou crie um novo faturamento para este período.</p>
+              <p className="text-gray-400 text-sm mt-1">Ajuste os filtros ou crie um novo faturamento para este período.</p>
             </div>
         )}
 
         {/* PAGINAÇÃO */}
         {totalPages > 0 && (
             <div className="flex justify-between items-center py-4 no-print border-t border-gray-800 mt-4">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-2">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-2">
               Página <span className="text-white">{page + 1}</span> de {totalPages}
             </span>
               <div className="flex gap-2">

@@ -119,7 +119,7 @@ const MapPage = () => {
                                     borderColor={'#fff'}
                                     glyphColor={'#fff'}
                                 >
-                                    {isGroup && <span className="text-white font-bold text-[10px]">{items.length}</span>}
+                                    {isGroup && <span className="text-white font-bold text-xs">{items.length}</span>}
                                 </Pin>
                             </AdvancedMarker>
                         );
@@ -132,11 +132,11 @@ const MapPage = () => {
                             }}
                             onCloseClick={() => setSelectedRental(null)}
                         >
-                            <div className="p-2 min-w-[220px] max-h-[350px] overflow-y-auto text-gray-800">
+                            <div className="p-2 min-w-[220px] max-h-[350px] overflow-y-auto text-gray-100">
                                 {Array.isArray(selectedRental) ? (
                                     /* VISÃO DA LISTA*/
                                     <div>
-                                        <h3 className="font-bold text-blue-600 border-b pb-1 mb-2 text-xs uppercase">
+                                        <h3 className="font-bold text-blue-400 border-b border-gray-700 pb-1 mb-2 text-xs uppercase">
                                             {selectedRental.length} Equipamentos aqui
                                         </h3>
                                         <div className="flex flex-col gap-1">
@@ -144,11 +144,11 @@ const MapPage = () => {
                                                 <div
                                                     key={item.id}
                                                     onClick={() => setSelectedRental(item)}
-                                                    className="p-2 hover:bg-gray-100 rounded cursor-pointer border border-transparent hover:border-gray-200 transition-colors"
+                                                    className="p-2 hover:bg-gray-800 rounded cursor-pointer border border-transparent hover:border-gray-700 transition-colors"
                                                 >
-                                                    <p className="font-bold text-sm text-gray-700">{item.equipment?.name}</p>
-                                                    <p className="text-sm text-gray-700">Número de série: {item.equipment?.serialNumber}</p>
-                                                    <p new className="text-sm text-gray-700 italic">Data inicio: {new Date (item.startDate).toLocaleDateString()}</p>
+                                                    <p className="font-bold text-sm text-gray-100">{item.equipment?.name}</p>
+                                                    <p className="text-sm text-gray-400">Número de série: {item.equipment?.serialNumber}</p>
+                                                    <p className="text-sm text-gray-400 italic">Data inicio: {new Date (item.startDate).toLocaleDateString()}</p>
                                                 </div>
                                             ))}
                                         </div>
@@ -156,15 +156,15 @@ const MapPage = () => {
                                 ) : (
                                     /* VISÃO DOS DETALHES */
                                     <div className="space-y-2 text-xs">
-                                        <div className="flex items-center justify-between border-b border-gray-200 pb-1 mb-2">
-                                            <h3 className="font-bold text-blue-600 text-sm uppercase">
+                                        <div className="flex items-center justify-between border-b border-gray-700 pb-1 mb-2">
+                                            <h3 className="font-bold text-blue-400 text-sm uppercase">
                                                 {selectedRental.equipment?.name}
                                             </h3>
                                             {/* Botão para voltar à lista se houver outros no mesmo local */}
                                             {groupedRentals[`${selectedRental.latitude}-${selectedRental.longitude}`]?.length > 1 && (
                                                 <button
                                                     onClick={() => setSelectedRental(groupedRentals[`${selectedRental.latitude}-${selectedRental.longitude}`])}
-                                                    className="p-1 hover:bg-gray-100 rounded text-black"
+                                                    className="p-1 hover:bg-gray-800 rounded text-white"
                                                 >
                                                     <ChevronLeft size={16} />
                                                 </button>
@@ -185,17 +185,17 @@ const MapPage = () => {
                                             <Cuboid size={14} className="text-gray-400" />
                                             <span className="truncate w-40"><strong>Número de série: </strong> {selectedRental.equipment?.serialNumber}</span>
                                         </p>
-                                        <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-100">
+                                        <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-800">
                                             <div>
-                                                <p className="text-[10px] text-gray-400 uppercase font-bold">Data Inicio</p>
+                                                <p className="text-xs text-gray-400 uppercase font-bold">Data Inicio</p>
                                                 <p>{new Date(selectedRental.startDate).toLocaleDateString()}</p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] text-gray-400 uppercase font-bold">Previsão</p>
+                                                <p className="text-xs text-gray-400 uppercase font-bold">Previsão</p>
                                                 <p>{selectedRental.endDate ? new Date(selectedRental.endDate).toLocaleDateString() : 'Pendente'}</p>
                                             </div>
                                         </div>
-                                        <p className="flex items-center gap-2 font-bold text-green-600 text-sm mt-2">
+                                        <p className="flex items-center gap-2 font-bold text-green-500 text-sm mt-2">
                                             <DollarSign size={14} />
                                             <span>R$ {selectedRental.charge}</span>
                                         </p>
@@ -207,24 +207,24 @@ const MapPage = () => {
                 </Map>
 
                 {/* Legenda */}
-                <div className="absolute bottom-10 left-10 bg-white p-4 rounded-lg shadow-lg z-1000 border border-gray-200">
-                    <h4 className="text-sm font-bold text-gray-800 mb-2">Legenda</h4>
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-[#ef4444]"></div>
-                            <span className="text-xs text-gray-700">Passou da data fim</span>
+                <div className="absolute bottom-10 left-10 bg-gray-900/90 backdrop-blur-md p-5 rounded-3xl shadow-2xl z-1000 border border-gray-800">
+                    <h4 className="text-sm font-bold text-white mb-3 tracking-wide">Legenda</h4>
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-3.5 h-3.5 rounded-full bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.4)]"></div>
+                            <span className="text-xs text-gray-300 font-medium">Passou da data fim</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-[#f59e0b]"></div>
-                            <span className="text-xs text-gray-700">Próximo da data fim (3 dias)</span>
+                        <div className="flex items-center gap-3">
+                            <div className="w-3.5 h-3.5 rounded-full bg-[#f59e0b] shadow-[0_0_10px_rgba(245,158,11,0.4)]"></div>
+                            <span className="text-xs text-gray-300 font-medium">Próximo da data fim (3 dias)</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-[#2563eb]"></div>
-                            <span className="text-xs text-gray-700">Sem data fim</span>
+                        <div className="flex items-center gap-3">
+                            <div className="w-3.5 h-3.5 rounded-full bg-[#2563eb] shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
+                            <span className="text-xs text-gray-300 font-medium">Sem data fim</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-[#10b981]"></div>
-                            <span className="text-xs text-gray-700">No prazo</span>
+                        <div className="flex items-center gap-3">
+                            <div className="w-3.5 h-3.5 rounded-full bg-[#10b981] shadow-[0_0_10px_rgba(16,185,129,0.4)]"></div>
+                            <span className="text-xs text-gray-300 font-medium">No prazo</span>
                         </div>
                     </div>
                 </div>

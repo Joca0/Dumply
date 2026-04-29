@@ -67,7 +67,7 @@ const AssignedList = () => {
             <div className="space-y-4 mb-8">
                 {rentals.length === 0 ? (
                     <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl text-center">
-                        <p className="text-gray-500">Nenhuma atribuição encontrada.</p>
+                        <p className="text-gray-400">Nenhuma atribuição encontrada.</p>
                     </div>
                 ) : (
                     rentals.map((rental) => (
@@ -82,9 +82,9 @@ const AssignedList = () => {
 
                             <div className="space-y-3">
                                 <div className="flex items-start gap-2">
-                                    <MapPin size={16} className="text-gray-500 mt-0.5 shrink-0" />
+                                    <MapPin size={16} className="text-gray-400 mt-0.5 shrink-0" />
                                     <div>
-                                        <p className="text-[10px] text-gray-500 font-bold uppercase">Endereço</p>
+                                        <p className="text-xs text-gray-400 font-bold uppercase">Endereço</p>
                                         <p className="text-gray-300 text-sm leading-relaxed">{rental.fullAddress}</p>
                                     </div>
                                 </div>
@@ -93,7 +93,7 @@ const AssignedList = () => {
                                     <div className="flex items-center gap-2 p-3 bg-gray-800/50 rounded-xl border border-gray-800">
                                         <Clock size={16} className="text-blue-500" />
                                         <div>
-                                            <p className="text-[10px] text-gray-500 font-bold uppercase">Data/Hora</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">Data/Hora</p>
                                             <p className="text-white text-sm font-bold">{formatDate(rental.startDate)}</p>
                                         </div>
                                     </div>
@@ -101,7 +101,7 @@ const AssignedList = () => {
                                     <div className="flex items-center gap-2 p-3 bg-gray-800/50 rounded-xl border border-gray-800">
                                         <Truck size={16} className="text-emerald-500" />
                                         <div>
-                                            <p className="text-[10px] text-gray-500 font-bold uppercase">Equipamento</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">Equipamento</p>
                                             <p className="text-white text-sm font-bold">
                                                 {rental.equipment ? `${rental.equipment.name} (${rental.equipment.serialNumber})` : 'Não definido'}
                                             </p>

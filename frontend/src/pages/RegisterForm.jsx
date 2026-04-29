@@ -89,12 +89,12 @@ const RegisterForm = () => {
                         <div className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-left">
                             <CheckCircle2 className="text-blue-300 mb-2" size={20} />
                             <p className="text-white text-xs font-bold uppercase tracking-widest">Segurança</p>
-                            <p className="text-blue-200 text-[10px]">Criptografia de ponta a ponta.</p>
+                            <p className="text-blue-200 text-xs">Criptografia de ponta a ponta.</p>
                         </div>
                         <div className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-left">
                             <CheckCircle2 className="text-blue-300 mb-2" size={20} />
                             <p className="text-white text-xs font-bold uppercase tracking-widest">Escalabilidade</p>
-                            <p className="text-blue-200 text-[10px]">Pronto para grandes frotas.</p>
+                            <p className="text-blue-200 text-xs">Pronto para grandes frotas.</p>
                         </div>
                     </div>
                 </div>
@@ -108,14 +108,14 @@ const RegisterForm = () => {
                 <div className="w-full max-w-110 relative z-10">
                     <div className="mb-10 text-center lg:text-left">
                         <h2 className="text-3xl font-black text-white tracking-tight mb-2">Cadastre sua empresa</h2>
-                        <p className="text-gray-500 font-medium">O Dumply está em fase de validação privada com empresas estratégicas. Faça parte do início.</p>
+                        <p className="text-gray-400 font-medium">O Dumply está em fase de validação privada com empresas estratégicas. Faça parte do início.</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
 
                         {/* Campo Nome Completo */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Nome Completo</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Nome Completo</label>
                             <div className="relative">
                                 <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -131,7 +131,7 @@ const RegisterForm = () => {
 
                         {/* Campo CPF/CNPJ */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">CPF/CNPJ</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">CPF/CNPJ</label>
                             <div className="relative">
                                 <Fingerprint size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -148,7 +148,7 @@ const RegisterForm = () => {
 
                         {/* Campo Empresa */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Empresa</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Empresa</label>
                             <div className="relative">
                                 <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -163,7 +163,7 @@ const RegisterForm = () => {
 
                         {/* Campo E-mail */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Seu E-mail para login</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Seu E-mail para login</label>
                             <div className="relative">
                                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -180,7 +180,7 @@ const RegisterForm = () => {
                         {/* Grid de Senhas */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="group relative">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Senha</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Senha</label>
                                 <div className="relative">
                                     <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                     <input
@@ -194,7 +194,7 @@ const RegisterForm = () => {
                                 </div>
                             </div>
                             <div className="group relative">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Confirmar</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Confirmar</label>
                                 <div className="relative">
                                     <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                     <input
@@ -225,7 +225,7 @@ const RegisterForm = () => {
                         </div>
                         {/* BOTÃO DE "JÁ POSSUI CADASTRO" ADICIONADO AQUI */}
                         <div className="mt-8 text-center">
-                            <p className="text-gray-500 font-medium">
+                            <p className="text-gray-400 font-medium">
                                 Já possui uma conta?{' '}
                                 <Link
                                     to="/login"
@@ -237,7 +237,7 @@ const RegisterForm = () => {
                         </div>
                     </form>
 
-                    <p className="mt-12 text-[10px] text-gray-700 text-center uppercase font-bold tracking-[0.2em]">
+                    <p className="mt-12 text-xs text-gray-700 text-center uppercase font-bold tracking-[0.2em]">
                         &copy; 2026 Dumply.
                     </p>
                 </div>

@@ -60,7 +60,7 @@ const ResetPassword = () => {
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-white tracking-tight">Nova Senha</h2>
-                        <p className="text-gray-500 text-sm">Defina sua nova credencial de acesso.</p>
+                        <p className="text-gray-400 text-sm">Defina sua nova credencial de acesso.</p>
                     </div>
                 </div>
 
@@ -68,7 +68,7 @@ const ResetPassword = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Token Field (Auto-filled if in URL) */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Token de Recuperação</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Token de Recuperação</label>
                             <div className="relative">
                                 <Key size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -84,7 +84,7 @@ const ResetPassword = () => {
 
                         {/* New Password */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Nova Senha</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Nova Senha</label>
                             <div className="relative">
                                 <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -107,7 +107,7 @@ const ResetPassword = () => {
 
                         {/* Confirm Password */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Confirmar Senha</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Confirmar Senha</label>
                             <div className="relative">
                                 <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -150,7 +150,7 @@ const ResetPassword = () => {
                 )}
 
                 <div className="mt-8 pt-6 border-t border-gray-800/50 text-center">
-                    <Link to="/auth/login" className="text-gray-500 hover:text-white flex items-center justify-center gap-2 font-bold transition-colors">
+                    <Link to="/auth/login" className="text-gray-400 hover:text-white flex items-center justify-center gap-2 font-bold transition-colors">
                         <ArrowLeft size={16} /> Cancelar e Voltar
                     </Link>
                 </div>

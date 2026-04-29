@@ -110,7 +110,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
 
             {/* CARD PRINCIPAL - OPERAÇÃO (6 colunas) */}
-            <div className="lg:col-span-7 bg-linear-to-br bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl shadow-blue-900/20">
+            <div className="lg:col-span-7 bg-linear-to-br bg-gray-900 border border-gray-800 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-blue-900/20">
               <div className="absolute top-0 right-0 p-4 opacity-15 translate-x-10 -translate-y-10">
                 <Truck size={280} />
               </div>
@@ -136,12 +136,12 @@ const Dashboard = () => {
             <div className="lg:col-span-5 flex flex-col gap-6">
               {/* Agendamentos - Estilo Clean */}
               <Link to="/scheduled">
-                <div className="flex-1 bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 hover:border-gray-700 transition-all group">
+                <div className="flex-1 bg-gray-900 border border-gray-800 rounded-3xl p-8 hover:border-gray-700 transition-all group">
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Próximas Saídas</span>
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Próximas Saídas</span>
                       <h4 className="text-4xl font-black text-white mt-2 group-hover:text-blue-400 transition-colors">{stats.totalScheduled}</h4>
-                      <p className="text-gray-500 text-sm mt-1 font-medium italic">Entregas agendadas</p>
+                      <p className="text-gray-400 text-sm mt-1 font-medium italic">Entregas agendadas</p>
                     </div>
                     <div className="p-4 bg-gray-800 rounded-2xl text-gray-400">
                       <CalendarClock size={28} />
@@ -154,13 +154,13 @@ const Dashboard = () => {
 
               {/* Financeiro */}
               <Link to="/invoices">
-              <div className="flex-1 bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 hover:border-amber-500/30 transition-all group">
+              <div className="flex-1 bg-gray-900 border border-gray-800 rounded-3xl p-8 hover:border-amber-500/30 transition-all group">
 
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Pendências Financeiras</span>
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Pendências Financeiras</span>
                       <h4 className="text-4xl font-black text-amber-500 mt-2">{stats.openInvoices}</h4>
-                      <p className="text-gray-500 text-sm mt-1 font-medium italic">Faturas em aberto</p>
+                      <p className="text-gray-400 text-sm mt-1 font-medium italic">Faturas em aberto</p>
                     </div>
                     <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-500">
                       <Receipt size={28} />
@@ -174,7 +174,7 @@ const Dashboard = () => {
           {/* 3. NAVEGAÇÃO EM GRID "ICON-CENTRIC" */}
           <section>
             <div className="flex items-center justify-between mb-8">
-              <h4 className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.3em] ml-2 font-mono">NAVEGAÇÃO RÁPIDA</h4>
+              <h4 className="text-xs font-bold text-gray-600 uppercase tracking-[0.3em] ml-2 font-mono">NAVEGAÇÃO RÁPIDA</h4>
               <div className="h-px flex-1 bg-gray-900 mx-6"></div>
             </div>
 
@@ -185,7 +185,7 @@ const Dashboard = () => {
                       {React.cloneElement(item.icon, { size: 28 })}
                     </div>
                     <span className="text-white font-bold text-sm tracking-tight">{item.title}</span>
-                    <span className="text-gray-600 text-[10px] font-medium mt-1 uppercase tracking-tighter">{item.sub.split(' ')[0]}</span>
+                    <span className="text-gray-600 text-xs font-medium mt-1 uppercase tracking-tighter">{item.sub.split(' ')[0]}</span>
                   </Link>
               ))}
             </div>

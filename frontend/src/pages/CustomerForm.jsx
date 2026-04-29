@@ -72,7 +72,7 @@ const CustomerForm = () => {
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-950 gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p className="text-gray-500 font-medium animate-pulse">Buscando dados do cliente...</p>
+          <p className="text-gray-400 font-medium animate-pulse">Buscando dados do cliente...</p>
         </div>
     );
   }
@@ -89,13 +89,13 @@ const CustomerForm = () => {
               <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
                 {id ? 'Editar Cadastro' : 'Novo Cliente'}
               </h2>
-              <p className="text-gray-500 text-sm">Gerencie informações pessoais e de contato.</p>
+              <p className="text-gray-400 text-sm">Gerencie informações pessoais e de contato.</p>
             </div>
           </div>
 
           <button
               onClick={() => navigate('/customers')}
-              className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm font-medium"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium"
           >
             <ChevronLeft size={18} /> Voltar
           </button>
@@ -103,16 +103,16 @@ const CustomerForm = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* CARD PRINCIPAL */}
-          <div className="bg-gray-900/40 border border-gray-800 p-6 md:p-8 rounded-[2.5rem] backdrop-blur-sm space-y-8 shadow-2xl">
+          <div className="bg-gray-900/40 border border-gray-800 p-6 md:p-8 rounded-3xl backdrop-blur-sm space-y-8 shadow-2xl">
 
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
               <Info size={14} className="text-blue-500" /> Identificação e Contato
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* NOME COMPLETO */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                   <User size={12} className="text-blue-500" /> Nome Completo
                 </label>
                 <input
@@ -128,7 +128,7 @@ const CustomerForm = () => {
 
               {/* DOCUMENTO */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                   <Fingerprint size={12} className="text-blue-500" /> {documentMask.label}
                 </label>
                 <input
@@ -145,7 +145,7 @@ const CustomerForm = () => {
 
               {/* EMPRESA */}
               <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                   <Building2 size={12} className="text-blue-500" /> Nome da Empresa (Opcional)
                 </label>
                 <input
@@ -160,7 +160,7 @@ const CustomerForm = () => {
 
               {/* CELULAR */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                   <Phone size={12} className="text-blue-500" /> Celular / WhatsApp
                 </label>
                 <input
@@ -176,7 +176,7 @@ const CustomerForm = () => {
 
               {/* EMAIL */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                   <Mail size={12} className="text-blue-500" /> E-mail (Opcional)
                 </label>
                 <input

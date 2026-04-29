@@ -23,13 +23,13 @@ const NotFound = () => {
                 {/* Mensagem */}
                 <div className="space-y-4 mb-10">
                     <h2 className="text-2xl md:text-3xl font-bold text-white">Caminho sem saída.</h2>
-                    <p className="text-gray-500 text-sm md:text-base leading-relaxed">
+                    <p className="text-gray-400 text-sm md:text-base leading-relaxed">
                         A página que você está procurando não existe ou foi movida para um novo endereço no sistema.
                     </p>
                 </div>
 
                 {/* Card de Ações Rápidas */}
-                <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-[2.5rem] backdrop-blur-sm shadow-2xl space-y-4">
+                <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-3xl backdrop-blur-sm shadow-2xl space-y-4">
                     <button
                         onClick={() => navigate('/')}
                         className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-bold transition-all active:scale-[0.98] shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3 group"
@@ -47,7 +47,7 @@ const NotFound = () => {
                         </button>
                     </div>
                 </div>
-                <p className="mt-12 text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">
+                <p className="mt-12 text-xs font-bold text-gray-600 uppercase tracking-[0.2em]">
                     Dumply Gestão de Equipamentos
                 </p>
             </div>

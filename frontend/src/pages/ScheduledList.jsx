@@ -66,7 +66,7 @@ const InternalDriverSearch = ({ onSelect, initialValue }) => {
                             }}
                         >
                             <div className="text-white font-bold">{d.fullName}</div>
-                            <div className="text-[10px] text-gray-500">Documento: {d.document}</div>
+                            <div className="text-xs text-gray-400">Documento: {d.document}</div>
                         </div>
                     ))}
                 </div>
@@ -119,7 +119,7 @@ const InternalEquipmentSearch = ({ onSelect, initialValue }) => {
                             }}
                         >
                             <div className="text-white font-bold">{e.name}</div>
-                            <div className="text-[10px] text-gray-500">Número de série: {e.serialNumber}</div>
+                            <div className="text-xs text-gray-400">Número de série: {e.serialNumber}</div>
                         </div>
                     ))}
                 </div>
@@ -237,7 +237,7 @@ const ScheduledRentals = () => {
 
     const getStatusBadge = () => {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
         <span className="relative flex h-1.5 w-1.5">
           <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
@@ -295,7 +295,7 @@ const ScheduledRentals = () => {
 
                     {/* Busca */}
                     <div className="md:col-span-8 relative">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+                        <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                             <Search size={10} /> Buscar
                         </label>
                         <div className="relative">
@@ -312,7 +312,7 @@ const ScheduledRentals = () => {
 
                     {/* Mês */}
                     <div className="md:col-span-4">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+                        <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                             <Calendar size={10} /> Previsão de Saída
                         </label>
                         <input
@@ -334,14 +334,14 @@ const ScheduledRentals = () => {
                         <div className="flex justify-between items-start mb-3 pl-2">
                             <div>
                                 <h3 className="text-white font-bold text-lg leading-tight">{rental.customer?.fullName}</h3>
-                                <p className="text-gray-500 text-xs font-mono mt-0.5">{rental.customer?.document || 'Sem documento'}</p>
+                                <p className="text-gray-400 text-xs font-mono mt-0.5">{rental.customer?.document || 'Sem documento'}</p>
                             </div>
                             {getStatusBadge()}
                         </div>
 
                         <div className="pl-2 space-y-3 mb-4">
                             <div className="flex items-start gap-2">
-                                <MapPin size={14} className="text-gray-500 mt-0.5 shrink-0" />
+                                <MapPin size={14} className="text-gray-400 mt-0.5 shrink-0" />
                                 <p className="text-gray-400 text-xs leading-relaxed line-clamp-2">{rental.fullAddress}</p>
                             </div>
 
@@ -401,11 +401,11 @@ const ScheduledRentals = () => {
                 <table className="w-full text-left border-separate border-spacing-0">
                     <thead>
                     <tr className="bg-gray-800/50">
-                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Cliente</th>
-                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Motorista (BETA)</th>
-                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Local de Entrega</th>
-                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Data Agendada</th>
-                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 text-right no-print">Ações</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Cliente</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Motorista (BETA)</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Local de Entrega</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Data Agendada</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 text-right no-print">Ações</th>
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -413,11 +413,11 @@ const ScheduledRentals = () => {
                         <tr key={rental.id} className="group hover:bg-white/2 transition-colors">
                             <td className="p-4 align-middle">
                                 <div className="font-semibold text-gray-200">{rental.customer?.fullName}</div>
-                                <div className="text-xs text-gray-500 font-mono mt-0.5">{rental.customer?.document || '---'}</div>
+                                <div className="text-xs text-gray-400 font-mono mt-0.5">{rental.customer?.document || '---'}</div>
                             </td>
                             <td className="p-4 align-middle">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center border border-gray-700 text-gray-500">
+                                    <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center border border-gray-700 text-gray-400">
                                         <User size={16} />
                                     </div>
                                     <div>
@@ -440,7 +440,7 @@ const ScheduledRentals = () => {
                                                 <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 rounded uppercase font-bold tracking-wide">Beta</span>
                                             )}
                                         </div>
-                                        <div className="text-[10px] text-gray-600 font-mono">
+                                        <div className="text-xs text-gray-600 font-mono">
                                             {rental.driver?.document ? `CNH: ${rental.driver.document}` : '---'}
                                         </div>
                                     </div>
@@ -494,14 +494,14 @@ const ScheduledRentals = () => {
                         <CalendarClock size={32} />
                     </div>
                     <p className="text-gray-300 font-bold text-lg">Nenhum agendamento encontrado</p>
-                    <p className="text-gray-500 text-sm mt-1">Tente alterar os filtros ou cadastrar uma nova reserva.</p>
+                    <p className="text-gray-400 text-sm mt-1">Tente alterar os filtros ou cadastrar uma nova reserva.</p>
                 </div>
             )}
 
             {/* PAGINAÇÃO */}
             {totalPages > 0 && (
                 <div className="flex justify-between items-center py-4 no-print border-t border-gray-800 mt-4">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-2">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-2">
             Página <span className="text-white">{page + 1}</span> de {totalPages}
           </span>
                     <div className="flex gap-2">
@@ -528,33 +528,33 @@ const ScheduledRentals = () => {
                         <div className="p-6 border-b border-gray-800 flex justify-between items-center">
                             <div>
                                 <h3 className="text-xl font-bold text-white">Iniciar Locação</h3>
-                                <p className="text-gray-500 text-xs mt-1">Atribua um equipamento para {selectedRental?.customer?.fullName}</p>
+                                <p className="text-gray-400 text-xs mt-1">Atribua um equipamento para {selectedRental?.customer?.fullName}</p>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
 
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block ml-1">Equipamento</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-1.5 block ml-1">Equipamento</label>
                                 <InternalEquipmentSearch onSelect={setSelectedEquipment} initialValue={selectedEquipment} />
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block ml-1">Motorista</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-1.5 block ml-1">Motorista</label>
                                 <InternalDriverSearch onSelect={setSelectedDriver} initialValue={selectedDriver} />
                             </div>
 
                             <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4">
-                                <div className="text-[10px] text-blue-400 font-bold uppercase mb-2">Resumo do Agendamento</div>
+                                <div className="text-xs text-blue-400 font-bold uppercase mb-2">Resumo do Agendamento</div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <div className="text-[10px] text-gray-500 uppercase">Valor</div>
+                                        <div className="text-xs text-gray-400 uppercase">Valor</div>
                                         <div className="text-sm font-mono text-white">R$ {selectedRental?.charge?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-gray-500 uppercase">Início</div>
+                                        <div className="text-xs text-gray-400 uppercase">Início</div>
                                         <div className="text-sm text-white">{formatDate(selectedRental?.startDate)}</div>
                                     </div>
                                 </div>
@@ -585,16 +585,16 @@ const ScheduledRentals = () => {
                         <div className="p-6 border-b border-gray-800 flex justify-between items-center">
                             <div>
                                 <h3 className="text-xl font-bold text-white">Designar Motorista</h3>
-                                <p className="text-gray-500 text-xs mt-1">Selecione o motorista para {selectedRental?.customer?.fullName}</p>
+                                <p className="text-gray-400 text-xs mt-1">Selecione o motorista para {selectedRental?.customer?.fullName}</p>
                             </div>
-                            <button onClick={() => setIsDriverModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                            <button onClick={() => setIsDriverModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
 
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block ml-1">Motorista</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-1.5 block ml-1">Motorista</label>
                                 <InternalDriverSearch onSelect={setSelectedDriver} initialValue={selectedDriver} />
                             </div>
                         </div>

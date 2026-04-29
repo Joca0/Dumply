@@ -70,7 +70,7 @@ const UserForm = ({ role = 'DRIVER' }) => {
         return (
             <div className="flex flex-col items-center justify-center h-screen bg-gray-950 gap-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                <p className="text-gray-500 font-medium animate-pulse">Buscando dados do motorista...</p>
+                <p className="text-gray-400 font-medium animate-pulse">Buscando dados do motorista...</p>
             </div>
         );
     }
@@ -87,13 +87,13 @@ const UserForm = ({ role = 'DRIVER' }) => {
                         <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
                             {id ? `Editar ${roleLabel}` : `Novo ${roleLabel}`}
                         </h2>
-                        <p className="text-gray-500 text-sm">Gerencie informações de acesso do {roleLabel.toLowerCase()}.</p>
+                        <p className="text-gray-400 text-sm">Gerencie informações de acesso do {roleLabel.toLowerCase()}.</p>
                     </div>
                 </div>
 
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm font-medium"
+                    className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium"
                 >
                     <ChevronLeft size={18} /> Voltar
                 </button>
@@ -101,16 +101,16 @@ const UserForm = ({ role = 'DRIVER' }) => {
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* CARD PRINCIPAL */}
-                <div className="bg-gray-900/40 border border-gray-800 p-6 md:p-8 rounded-[2.5rem] backdrop-blur-sm space-y-8 shadow-2xl">
+                <div className="bg-gray-900/40 border border-gray-800 p-6 md:p-8 rounded-3xl backdrop-blur-sm space-y-8 shadow-2xl">
 
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
                         <Info size={14} className="text-blue-500" /> Dados Pessoais e Acesso
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* NOME COMPLETO */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                            <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                                 <User size={12} className="text-blue-500" /> Nome Completo
                             </label>
                             <input
@@ -126,7 +126,7 @@ const UserForm = ({ role = 'DRIVER' }) => {
 
                         {/* DOCUMENTO */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                            <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                                 <Fingerprint size={12} className="text-blue-500" /> {documentMask.label}
                             </label>
                             <input
@@ -143,7 +143,7 @@ const UserForm = ({ role = 'DRIVER' }) => {
 
                         {/* EMAIL */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                            <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                                 <Mail size={12} className="text-blue-500" /> E-mail
                             </label>
                             <input
@@ -160,7 +160,7 @@ const UserForm = ({ role = 'DRIVER' }) => {
                         {/* SENHA */}
                         {!id && (
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                                     <Lock size={12} className="text-blue-500" /> Senha Temporária
                                 </label>
                                 <input

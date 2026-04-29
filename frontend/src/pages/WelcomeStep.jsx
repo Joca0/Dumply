@@ -39,7 +39,7 @@ const WelcomeStep = ({ onComplete }) => {
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center gap-1.5 mb-2">
                         <Sparkles size={14} className="text-blue-400" />
-                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Acesso Exclusivo</span>
+                        <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Acesso Exclusivo</span>
                     </div>
                     <h2 className="text-2xl font-black text-white tracking-tight mb-2">
                         Bem-vindo ao Teste fechado
@@ -58,14 +58,14 @@ const WelcomeStep = ({ onComplete }) => {
                     <div className="bg-gray-950/50 p-4 rounded-xl border border-gray-800/50 flex flex-col gap-1.5">
                         <ShieldCheck className="text-emerald-400" size={20} />
                         <h4 className="text-white font-bold text-xs tracking-wide mt-1">Ambiente Seguro</h4>
-                        <p className="text-gray-500 text-[11px] leading-relaxed">
+                        <p className="text-gray-400 text-xs leading-relaxed">
                             Dados isolados com criptografia de ponta a ponta.
                         </p>
                     </div>
                     <div className="bg-gray-950/50 p-4 rounded-xl border border-gray-800/50 flex flex-col gap-1.5">
                         <CheckCircle2 className="text-blue-400" size={20} />
                         <h4 className="text-white font-bold text-xs tracking-wide mt-1">Feedback Direto</h4>
-                        <p className="text-gray-500 text-[11px] leading-relaxed">
+                        <p className="text-gray-400 text-xs leading-relaxed">
                             Canal prioritário com os desenvolvedores.
                         </p>
                     </div>

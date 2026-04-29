@@ -81,3 +81,43 @@
     background-color: transparent !important;
   }
 }
+
+/* Google Maps InfoWindow Dark Mode */
+.gm-style-iw {
+  background-color: #111827 !important; /* gray-900 */
+  color: #f3f4f6 !important; /* gray-100 */
+  border-radius: 1.5rem !important; /* rounded-3xl */
+  padding: 0 !important;
+  border: 1px solid #374151 !important; /* gray-700 */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.gm-style-iw-d {
+  overflow: hidden !important;
+  max-height: none !important;
+}
+
+.gm-style-iw-c {
+  padding: 0 !important;
+  background-color: #111827 !important;
+}
+
+.gm-style-iw-tc::after {
+  background-color: #111827 !important;
+}
+
+.gm-ui-hover-effect {
+  top: 8px !important;
+  right: 8px !important;
+  background-color: #1f2937 !important;
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.gm-ui-hover-effect > span {
+  margin: 0 !important;
+}

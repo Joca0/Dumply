@@ -60,7 +60,7 @@ const EquipmentForm = () => {
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-950 gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p className="text-gray-500 font-medium animate-pulse">Buscando equipamento...</p>
+          <p className="text-gray-400 font-medium animate-pulse">Buscando equipamento...</p>
         </div>
     );
   }
@@ -77,29 +77,29 @@ const EquipmentForm = () => {
               <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
                 {id ? 'Editar Equipamento' : 'Novo Cadastro'}
               </h2>
-              <p className="text-gray-500 text-sm">Gerencie os detalhes técnicos do inventário.</p>
+              <p className="text-gray-400 text-sm">Gerencie os detalhes técnicos do inventário.</p>
             </div>
           </div>
 
           <button
               onClick={() => navigate('/equipments')}
-              className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm font-medium"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium"
           >
             <ChevronLeft size={18} /> Voltar
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="bg-gray-900/40 border border-gray-800 p-6 md:p-8 rounded-[2.5rem] backdrop-blur-sm space-y-8 shadow-2xl">
+          <div className="bg-gray-900/40 border border-gray-800 p-6 md:p-8 rounded-3xl backdrop-blur-sm space-y-8 shadow-2xl">
 
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] flex items-center gap-3 mb-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] flex items-center gap-3 mb-4">
               <Info size={14} className="text-blue-500" /> Informações Básicas
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* NOME */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                   <Tag size={12} className="text-blue-500" /> Nome do Equipamento
                 </label>
                 <div className="relative group">
@@ -117,7 +117,7 @@ const EquipmentForm = () => {
 
               {/* SERIAL */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                   <Hash size={12} className="text-blue-500" /> Número de Série
                 </label>
                 <div className="relative group">
@@ -136,7 +136,7 @@ const EquipmentForm = () => {
 
             {/* CATEGORIA */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Categoria (Opcional)</label>
+              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Categoria (Opcional)</label>
               <input
                   type="text"
                   disabled={loading}

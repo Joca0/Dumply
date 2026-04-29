@@ -26,7 +26,7 @@ const CustomerSearch = ({ onSelect, selectedCustomerId }) => {
       <div className="relative w-full">
         <div className="relative group">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search size={20} className="text-gray-500 group-focus-within:text-blue-500 transition-colors" />
+            <Search size={20} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />
           </div>
           <input
               type="text"
@@ -51,7 +51,7 @@ const CustomerSearch = ({ onSelect, selectedCustomerId }) => {
                   >
                     <div>
                       <div className="font-bold text-white group-hover:text-blue-400">{c.fullName}</div>
-                      <div className="text-xs text-gray-500 font-mono">{c.document}</div>
+                      <div className="text-xs text-gray-400 font-mono">{c.document}</div>
                     </div>
                     <ChevronRight size={16} className="text-gray-700 group-hover:text-blue-400" />
                   </div>
@@ -118,7 +118,7 @@ const InvoiceCreate = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-black tracking-tight">Novo Faturamento</h1>
-                <p className="text-xs text-gray-500 uppercase font-bold tracking-widest">Preview de Cobrança</p>
+                <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">Preview de Cobrança</p>
               </div>
             </div>
 
@@ -133,7 +133,7 @@ const InvoiceCreate = () => {
           {/* LADO ESQUERDO: LISTA DE ITENS */}
           <div className="lg:col-span-8 space-y-6">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                 <Package size={16} className="text-blue-500" />
                 Aluguéis para Faturar {rentals.length > 0 && `(${rentals.length})`}
               </h2>
@@ -148,9 +148,9 @@ const InvoiceCreate = () => {
             </div>
 
             {fetchingRentals ? (
-                <div className="h-96 flex flex-col items-center justify-center bg-gray-900/20 border border-gray-800 rounded-[2.5rem] border-dashed">
+                <div className="h-96 flex flex-col items-center justify-center bg-gray-900/20 border border-gray-800 rounded-3xl border-dashed">
                   <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
-                  <p className="text-gray-500 font-medium">Buscando medições pendentes...</p>
+                  <p className="text-gray-400 font-medium">Buscando medições pendentes...</p>
                 </div>
             ) : rentals.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -172,11 +172,11 @@ const InvoiceCreate = () => {
                         </div>
 
                         <div className="mb-6">
-                          <p className="text-[10px] font-bold text-blue-500 uppercase mb-1 flex items-center gap-1">
+                          <p className="text-xs font-bold text-blue-500 uppercase mb-1 flex items-center gap-1">
                             <Hash size={10} /> ID {rental.id}
                           </p>
                           <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{rental.equipment?.name}</h3>
-                          <p className="text-xs text-gray-500 font-mono mt-1">Número de série: {rental.equipment?.serialNumber}</p>
+                          <p className="text-xs text-gray-400 font-mono mt-1">Número de série: {rental.equipment?.serialNumber}</p>
                         </div>
 
                         <div className="space-y-3 mb-8">
@@ -191,7 +191,7 @@ const InvoiceCreate = () => {
                         </div>
 
                         <div className="pt-4 border-t border-gray-800/50 flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-gray-600 uppercase">Subtotal do Período</span>
+                          <span className="text-xs font-bold text-gray-600 uppercase">Subtotal do Período</span>
                           <span className="text-2xl font-black text-white">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(rental.charge)}
                     </span>
@@ -200,12 +200,12 @@ const InvoiceCreate = () => {
                   ))}
                 </div>
             ) : (
-                <div className="h-96 flex flex-col items-center justify-center bg-gray-900/20 border border-gray-800 rounded-[2.5rem] border-dashed text-center px-10">
+                <div className="h-96 flex flex-col items-center justify-center bg-gray-900/20 border border-gray-800 rounded-3xl border-dashed text-center px-10">
                   <div className="p-6 bg-gray-900 rounded-full mb-6">
                     <Search size={40} className="text-gray-700" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">Aguardando Seleção de Cliente</h3>
-                  <p className="text-gray-500 max-w-xs">Use a barra de busca acima para carregar as medições pendentes de um cliente específico.</p>
+                  <p className="text-gray-400 max-w-xs">Use a barra de busca acima para carregar as medições pendentes de um cliente específico.</p>
                 </div>
             )}
           </div>
@@ -213,11 +213,11 @@ const InvoiceCreate = () => {
           {/* LADO DIREITO: RESUMO DO FATURAMENTO (STICKY) */}
           <div className="lg:col-span-4">
             <div className="sticky top-32 space-y-6">
-              <div className="bg-gray-900 border border-gray-800 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+              <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
                 {/* Efeito de Brilho */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
 
-                <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
+                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
                   <Calculator size={14} className="text-blue-500" /> Checkout de Fatura
                 </h2>
 
@@ -227,7 +227,7 @@ const InvoiceCreate = () => {
                     <span className="font-bold text-white">{selectedRentalIds.length}</span>
                   </div>
                   <div className="pt-6 border-t border-gray-800">
-                    <p className="text-[10px] font-bold text-blue-500 uppercase mb-2">Total a Faturar</p>
+                    <p className="text-xs font-bold text-blue-500 uppercase mb-2">Total a Faturar</p>
                     <div className="text-5xl font-black text-white tracking-tighter">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSelected)}
                     </div>
@@ -250,7 +250,7 @@ const InvoiceCreate = () => {
                 {selectedRentalIds.length > 0 && (
                     <button
                         onClick={() => setSelectedRentalIds([])}
-                        className="w-full mt-4 text-xs font-bold text-gray-500 hover:text-white transition-colors py-2"
+                        className="w-full mt-4 text-xs font-bold text-gray-400 hover:text-white transition-colors py-2"
                     >
                       Limpar Seleção
                     </button>

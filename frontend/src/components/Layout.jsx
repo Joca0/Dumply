@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { QRCodeSVG } from 'qrcode.react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { setup2FA, confirm2FA, requestDisable2FA, confirmDisable2FA, logout, changePassword } from '../api';
 import { toast } from 'sonner';
 import {
@@ -18,7 +19,6 @@ import {
   LogOut,
   ChevronRight,
   LayoutDashboard,
-  Settings,
   CheckCircle,
   Shield,
   User,
@@ -36,7 +36,6 @@ import { useAuth } from '../context/AuthContext';
 const Layout = () => {
   const { user, clearToken, loading, refreshUser } = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [twoFactorStep, setTwoFactorStep] = useState('idle');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -53,7 +52,7 @@ const Layout = () => {
       const res = await setup2FA();
       setQrCodeUrl(res.data.qrCodeUrl);
       setTwoFactorStep('setup');
-    } catch (error) {
+    } catch {
       toast.error("Erro ao configurar o 2FA. Tente novamente.");
     }
   }
@@ -65,7 +64,7 @@ const Layout = () => {
       await refreshUser();
       setTwoFactorStep('idle');
       setIsProfileOpen(false);
-    } catch (error) {
+    } catch {
       toast.error("Código inválido. Tente novamente.");
     }
   }
@@ -77,7 +76,7 @@ const Layout = () => {
       toast.success("Código de desativação enviado para seu e-mail.");
       setTwoFactorStep('disable-confirm');
       setOtpCode('');
-    } catch (error) {
+    } catch {
       toast.error("Erro ao solicitar desativação. Tente novamente.");
     } finally {
       setIsSubmitting(false);
@@ -92,7 +91,7 @@ const Layout = () => {
       await refreshUser();
       setTwoFactorStep('idle');
       setIsProfileOpen(false);
-    } catch (error) {
+    } catch {
       toast.error("Código de verificação inválido.");
     } finally {
       setIsSubmitting(false);
@@ -119,7 +118,7 @@ const Layout = () => {
       toast.success("Senha alterada com sucesso!");
       setTwoFactorStep('idle');
       setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
+    } catch {
       // Erro tratado pelo interceptor (ex: senha antiga incorreta)
     } finally {
       setIsSubmitting(false);
@@ -149,10 +148,6 @@ const Layout = () => {
     if (['ADMIN', 'OWNER', 'MANAGER'].includes(user.role)) return true;
     return rolePermissions[user.role]?.includes(to);
   };
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -214,7 +209,7 @@ const Layout = () => {
             {isSidebarOpen ? (
                 <>
                   <span className="font-bold text-xl tracking-tight text-white">Dumply<span className="text-blue-500">.</span></span>
-                  <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-white transition-colors"><Menu size={20} /></button>
+                  <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-white transition-colors"><Menu size={20} /></button>
                 </>
             ) : (
                 <button onClick={() => setSidebarOpen(true)} className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mx-auto hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"><Menu size={20} /></button>
@@ -223,20 +218,39 @@ const Layout = () => {
 
           <div className="flex-1 overflow-y-auto py-6 px-3 space-y-6">
             <div className="px-3">
-              <NavLink to="/rentals/new" className={`flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95 ${isSidebarOpen ? 'p-3 w-full' : 'w-10 h-10 mx-auto'}`}>
+              <NavLink 
+                to="/rentals/new" 
+                title={!isSidebarOpen ? "Criar Locação" : ""}
+                className={`flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95 ${isSidebarOpen ? 'p-3 w-full' : 'w-10 h-10 mx-auto relative group'}`}
+              >
                 <Plus size={20} />
                 {isSidebarOpen && <span>Criar Locação</span>}
+                {!isSidebarOpen && (
+                  <div className="absolute left-full ml-4 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 border border-gray-800 shadow-xl pointer-events-none">
+                    Criar Locação
+                  </div>
+                )}
               </NavLink>
             </div>
 
             {menuGroups.map((group, idx) => (
                 <div key={idx}>
-                  {isSidebarOpen && <h3 className="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">{group.label}</h3>}
+                  {isSidebarOpen && <h3 className="px-4 text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{group.label}</h3>}
                   <div className="space-y-1">
                     {group.items.filter(item => isAllowed(item.to)).map((item) => (
-                        <NavLink key={item.to} to={item.to} className={({ isActive }) => `relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'}`}>
+                        <NavLink 
+                          key={item.to} 
+                          to={item.to} 
+                          title={!isSidebarOpen ? item.label : ""}
+                          className={({ isActive }) => `relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'}`}
+                        >
                           <item.icon size={20} className="min-w-[20px]" />
                           {isSidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+                          {!isSidebarOpen && (
+                            <div className="absolute left-full ml-4 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 border border-gray-800 shadow-xl pointer-events-none">
+                              {item.label}
+                            </div>
+                          )}
                         </NavLink>
                     ))}
                   </div>
@@ -253,7 +267,7 @@ const Layout = () => {
               {isSidebarOpen && (
                   <div className="flex-1 min-w-0 text-left">
                     <p className="text-sm font-bold text-white truncate">{user?.fullName}</p>
-                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                   </div>
               )}
             </button>
@@ -299,7 +313,7 @@ const Layout = () => {
                         <Shield size={18} className={user?.is2faEnabled ? "text-green-400" : "text-gray-400"} />
                         <div className="flex-1 text-left">
                           <p className="text-sm font-medium">Segurança (2FA)</p>
-                          <p className="text-xs text-gray-500">{user?.is2faEnabled ? "Ativado" : "Proteja sua conta"}</p>
+                          <p className="text-xs text-gray-400">{user?.is2faEnabled ? "Ativado" : "Proteja sua conta"}</p>
                         </div>
                         <ChevronRight size={16} className="text-gray-600" />
                       </button>
@@ -320,7 +334,7 @@ const Layout = () => {
 
                     <div className="space-y-4">
                       <div className="group relative">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Senha Atual</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Senha Atual</label>
                         <div className="relative">
                           <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                           <input
@@ -334,7 +348,7 @@ const Layout = () => {
                       </div>
 
                       <div className="group relative">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Nova Senha</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Nova Senha</label>
                         <div className="relative">
                           <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                           <input
@@ -355,7 +369,7 @@ const Layout = () => {
                       </div>
 
                       <div className="group relative">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Confirmar Nova Senha</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">Confirmar Nova Senha</label>
                         <div className="relative">
                           <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                           <input
@@ -470,7 +484,18 @@ const Layout = () => {
         </Dialog>
 
         <main className="flex-1 overflow-auto relative lg:pt-0 pt-16">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
   );

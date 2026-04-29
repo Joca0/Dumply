@@ -85,7 +85,7 @@ const RentalList = () => {
 
     if (status === 'ACTIVE') {
       return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
@@ -95,7 +95,7 @@ const RentalList = () => {
       );
     }
     return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-800 text-gray-400 border border-gray-700">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-800 text-gray-400 border border-gray-700">
         <span className="h-1.5 w-1.5 rounded-full bg-gray-500" />
         FINALIZADO
       </span>
@@ -150,7 +150,7 @@ const RentalList = () => {
 
             {/* Busca */}
             <div className="md:col-span-5 relative">
-              <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+              <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                 <Search size={10} /> Buscar
               </label>
               <div className="relative">
@@ -167,7 +167,7 @@ const RentalList = () => {
 
             {/* Mês */}
             <div className="md:col-span-3">
-              <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+              <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                 <Calendar size={10} /> Mês de Inicio
               </label>
               <input
@@ -181,7 +181,7 @@ const RentalList = () => {
 
             {/* Status */}
             <div className="md:col-span-4">
-              <label className="text-[10px] text-gray-500 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
+              <label className="text-xs text-gray-400 font-bold uppercase ml-1 mb-1.5 flex items-center gap-1">
                 <Filter size={10} /> Situação
               </label>
               <div className="relative">
@@ -194,7 +194,7 @@ const RentalList = () => {
                   <option value="ACTIVE">Apenas Ativos</option>
                   <option value="FINISHED">Apenas Finalizados</option>
                 </select>
-                <div className="absolute right-3 top-3 pointer-events-none text-gray-500">
+                <div className="absolute right-3 top-3 pointer-events-none text-gray-400">
                   <Filter size={14} />
                 </div>
               </div>
@@ -212,7 +212,7 @@ const RentalList = () => {
                 <div className="flex justify-between items-start mb-3 pl-2">
                   <div>
                     <h3 className="text-white font-bold text-lg leading-tight">{rental.customer?.fullName}</h3>
-                    <p className="text-gray-500 text-xs font-mono mt-0.5">{rental.customer?.document || 'Sem documento'}</p>
+                    <p className="text-gray-400 text-xs font-mono mt-0.5">{rental.customer?.document || 'Sem documento'}</p>
                   </div>
                   {getStatusBadge(rental.status)}
                 </div>
@@ -222,7 +222,7 @@ const RentalList = () => {
                     <Truck size={14} className="text-blue-500 mt-0.5 shrink-0" />
                     <div>
                       <p className="text-gray-300 text-sm font-medium">{rental.equipment?.name || 'Item Removido'}</p>
-                      <p className="text-[10px] text-gray-500 uppercase">N/S: {rental.equipment?.serialNumber || '--'}</p>
+                      <p className="text-xs text-gray-400 uppercase">N/S: {rental.equipment?.serialNumber || '--'}</p>
                     </div>
                   </div>
 
@@ -280,12 +280,12 @@ const RentalList = () => {
           <table className="w-full text-left border-separate border-spacing-0">
             <thead>
             <tr className="bg-gray-800/50">
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Cliente</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Equipamento</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 w-1/4">Endereço</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Datas</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Status</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 text-right no-print">Ações</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Cliente</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Equipamento</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 w-1/4">Endereço</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Datas</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Status</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 text-right no-print">Ações</th>
             </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
@@ -293,11 +293,11 @@ const RentalList = () => {
                 <tr key={rental.id} className="group hover:bg-white/2 transition-colors">
                   <td className="p-4 align-top">
                     <div className="font-semibold text-gray-200">{rental.customer?.fullName}</div>
-                    <div className="text-xs text-gray-500 font-mono mt-0.5">{rental.customer?.document || '---'}</div>
+                    <div className="text-xs text-gray-400 font-mono mt-0.5">{rental.customer?.document || '---'}</div>
                   </td>
                   <td className="p-4 align-top">
                     <div className="text-sm text-gray-300 font-medium">{rental.equipment?.name || '---'}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-0.5">Número de Série: {rental.equipment?.serialNumber}</div>
+                    <div className="text-xs text-gray-400 uppercase mt-0.5">Número de Série: {rental.equipment?.serialNumber}</div>
                   </td>
                   <td className="p-4 align-top">
                     <div className="flex gap-2">
@@ -312,7 +312,7 @@ const RentalList = () => {
                         <span>{formatDate(rental.startDate)}</span>
                       </div>
                       {rental.endDate && (
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
                             <CheckCircle size={12} className="text-gray-600" />
                             <span>{formatDate(rental.endDate)}</span>
                           </div>
@@ -364,14 +364,14 @@ const RentalList = () => {
                 <Search size={32} />
               </div>
               <p className="text-gray-300 font-bold text-lg">Nenhum aluguel encontrado</p>
-              <p className="text-gray-500 text-sm mt-1">Tente alterar os filtros ou cadastrar uma nova locação.</p>
+              <p className="text-gray-400 text-sm mt-1">Tente alterar os filtros ou cadastrar uma nova locação.</p>
             </div>
         )}
 
         {/* PAGINAÇÃO */}
         {totalPages > 0 && (
             <div className="flex justify-between items-center py-4 no-print border-t border-gray-800 mt-4">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-2">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-2">
             Página <span className="text-white">{page + 1}</span> de {totalPages}
           </span>
               <div className="flex gap-2">

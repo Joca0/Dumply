@@ -83,7 +83,7 @@ const DriverList = () => {
         {/* BUSCA */}
         <div className="mb-6">
           <div className="relative w-full md:max-w-md">
-            <Search className="absolute left-3 top-3 text-gray-500" size={18} />
+            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
             <input
                 type="text"
                 placeholder="Nome, documento ou e-mail..."
@@ -105,7 +105,7 @@ const DriverList = () => {
                     </div>
                     <div>
                       <h3 className="text-white font-bold">{driver.fullName}</h3>
-                      <p className="text-gray-500 text-xs">{driver.email}</p>
+                      <p className="text-gray-400 text-xs">{driver.email}</p>
                     </div>
                   </div>
                   <div className="flex gap-1">
@@ -120,7 +120,7 @@ const DriverList = () => {
 
                 <div className="space-y-3 pt-3 border-t border-gray-800/50">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 flex items-center gap-2"><Fingerprint size={14}/> Doc</span>
+                    <span className="text-gray-400 flex items-center gap-2"><Fingerprint size={14}/> Doc</span>
                     <span className="text-gray-300 font-mono">{driver.document}</span>
                   </div>
                 </div>
@@ -133,10 +133,10 @@ const DriverList = () => {
           <table className="w-full text-left border-separate border-spacing-0">
             <thead>
             <tr className="bg-gray-800/50">
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Motorista</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">Documento</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800">E-mail</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800 text-right">Ações</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Motorista</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">Documento</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800">E-mail</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 text-right">Ações</th>
             </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">

@@ -74,7 +74,7 @@ const Login = () => {
                 <h1 className="text-5xl font-black text-white tracking-tighter">
                     DUMPLY<span className="text-blue-500">.</span>
                 </h1>
-                <p className="text-gray-500 font-medium mt-2">Teste Fechado</p>
+                <p className="text-gray-400 font-medium mt-2">Teste Fechado</p>
             </div>
 
             {/* CARD DE LOGIN CENTRALIZADO */}
@@ -92,7 +92,7 @@ const Login = () => {
                         <h2 className="text-2xl font-bold text-white tracking-tight">
                             {show2FA ? "Segurança 2FA" : "Acessar Conta"}
                         </h2>
-                        <p className="text-gray-500 text-sm">
+                        <p className="text-gray-400 text-sm">
                             {show2FA ? "Digite o código do Google Authenticator." : "Insira suas credenciais abaixo."}
                         </p>
                     </div>
@@ -103,7 +103,7 @@ const Login = () => {
 
                         {/* E-mail */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">E-mail</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors">E-mail</label>
                             <div className="relative">
                                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -120,8 +120,8 @@ const Login = () => {
                         {/* Senha */}
                         <div className="group relative">
                             <div className="flex justify-between items-center mb-2 ml-1">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest group-focus-within:text-blue-500 transition-colors">Senha</label>
-                                <Link to="/auth/forgot-password" className="text-[10px] font-bold text-gray-600 uppercase tracking-widest hover:text-blue-500 transition-colors">
+                                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest group-focus-within:text-blue-500 transition-colors">Senha</label>
+                                <Link to="/auth/forgot-password" className="text-xs font-bold text-gray-600 uppercase tracking-widest hover:text-blue-500 transition-colors">
                                     Esqueceu?
                                 </Link>
                             </div>
@@ -157,7 +157,7 @@ const Login = () => {
                     <form onSubmit={handleVerify2FA} className="space-y-6">
                         {/* Código 2FA */}
                         <div className="group relative">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors text-center">Código de Verificação</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase mb-2 ml-1 block tracking-widest group-focus-within:text-blue-500 transition-colors text-center">Código de Verificação</label>
                             <div className="relative">
                                 <ShieldCheck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
@@ -189,7 +189,7 @@ const Login = () => {
                             <button
                                 type="button"
                                 onClick={() => setShow2FA(false)}
-                                className="w-full mt-4 text-gray-500 hover:text-white text-sm font-bold transition-colors"
+                                className="w-full mt-4 text-gray-400 hover:text-white text-sm font-bold transition-colors"
                             >
                                 Voltar para o Login
                             </button>
@@ -199,7 +199,7 @@ const Login = () => {
 
                 {/* Registro */}
                 <div className="mt-10 pt-8 border-t border-gray-800/50 text-center">
-                    <p className="text-gray-500 flex items-center justify-center gap-2">
+                    <p className="text-gray-400 flex items-center justify-center gap-2">
                         Não tem conta?
                         <Link
                             to="/auth/register"
@@ -211,7 +211,7 @@ const Login = () => {
                 </div>
             </div>
 
-            <p className="mt-12 text-[10px] text-gray-700 text-center uppercase font-bold tracking-[0.2em] relative z-10">
+            <p className="mt-12 text-xs text-gray-700 text-center uppercase font-bold tracking-[0.2em] relative z-10">
                 &copy; 2026 Dumply. Todos os direitos reservados.
             </p>
         </div>
