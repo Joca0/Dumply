@@ -29,9 +29,9 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const handleCloseWelcome = async () => {
+  const handleCloseWelcome = async (consentData) => {
     try {
-      await completeWelcome(); // Chama o back-end para marcar como visto
+      await completeWelcome(consentData); // Chama o back-end para marcar como visto e enviar consentimento
       await refreshUser(); // Atualiza os dados do usuário no contexto global
       setShowWelcome(false); // Fecha o modal :)
     } catch (error) {

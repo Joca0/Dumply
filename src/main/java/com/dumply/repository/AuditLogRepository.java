@@ -66,10 +66,10 @@ public interface AuditLogRepository extends Repository<AuditLog, UUID> {
 
     /**
      * Conta o número de ocorrências de um tipo de evento para um e-mail
-     * em um intervalo — útil para alertar sobre múltiplas tentativas falhas
-     * em uma mesma conta.
+     * em um intervalo para uma empresa específica.
      */
-    long countByEmailAndEventTypeAndTimestampAfter(
+    long countByCompanyIdAndEmailAndEventTypeAndTimestampAfter(
+            UUID companyId,
             String email,
             String eventType,
             LocalDateTime since

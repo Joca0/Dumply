@@ -52,31 +52,18 @@ public class AuditLogService {
         this.auditLogRepository = auditLogRepository;
     }
 
-    // ============================================================
-    //  Registro de eventos (Reqs. 5.1, 5.2)
-    // ============================================================
-
-    /**
-     * Registra um evento de sucesso (outcome = SUCCESS).
-     */
     @Async
     public void recordSuccess(AuditEventType type, UUID userId, UUID companyId,
                               String email, HttpServletRequest request, String details) {
         persist(type, OUTCOME_SUCCESS, userId, companyId, email, request, details);
     }
 
-    /**
-     * Registra um evento de falha (outcome = FAILURE).
-     */
     @Async
     public void recordFailure(AuditEventType type, UUID userId, UUID companyId,
                               String email, HttpServletRequest request, String details) {
         persist(type, OUTCOME_FAILURE, userId, companyId, email, request, details);
     }
 
-    /**
-     * Versão simplificada para eventos sem detalhes adicionais.
-     */
     @Async
     public void record(AuditEventType type, String outcome, UUID userId, UUID companyId,
                        String email, HttpServletRequest request) {
@@ -104,27 +91,10 @@ public class AuditLogService {
         }
     }
 
-    // ============================================================
-    //  Consulta para o endpoint administrativo (Req. 5.4)
-    // ============================================================
-
-    /**
-     * Consulta paginada com filtros dinâmicos. Todos os parâmetros são opcionais —
-     * filtros nulos são ignorados.
-     *
-     * @param eventType filtra por tipo de evento (ex.: {@code "LOGIN_FAIL"})
-     * @param outcome   filtra por resultado ({@code "SUCCESS"} ou {@code "FAILURE"})
-     * @param email     filtra por e-mail (match exato)
-     * @param userId    filtra por ID de usuário
-     * @param companyId filtra por tenant
-     * @param ipAddress filtra por IP de origem
-     * @param since     limite inferior do intervalo temporal
-     * @param until     limite superior do intervalo temporal
-     * @param pageable  parâmetros de paginação e ordenação
-     */
     public Page<AuditLogResponse> search(String eventType,
                                          String outcome,
                                          String email,
+                                         String search,
                                          UUID userId,
                                          UUID companyId,
                                          String ipAddress,
@@ -143,6 +113,13 @@ public class AuditLogService {
             }
             if (email != null && !email.isBlank()) {
                 predicates.add(cb.equal(root.get("email"), email));
+            }
+            if (search != null && !search.isBlank()) {
+                String searchPattern = "%" + search.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("email")), searchPattern),
+                        cb.like(cb.lower(root.get("details")), searchPattern)
+                ));
             }
             if (userId != null) {
                 predicates.add(cb.equal(root.get("userId"), userId));
@@ -166,21 +143,15 @@ public class AuditLogService {
         return auditLogRepository.findAll(spec, pageable).map(this::toResponse);
     }
 
-    /**
-     * Conta tentativas de login falhas para um e-mail dentro de um intervalo.
-     * Útil para painéis de monitoramento e alertas (Req. 5.4).
-     */
-    public long countRecentFailedLogins(String email, LocalDateTime since) {
-        return auditLogRepository.countByEmailAndEventTypeAndTimestampAfter(
+    public long countRecentFailedLogins(UUID companyId, String email, LocalDateTime since) {
+        return auditLogRepository.countByCompanyIdAndEmailAndEventTypeAndTimestampAfter(
+                companyId,
                 email,
                 AuditEventType.LOGIN_FAIL.name(),
                 since
         );
     }
 
-    // ============================================================
-    //  Helpers
-    // ============================================================
 
     private AuditLogResponse toResponse(AuditLog log) {
         return new AuditLogResponse(

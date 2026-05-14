@@ -32,6 +32,14 @@ api.interceptors.response.use(
         toast.error(typeof data === 'string' ? data : 'Não autorizado ou sessão expirada');
       }
 
+      if (status === 403) {
+        toast.error(typeof data === 'string' ? data : 'Você não tem permissão para realizar esta ação.');
+      }
+
+      if (status === 429) {
+        toast.error(typeof data === 'string' ? data : 'Muitas tentativas. Conta bloqueada temporariamente.');
+      }
+
       if (status === 409) {
         toast.warning(typeof data === 'string' ? data : 'Conflito de dados');
       }
@@ -60,7 +68,17 @@ export const resetPassword = (token, newPassword) => api.post('/auth/reset-passw
 export const changePassword = (data) => api.post('/auth/change-password', data);
 
 export const register = (data) => api.post('/companies/signup', data);
-export const completeWelcome = () => api.patch('/auth/complete-welcome');
+export const completeWelcome = (consentData) => api.patch('/auth/complete-welcome', consentData);
+
+// LGPD Endpoints
+export const getMyData = () => api.get('/lgpd/me/data');
+export const exportMyData = () => api.get('/lgpd/me/export', { responseType: 'blob' });
+export const deleteAccount = (data) => api.delete('/lgpd/me', { data });
+export const grantConsent = (purpose, version) => api.post('/lgpd/consent', { purpose, version });
+export const revokeConsent = (purpose) => api.delete(`/lgpd/consent?purpose=${purpose}`);
+
+// Audit Endpoints
+export const getAuditLogs = (params) => api.get('/admin/audit/logs', { params });
 
 export const getDashboardStats = () => api.get('/dashboard/stats');
 

@@ -29,6 +29,12 @@ class AuthServiceBruteForceTest {
     @Mock
     private com.dumply.config.security.TokenService tokenService;
 
+    @Mock
+    private AuditLogService auditLogService;
+
+    @Mock
+    private jakarta.servlet.http.HttpServletRequest request;
+
     @InjectMocks
     private AuthService authService;
 
@@ -44,12 +50,12 @@ class AuthServiceBruteForceTest {
         user.setPassword("encodedPassword");
         user.setFailedLoginAttempts(0);
 
-        LoginRequestDTO request = new LoginRequestDTO("test@test.com", "wrongPassword");
+        LoginRequestDTO body = new LoginRequestDTO("test@test.com", "wrongPassword");
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(false);
+        when(userRepository.findByEmail(body.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(body.password(), user.getPassword())).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () -> authService.login(request));
+        assertThrows(BadCredentialsException.class, () -> authService.login(body, request));
 
         assertEquals(1, user.getFailedLoginAttempts());
         verify(userRepository, times(1)).save(user);
@@ -62,12 +68,12 @@ class AuthServiceBruteForceTest {
         user.setPassword("encodedPassword");
         user.setFailedLoginAttempts(4); // Próxima falha bloqueia (limite é 5)
 
-        LoginRequestDTO request = new LoginRequestDTO("test@test.com", "wrongPassword");
+        LoginRequestDTO body = new LoginRequestDTO("test@test.com", "wrongPassword");
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(false);
+        when(userRepository.findByEmail(body.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(body.password(), user.getPassword())).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () -> authService.login(request));
+        assertThrows(BadCredentialsException.class, () -> authService.login(body, request));
 
         assertEquals(5, user.getFailedLoginAttempts());
         assertNotNull(user.getLocktime());
@@ -81,11 +87,11 @@ class AuthServiceBruteForceTest {
         user.setEmail("test@test.com");
         user.setLocktime(LocalDateTime.now().plusMinutes(10));
 
-        LoginRequestDTO request = new LoginRequestDTO("test@test.com", "anyPassword");
+        LoginRequestDTO body = new LoginRequestDTO("test@test.com", "anyPassword");
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(body.email())).thenReturn(Optional.of(user));
 
-        assertThrows(AccountBlockedException.class, () -> authService.login(request));
+        assertThrows(AccountBlockedException.class, () -> authService.login(body, request));
         verify(passwordEncoder, never()).matches(anyString(), anyString());
     }
 
@@ -96,12 +102,12 @@ class AuthServiceBruteForceTest {
         user.setPassword("encodedPassword");
         user.setFailedLoginAttempts(3);
 
-        LoginRequestDTO request = new LoginRequestDTO("test@test.com", "correctPassword");
+        LoginRequestDTO body = new LoginRequestDTO("test@test.com", "correctPassword");
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(true);
+        when(userRepository.findByEmail(body.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(body.password(), user.getPassword())).thenReturn(true);
 
-        authService.login(request);
+        authService.login(body, request);
 
         assertEquals(0, user.getFailedLoginAttempts());
         assertNull(user.getLocktime());

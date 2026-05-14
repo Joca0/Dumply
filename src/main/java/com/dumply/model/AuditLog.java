@@ -6,6 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,6 +33,14 @@ import java.util.UUID;
  * @see com.dumply.repository.AuditLogRepository
  */
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Filter(
+       name = "companyFilter",
+       condition = "company_id = :companyId"
+)
 @Table(name = "audit_log",
        indexes = {
                @Index(name = "idx_audit_log_user_id", columnList = "user_id"),
@@ -36,10 +48,6 @@ import java.util.UUID;
                @Index(name = "idx_audit_log_timestamp", columnList = "timestamp"),
                @Index(name = "idx_audit_log_ip", columnList = "ip_address")
        })
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class AuditLog {
 
     @Id

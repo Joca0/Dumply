@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,7 +22,11 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+@Filter(
+        name = "companyFilter",
+        condition = "company_id = :companyId"
+)
+public class User extends CompanySuperEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

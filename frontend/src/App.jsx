@@ -20,6 +20,7 @@ import LoginForm from "@/pages/LoginForm.jsx";
 import {AuthProvider} from "@/context/AuthContext.jsx";
 import ScheduledList from "@/pages/ScheduledList.jsx";
 import AssignedList from "@/pages/AssignedList.jsx";
+import AuditLogs from "@/pages/AuditLogs.jsx";
 import {AlertProvider} from "@/components/ui/MainAlert.jsx";
 import NotFound from "@/pages/NotFound.jsx";
 import RegisterForm from "@/pages/RegisterForm.jsx";
@@ -82,6 +83,7 @@ function App() {
             <Route path="invoices" element={<InvoiceList/>}/>
             <Route path="invoices/new" element={<InvoiceCreate/>}/>
             <Route path="invoices/:id" element={<InvoiceDetail/>}/>
+            <Route path="audit" element={<AuditLogs/>}/>
           </Route>
           <Route path="*" element={<Navigate to="/" replace/>}/>
         </Routes>
