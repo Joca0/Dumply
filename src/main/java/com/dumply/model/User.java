@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,7 +22,11 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+@Filter(
+        name = "companyFilter",
+        condition = "company_id = :companyId"
+)
+public class User extends CompanySuperEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -53,6 +58,35 @@ public class User {
     private boolean accountNonLocked = true;
 
     private String disable2faCode;
+
+    // ============================================================
+    //  LGPD — Registro de Consentimento (Req. 4.4, 4.5 e 4.7)
+    // ============================================================
+
+    /**
+     * Indica se o titular concedeu consentimento explícito para o tratamento
+     * de seus dados pessoais. Iniciado como {@code false} — o aceite é obrigatório
+     * no primeiro login (vide {@link com.dumply.service.AuthService#completeWelcome}).
+     */
+    @Column(name = "consent_given", nullable = false)
+    private Boolean consentGiven = false;
+
+    /**
+     * Carimbo temporal (UTC) do momento em que o titular manifestou o consentimento.
+     * Permanece {@code null} enquanto o aceite não for realizado.
+     */
+    @Column(name = "consent_given_at")
+    private LocalDateTime consentGivenAt;
+
+    /**
+     * Versão da Política de Privacidade aceita pelo titular (ex.: {@code "v1.0"}).
+     * Alterações materiais na política exigem nova manifestação de vontade
+     * (re-incremento da versão).
+     */
+    @Column(name = "consent_version", length = 20)
+    private String consentVersion;
+
+    // ============================================================
 
     @Enumerated(EnumType.STRING)
     private Role role;

@@ -4,11 +4,20 @@ import { toast } from 'sonner';
 
 const WelcomeStep = ({ onComplete }) => {
     const [loading, setLoading] = useState(false);
+    const [consent, setConsent] = useState(false);
 
     const handleStart = async () => {
+        if (!consent) {
+            toast.error("Você precisa aceitar os termos da Política de Privacidade para continuar.");
+            return;
+        }
+
         setLoading(true);
         try {
-            if (onComplete) await onComplete();
+            if (onComplete) await onComplete({
+                consentGiven: true,
+                consentVersion: "v1.0"
+            });
             toast.success("Tudo pronto! Bem-vindo ao Dumply.");
         } catch (error) {
             toast.error("Erro ao processar. Tente novamente.");
@@ -54,7 +63,7 @@ const WelcomeStep = ({ onComplete }) => {
                 </div>
 
                 {/* Grid de Benefícios / Informações */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                     <div className="bg-gray-950/50 p-4 rounded-xl border border-gray-800/50 flex flex-col gap-1.5">
                         <ShieldCheck className="text-emerald-400" size={20} />
                         <h4 className="text-white font-bold text-xs tracking-wide mt-1">Ambiente Seguro</h4>
@@ -69,6 +78,29 @@ const WelcomeStep = ({ onComplete }) => {
                             Canal prioritário com os desenvolvedores.
                         </p>
                     </div>
+                </div>
+
+                {/* LGPD Consent */}
+                <div className="mb-8 p-4 bg-blue-600/5 border border-blue-500/20 rounded-2xl">
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                        <div className="relative flex items-center mt-1">
+                            <input
+                                type="checkbox"
+                                className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-700 bg-gray-950 checked:bg-blue-600 checked:border-blue-600 transition-all"
+                                checked={consent}
+                                onChange={(e) => setConsent(e.target.checked)}
+                            />
+                            <CheckCircle2 size={14} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">
+                                Aceito os termos da Política de Privacidade
+                            </p>
+                            <p className="text-[10px] text-gray-500 mt-1 leading-relaxed">
+                                Ao prosseguir, você confirma que leu e concorda com o tratamento de seus dados pessoais conforme a LGPD para fins de prestação de serviço.
+                            </p>
+                        </div>
+                    </label>
                 </div>
 
                 {/* Ação Principal */}

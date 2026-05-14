@@ -3,13 +3,9 @@ package com.dumply.controller;
 import com.dumply.common.dto.*;
 import com.dumply.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Driver;
 import java.util.Map;
 
 
@@ -24,15 +20,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseDTO> login(@RequestBody LoginRequestDTO body) {
-        return ResponseEntity.ok(authService.login(body));
+    public ResponseEntity<ResponseDTO> login(@RequestBody LoginRequestDTO body,
+                                             HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.login(body, httpRequest));
     }
 
     @PatchMapping("/complete-welcome")
-    public ResponseEntity<ProfileDTO> completeWelcome() {
-        return ResponseEntity.ok(authService.completeWelcome());
+    public ResponseEntity<ProfileDTO> completeWelcome(
+            @RequestBody CompleteWelcomeRequest request,
+            HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.completeWelcome(request, httpRequest));
     }
-
 
     @GetMapping("/me")
     public ResponseEntity<ProfileDTO> me() {
@@ -45,33 +43,38 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        authService.logout();
+    public ResponseEntity<Void> logout(HttpServletRequest httpRequest) {
+        authService.logout(httpRequest);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        authService.forgotPassword(request);
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request,
+                                               HttpServletRequest httpRequest) {
+        authService.forgotPassword(request, httpRequest);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request);
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request,
+                                              HttpServletRequest httpRequest) {
+        authService.resetPassword(request, httpRequest);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request) {
-        authService.changePassword(request);
+    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request,
+                                               HttpServletRequest httpRequest) {
+        authService.changePassword(request, httpRequest);
         return ResponseEntity.ok().build();
     }
 
 
     @PostMapping("/2fa/verify")
-    public ResponseEntity<ResponseDTO> verify2FA(@RequestParam String email, @RequestParam String code) {
-        return ResponseEntity.ok(authService.verify2FA(email, Integer.parseInt(code)));
+    public ResponseEntity<ResponseDTO> verify2FA(@RequestParam String email,
+                                                 @RequestParam String code,
+                                                 HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.verify2FA(email, Integer.parseInt(code), httpRequest));
     }
 
     @PostMapping("/2fa/setup")
@@ -80,22 +83,22 @@ public class AuthController {
     }
 
     @PostMapping("/2fa/confirm")
-    public ResponseEntity<Void> confirm2FA(@RequestParam int code) {
-        authService.confirmEnable2FA(code);
+    public ResponseEntity<Void> confirm2FA(@RequestParam int code,
+                                           HttpServletRequest httpRequest) {
+        authService.confirmEnable2FA(code, httpRequest);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/2fa/disable/request")
-    public ResponseEntity<Void> requestDisable2FA() {
-        authService.requestDisable2FACode();
+    public ResponseEntity<Void> requestDisable2FA(HttpServletRequest httpRequest) {
+        authService.requestDisable2FACode(httpRequest);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/2fa/disable/confirm")
-    public ResponseEntity<Void> confirmDisable2FA(@RequestParam String code) {
-        authService.confirmDisable2FA(code);
+    public ResponseEntity<Void> confirmDisable2FA(@RequestParam String code,
+                                                  HttpServletRequest httpRequest) {
+        authService.confirmDisable2FA(code, httpRequest);
         return ResponseEntity.ok().build();
     }
-
-
 }

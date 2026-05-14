@@ -3,7 +3,17 @@ import { NavLink, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { setup2FA, confirm2FA, requestDisable2FA, confirmDisable2FA, logout, changePassword } from '../api';
+import { 
+  setup2FA, 
+  confirm2FA, 
+  requestDisable2FA, 
+  confirmDisable2FA, 
+  logout, 
+  changePassword,
+  getMyData,
+  exportMyData,
+  deleteAccount
+} from '../api';
 import { toast } from 'sonner';
 import {
   Home,
@@ -28,7 +38,11 @@ import {
   Lock,
   Key,
   Eye,
-  EyeOff
+  EyeOff,
+  Download,
+  Trash2,
+  AlertTriangle,
+  Fingerprint
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -43,6 +57,8 @@ const Layout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [lgpdData, setLgpdData] = useState(null);
+  const [deletionConfirm, setDeletionConfirm] = useState({ password: '', confirmString: '' });
   const location = useLocation();
 
   const userInitial = (user?.fullName?.charAt(0) || user?.name?.charAt(0) || '?').toUpperCase();
@@ -125,6 +141,59 @@ const Layout = () => {
     }
   }
 
+  const handleGetMyData = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = await getMyData();
+      setLgpdData(res.data);
+      setTwoFactorStep('lgpd-view');
+    } catch {
+      toast.error("Erro ao recuperar seus dados.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const handleExportMyData = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await exportMyData();
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `meus_dados_dumply.json`);
+      document.body.appendChild(link);
+      link.click();
+      toast.success("Dados exportados com sucesso!");
+    } catch {
+      toast.error("Erro ao exportar dados.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    if (deletionConfirm.confirmString !== 'EXCLUIR') {
+      toast.error("Por favor, digite a frase de confirmação exatamente como solicitada.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await deleteAccount({
+        password: deletionConfirm.password,
+        confirmation: deletionConfirm.confirmString
+      });
+      toast.success("Sua conta foi excluída e seus dados anonimizados.");
+      clearToken();
+    } catch {
+      // Erro tratado pelo interceptor
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -139,12 +208,17 @@ const Layout = () => {
 
   const rolePermissions = {
     DRIVER: ['/map', '/assigned'],
-    ADMIN: ['/map', '/dashboard', '/rentals', '/customers', '/equipments', '/invoices', '/scheduled'],
-    OWNER: ['/map', '/dashboard', '/rentals', '/customers', '/equipments', '/invoices', '/scheduled'],
+    ADMIN: ['/map', '/dashboard', '/rentals', '/customers', '/equipments', '/invoices', '/scheduled', '/audit'],
+    MANAGER: ['/map', '/dashboard', '/rentals', '/customers', '/equipments', '/invoices', '/scheduled', '/audit'],
+    OWNER: ['/map', '/dashboard', '/rentals', '/customers', '/equipments', '/invoices', '/scheduled', '/audit'],
   };
 
   const isAllowed = (to) => {
     if (!user) return false;
+    
+    // Logs de Auditoria: ADMIN, OWNER e MANAGER
+    if (to === '/audit') return ['OWNER', 'ADMIN', 'MANAGER'].includes(user.role);
+
     if (['ADMIN', 'OWNER', 'MANAGER'].includes(user.role)) return true;
     return rolePermissions[user.role]?.includes(to);
   };
@@ -186,6 +260,12 @@ const Layout = () => {
       items: [
         { to: '/drivers', icon: Truck, label: 'Motoristas' },
         { to: '/managers', icon: Users, label: 'Gerentes' },
+      ]
+    },
+    {
+      label: 'Segurança',
+      items: [
+        { to: '/audit', icon: Shield, label: 'Logs de Auditoria' },
       ]
     }
   ];
@@ -317,6 +397,25 @@ const Layout = () => {
                         </div>
                         <ChevronRight size={16} className="text-gray-600" />
                       </button>
+
+                      <div className="pt-2">
+                        <p className="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Privacidade (LGPD)</p>
+                        <button onClick={handleGetMyData} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
+                          <Eye size={18} className="text-blue-400" />
+                          <span className="flex-1 text-left text-sm font-medium">Ver Meus Dados</span>
+                          <ChevronRight size={16} className="text-gray-600" />
+                        </button>
+                        <button onClick={handleExportMyData} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
+                          <Download size={18} className="text-emerald-400" />
+                          <span className="flex-1 text-left text-sm font-medium">Exportar Dados</span>
+                          <ChevronRight size={16} className="text-gray-600" />
+                        </button>
+                        <button onClick={() => setTwoFactorStep('lgpd-delete')} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-gray-300 transition-all border border-transparent hover:border-gray-700">
+                          <Trash2 size={18} className="text-red-400" />
+                          <span className="flex-1 text-left text-sm font-medium">Excluir Minha Conta</span>
+                          <ChevronRight size={16} className="text-gray-600" />
+                        </button>
+                      </div>
                     </div>
 
                     <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all font-bold text-sm mt-4">
@@ -450,6 +549,88 @@ const Layout = () => {
                       </button>
                     </div>
                   </div>
+              ) : twoFactorStep === 'lgpd-view' ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-500/10 rounded-lg">
+                        <Fingerprint className="text-blue-500" size={20} />
+                      </div>
+                      <h3 className="font-bold text-lg">Meus Dados Pessoais</h3>
+                    </div>
+
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {lgpdData && Object.entries(lgpdData).map(([key, value]) => (
+                        <div key={key} className="p-3 bg-gray-950 border border-gray-800 rounded-xl">
+                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">{key}</p>
+                          <p className="text-sm font-medium text-white">{value?.toString() || '—'}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button onClick={() => setTwoFactorStep('idle')} className="w-full p-3 rounded-xl bg-gray-800 font-bold text-sm">
+                      Voltar
+                    </button>
+                  </div>
+              ) : twoFactorStep === 'lgpd-delete' ? (
+                  <form onSubmit={handleDeleteAccount} className="space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-500/10 rounded-lg">
+                        <AlertTriangle className="text-red-500" size={20} />
+                      </div>
+                      <h3 className="font-bold text-lg text-red-500">Exclusão de Conta</h3>
+                    </div>
+
+                    <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl text-sm text-gray-300 leading-relaxed">
+                      Esta ação é <span className="text-white font-bold underline">irreversível</span>. Sua conta será desativada e seus dados pessoais serão anonimizados conforme a LGPD.
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="group relative">
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-red-500 transition-colors">Sua Senha Atual</label>
+                        <div className="relative">
+                          <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-red-500 transition-colors" />
+                          <input
+                              type="password"
+                              required
+                              placeholder="••••••••"
+                              className="w-full bg-gray-950 border border-gray-800 p-3 pl-10 rounded-xl text-sm focus:ring-2 focus:ring-red-500 outline-none"
+                              value={deletionConfirm.password}
+                              onChange={(e) => setDeletionConfirm({...deletionConfirm, password: e.target.value})}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="group relative">
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-1 ml-1 block tracking-widest group-focus-within:text-red-500 transition-colors">Confirmação Literal</label>
+                        <p className="text-[10px] text-gray-500 mb-2 ml-1">Digite <span className="text-white font-bold">EXCLUIR</span> abaixo:</p>
+                        <input
+                            type="text"
+                            required
+                            placeholder="Digite a frase aqui"
+                            className="w-full bg-gray-950 border border-gray-800 p-3 rounded-xl text-sm focus:ring-2 focus:ring-red-500 outline-none uppercase font-bold text-center"
+                            value={deletionConfirm.confirmString}
+                            onChange={(e) => setDeletionConfirm({...deletionConfirm, confirmString: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <button type="button" onClick={() => setTwoFactorStep('idle')} className="p-3 rounded-xl bg-gray-800 font-bold text-sm">
+                        Cancelar
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={isSubmitting || deletionConfirm.confirmString !== 'EXCLUIR'}
+                        className="p-3 rounded-xl bg-red-600 hover:bg-red-500 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (
+                          <>
+                            <Trash2 size={18} /> Excluir Permanentemente
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
               ) : (
                   <div className="flex flex-col items-center gap-6 text-center">
                     <div className="space-y-2">
